@@ -246,3 +246,23 @@ void fit(struct neural_network *nn, size_t data_size, float *inputs[], float *ou
         printf("Mean loss : %f\n", loss / (data_size * nn->layers[nn->number_of_layers - 1]->size));
     }
 }
+
+float evaluate(struct neural_network *nn, size_t data_size, float *inputs[], float *outputs[], float(*loss)(float *, float *, size_t), int verbose)
+{
+    if(0 == data_size)
+        return 0;
+    float total = 0;
+    for (size_t i = 0; i < data_size; i++)
+    {
+        float *prediction = feed_forward(nn, inputs[i]);
+        float loss_value = loss(outputs[i], prediction, nn->layers[nn->number_of_layers - 1]->size);
+        free(prediction);
+        if (verbose)
+            printf("Loss n°%zu : %f\n", i, loss_value);
+        total += loss_value;
+    }
+    total /= data_size;
+    if (verbose)
+        printf("Final loss : %f\n", total);
+    return total;
+}

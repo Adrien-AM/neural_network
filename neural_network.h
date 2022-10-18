@@ -23,11 +23,10 @@ void randomize_weights(struct neural_network *nn, float mu, float sigma, int use
 /*
  * @param nn
  * @param inputs vector to feed neural network
- * 
+ *
  * @return prediction vector
  */
 float *feed_forward(struct neural_network *nn, float inputs[]);
-
 
 /*
  * Computes back propagation after a feed forward
@@ -37,18 +36,33 @@ float *feed_forward(struct neural_network *nn, float inputs[]);
  * @param learning_rate alpha, step size of gradient.
  * @param gamma momentum constant. If gamma = 0, doesn't have impact on computation. Lower gamma = lower momentum.
  */
-void back_propagate(struct neural_network *nn, float *output, float inputs[], float learning_rate, float gamma);
+void back_propagate(struct neural_network *nn, float *output,
+                    float inputs[], float learning_rate, float gamma);
 
-/* 
+/*
  * Fits the model to given inputs and outputs.
  *
  * @param nn
+ * @param data_size number of lines in dataset
  * @param inputs matrix of train inputs
  * @param outputs matrix of train outputs
  * @param epochs number of iterations
  * @param learning_rate step size of gradient
  * @param gamma momentum constant. If gamma = 0, doesn't have impact on computation. Lower gamma = lower momentum.
  */
-void fit(struct neural_network *nn, size_t data_size, float *inputs[], float *outputs[], size_t epochs, float learning_rate, float gamma);
+void fit(struct neural_network *nn, size_t data_size, float *inputs[],
+         float *outputs[], size_t epochs, float learning_rate, float gamma);
+
+/*
+ * Evaluates a trained model over a new data set.
+ * @param nn
+ * @param data_size number of lines in dataset
+ * @param inputs
+ * @param outputs expected output matrix
+ * @param loss loss function
+ * @param verbose display mode. Set to true for prints.
+ */
+float evaluate(struct neural_network *nn, size_t data_size,
+               float *inputs[], float *outputs[], float (*loss)(float *, float *, size_t), int verbose);
 
 #endif // __NEURAL_NETWORK_H__

@@ -5,9 +5,9 @@
 #include "utils.h"
 
 // Example function to approximate
-float f(float x)
+float f(float *x)
 {
-    return (0.23 * x * x) + 3.2 * x;
+    return (0.23 * *x * *x) + 3.2 * *x;
 }
 
 int main(void)
@@ -19,6 +19,7 @@ int main(void)
     const size_t DATA_SIZE = 5000;
     const size_t INPUT_SIZE = 1;
     const size_t OUTPUT_SIZE = 1;
+    const size_t TEST_SIZE = 20;
 
     // for model
     const float learning_rate = 1e-5;
@@ -38,29 +39,33 @@ int main(void)
     // generate data
     float *inputs[DATA_SIZE];
     float *outputs[DATA_SIZE];
-    for (size_t i = 0; i < DATA_SIZE; i++)
-    {
-        inputs[i] = malloc(sizeof(float) * INPUT_SIZE);
-        outputs[i] = malloc(sizeof(float) * OUTPUT_SIZE);
-        inputs[i][0] = (float)rand() / (float)(RAND_MAX/50) - 25;
-        outputs[i][0] = f(inputs[i][0]);
-    }
+
+    generate_data_inputs(DATA_SIZE, INPUT_SIZE, inputs, -25, 25);
+    generate_data_outputs(DATA_SIZE, OUTPUT_SIZE, inputs, outputs, &f);
 
     // Start training !
     fit(nn, DATA_SIZE, inputs, outputs, training_epochs, learning_rate, momentum_constant);
 
-    // Test on a fixed example
-    float inp[] = {5};
-    float *result = feed_forward(nn, inp);
-    printf("Input : %f, result : %f\n", inp[0], result[0]);
- 
- 
-    free(result);
-    for (size_t i = 0; i < DATA_SIZE; i++) 
+    for (size_t i = 0; i < DATA_SIZE; i++)
     {
         free(inputs[i]);
         free(outputs[i]);
     }
+
+    float *test_inputs[TEST_SIZE];
+    float *test_outputs[TEST_SIZE];
+
+    generate_data_inputs(TEST_SIZE, INPUT_SIZE, test_inputs, -25, 25);
+    generate_data_outputs(TEST_SIZE, OUTPUT_SIZE, test_inputs, test_outputs, &f);
+
+    evaluate(nn, TEST_SIZE, test_inputs, test_outputs, &mean_squared_error, 1);
+
+    for (size_t i = 0; i < TEST_SIZE; i++)
+    {
+        free(test_inputs[i]);
+        free(test_outputs[i]);
+    }
+
     free_neural_network(nn);
 
     return EXIT_SUCCESS;
