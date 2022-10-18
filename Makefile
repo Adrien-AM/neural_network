@@ -1,11 +1,13 @@
 CC=gcc
 CFLAGS=-Werror -Wall -Wextra -std=c2x
+LDFLAGS=-lm
 
-nn: utils.o nn.c
+src=utils neural_network
+
+main: main.c neural_network.o utils.o
 	${CC} ${CFLAGS} $^ -o $@ -lm
 
-utils.o: utils.c
-	${CC} ${CFLAGS} -c utils.c -lm
+$(eval $(foreach f,src,$(echo $(f).o: $(f).c ${CC} ${CFLAGS} -c $@ -o $@ ${LDFLAGS})))
 
 clean:
-	rm *.o nn
+	rm *.o main

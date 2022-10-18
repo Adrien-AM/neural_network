@@ -1,14 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <math.h>
-
+#include "neural_network.h"
 #include "utils.h"
-
-#define DATA_SIZE 3000
-#define INPUT_SIZE 1
-#define OUTPUT_SIZE 1
 
 struct neuron
 {
@@ -34,9 +25,6 @@ struct neural_network
     size_t number_of_layers;
 };
 
-/*
- * Allocates empty model with weights and biases set to 0.
- */
 struct neural_network *create_model(size_t number_of_layers, size_t layers_size[],
                                     size_t input_size, float (**activation)(float, int))
 {
@@ -117,9 +105,6 @@ void reset_errors(struct neural_network *nn)
     }
 }
 
-/*
- * Sets random weights to neural network. Weights are randomly chosen from a normal distribution of mean mu and stddev sigma.
- */
 void randomize_weights(struct neural_network *nn, float mu, float sigma, int use_bias)
 {
     for (size_t l = 0; l < nn->number_of_layers; l++)
@@ -136,12 +121,6 @@ void randomize_weights(struct neural_network *nn, float mu, float sigma, int use
     }
 }
 
-/*
- * @param nn
- * @param inputs vector to feed neural network
- * 
- * @return prediction vector
- */
 float *feed_forward(struct neural_network *nn, float inputs[])
 {
     reset_values(nn);
@@ -179,14 +158,6 @@ float *feed_forward(struct neural_network *nn, float inputs[])
     return result;
 }
 
-/*
- * Computes back propagation after a feed forward
- * @param nn
- * @param output desired output vector
- * @param inputs used in forward prop.
- * @param learning_rate alpha, step size of gradient.
- * @param gamma momentum constant. If gamma = 0, doesn't have impact on computation. Lower gamma = lower momentum.
- */
 void back_propagate(struct neural_network *nn, float *output, float inputs[], float learning_rate, float gamma)
 {
     reset_errors(nn);
@@ -248,17 +219,7 @@ void back_propagate(struct neural_network *nn, float *output, float inputs[], fl
     }
 }
 
-/* 
- * Fits the model to given inputs and outputs.
- *
- * @param nn
- * @param inputs matrix of train inputs
- * @param outputs matrix of train outputs
- * @param epochs number of iterations
- * @param learning_rate step size of gradient
- * @param gamma momentum constant. If gamma = 0, doesn't have impact on computation. Lower gamma = lower momentum.
- */
-void fit(struct neural_network *nn, float *inputs[], float *outputs[], size_t epochs, float learning_rate, float gamma)
+void fit(struct neural_network *nn, size_t data_size, float *inputs[], float *outputs[], size_t epochs, float learning_rate, float gamma)
 {
     reset_values(nn);
     reset_errors(nn);
@@ -267,7 +228,7 @@ void fit(struct neural_network *nn, float *inputs[], float *outputs[], size_t ep
     {
         printf("Epoch : %zu\n", epoch);
         float loss = 0;
-        for (int i = 0; i < DATA_SIZE; i++)
+        for (size_t i = 0; i < data_size; i++)
         {
             float *expected = outputs[i];
             float *inp = inputs[i];
@@ -282,49 +243,6 @@ void fit(struct neural_network *nn, float *inputs[], float *outputs[], size_t ep
 
             free(result);
         }
-        printf("Mean loss : %f\n", loss / (DATA_SIZE * nn->layers[nn->number_of_layers - 1]->size));
+        printf("Mean loss : %f\n", loss / (data_size * nn->layers[nn->number_of_layers - 1]->size));
     }
-}
-
-float f(float x)
-{
-    return (0.23 * x * x) + 3.2 * x;
-}
-
-int main(void)
-{
-    srand(time(NULL));
-
-    size_t layers_size[] = {4, 4, 1};
-    
-    float (*activations[])(float, int) = {&relu, &relu, &linear};
-    struct neural_network *nn = create_model(2, layers_size, INPUT_SIZE, activations);
-    randomize_weights(nn, 0, 0.5, 1);
-
-    float *inputs[DATA_SIZE] = {};
-    float *outputs[DATA_SIZE] = {};
-    for (int i = 0; i < DATA_SIZE; i++)
-    {
-        inputs[i] = malloc(sizeof(float) * INPUT_SIZE);
-        outputs[i] = malloc(sizeof(float) * OUTPUT_SIZE);
-        inputs[i][0] = (float)rand() / (float)(RAND_MAX/50) - 25;
-        outputs[i][0] = f(inputs[i][0]);
-    }
-
-    fit(nn, inputs, outputs, 5, 1e-5, 0.1);
-
-    float inp[] = {5};
-    float *result = feed_forward(nn, inp);
-    printf("Input : %f, result : %f\n", inp[0], result[0]);
-    free(result);
-
-    for (int i = 0; i < DATA_SIZE; i++) 
-    {
-        free(inputs[i]);
-        free(outputs[i]);
-    }
-
-    free_neural_network(nn);
-
-    return EXIT_SUCCESS;
 }
