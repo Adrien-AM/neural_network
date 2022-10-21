@@ -10,13 +10,18 @@ float f(float *x)
     return (0.23 * *x * *x) + 3.2 * *x;
 }
 
+float f2(float *x)
+{
+    return (0.78 * x[0]) + (1.25 * x[1]);
+}
+
 int main(void)
 {
     srand(time(NULL));
 
     // define all parameters
     // for data
-    const size_t DATA_SIZE = 5000;
+    const size_t DATA_SIZE = 1000;
     const size_t INPUT_SIZE = 1;
     const size_t OUTPUT_SIZE = 1;
     const size_t TEST_SIZE = 20;
@@ -30,10 +35,10 @@ int main(void)
     const size_t training_epochs = 15;
 
     // define model shape
-    size_t layers_size[] = {4, 1};
-    float (*activations[])(float, int) = {&relu, &linear};
+    size_t layers_size[] = {4, 3, 1};
+    float (*activations[])(float, int) = {&relu, &relu, &linear};
 
-    struct neural_network *nn = create_model(2, layers_size, INPUT_SIZE, activations);
+    struct neural_network *nn = create_model(3, layers_size, INPUT_SIZE, activations);
     randomize_weights(nn, initializer_mean, initializer_stddev, use_bias);
 
     // generate data
@@ -41,7 +46,7 @@ int main(void)
     float *outputs[DATA_SIZE];
 
     generate_data_inputs(DATA_SIZE, INPUT_SIZE, inputs, -25, 25);
-    generate_data_outputs(DATA_SIZE, OUTPUT_SIZE, inputs, outputs, &f);
+    generate_data_outputs(DATA_SIZE, OUTPUT_SIZE, inputs, outputs, &f2);
 
     // Start training !
     fit(nn, DATA_SIZE, inputs, outputs, training_epochs, learning_rate, momentum_constant);
@@ -56,7 +61,7 @@ int main(void)
     float *test_outputs[TEST_SIZE];
 
     generate_data_inputs(TEST_SIZE, INPUT_SIZE, test_inputs, -25, 25);
-    generate_data_outputs(TEST_SIZE, OUTPUT_SIZE, test_inputs, test_outputs, &f);
+    generate_data_outputs(TEST_SIZE, OUTPUT_SIZE, test_inputs, test_outputs, &f2);
 
     evaluate(nn, TEST_SIZE, test_inputs, test_outputs, &mean_squared_error, 1);
 
