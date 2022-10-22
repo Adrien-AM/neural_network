@@ -1,6 +1,8 @@
 .vscode/
 main
 test
+house
+vgcore.*
 
 # data files
 *.csv

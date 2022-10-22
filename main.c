@@ -3,6 +3,7 @@
 
 #include "neural_network.h"
 #include "utils.h"
+#include "data_utils.h"
 
 // Example function to approximate
 float f(float *x)

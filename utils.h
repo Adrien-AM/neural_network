@@ -18,14 +18,5 @@ float rand_normal(float, float);
 // Loss functions
 float mean_squared_error(float *y_true, float *y_pred, size_t size);
 
-// Data functions
-void generate_data_inputs(size_t data_size, size_t input_size,
-                          float **inputs, int range_start, int range_end);
-void generate_data_outputs(size_t data_size, size_t output_size, float ** inputs,
-                           float **outputs, float (*func)(float *));
-
-// Undefined behaviour when files doesnt have ending newline :)
-float **read_csv(char *filename, size_t *nb_lines, size_t *nb_columns, char **columns);
-void free_csv(size_t nb_lines, size_t nb_columns, float **data, char **columns);
 
 #endif
