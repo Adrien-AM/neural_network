@@ -1,5 +1,9 @@
 .vscode/
 main
+test
+
+# data files
+*.csv
 
 # Prerequisites
 *.d

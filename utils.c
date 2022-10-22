@@ -1,6 +1,7 @@
 #include "utils.h"
 
-#define MAX_LINE_SIZE 1024
+#define MAX_LINE_SIZE 2000
+#define MAX_NB_LINES 30000
 
 float relu(float x, int derivative)
 {
@@ -79,17 +80,8 @@ void generate_data_outputs(size_t data_size, size_t output_size, float **inputs,
     }
 }
 
-float **read_csv(char *filename, size_t *nb_lines, size_t *nb_columns, char **columns)
+void read_columns(FILE *f, size_t *nb_columns, char **columns)
 {
-    (void)nb_lines;
-    FILE *f = fopen(filename, "r");
-    if (NULL == f)
-    {
-        fprintf(stderr, "Cannot open file %s\n", filename);
-        perror(NULL);
-        exit(0);
-    }
-
     char line[MAX_LINE_SIZE];
 
     if (NULL == fgets(line, MAX_LINE_SIZE, f))
@@ -98,21 +90,89 @@ float **read_csv(char *filename, size_t *nb_lines, size_t *nb_columns, char **co
         exit(0);
     }
 
-    int offset = 0;
-    int c = 0;
+    size_t offset = 0;
+    size_t c = 0;
     *nb_columns = 1;
-    while (line[c + offset] != '\n')
+    char buffer[MAX_LINE_SIZE];
+    while (1)
     {
-        if (line[c + offset] == ',')
+        buffer[c] = line[c + offset];
+        c++;
+        if (line[c + offset] == ',' || line[c + offset] == '\n')
         {
-            offset += c;
-            c = 0;
+            columns[*nb_columns - 1] = malloc(sizeof(char) * (c + 1));
+            strncpy(columns[*nb_columns - 1], buffer, c);
+            columns[*nb_columns - 1][c] = '\0';
+            if (line[c + offset] == '\n')
+            {
+                break;
+            }
             *nb_columns += 1;
-            continue;
+            offset += c + 1;
+            c = 0;
         }
-        columns[*nb_columns - 1][c] = line[c + offset];
+    }
+}
+
+float **read_csv(char *filename, size_t *nb_lines, size_t *nb_columns, char **columns)
+{
+    FILE *f = fopen(filename, "r");
+    if (NULL == f)
+    {
+        fprintf(stderr, "Cannot open file %s\n", filename);
+        perror(NULL);
+        exit(0);
     }
 
+    read_columns(f, nb_columns, columns);
+
+    char line[MAX_LINE_SIZE];
+
+    size_t offset;
+    size_t c;
+    size_t col;
+
+    float **data = malloc(sizeof(float *) * MAX_NB_LINES);
+    *nb_lines = 0;
+    char buffer[MAX_LINE_SIZE];
+    while (fgets(line, MAX_LINE_SIZE, f) != NULL)
+    {
+        *nb_lines += 1;
+        data[*nb_lines - 1] = malloc(sizeof(float) * *nb_columns);
+        col = 0;
+        offset = 0;
+        c = 0;
+        while (col < *nb_columns)
+        {
+            while (line[c + offset] != ',' && line[c + offset] != '\n' && line[c + offset] != EOF)
+            {
+                buffer[c] = line[c + offset];
+                c++;
+            }
+
+            buffer[c] = '\0';
+            data[*nb_lines - 1][col] = atof(buffer);
+            col++;
+            offset += c + 1;
+            c = 0;
+        }
+    }
+
+    data = realloc(data, sizeof(float *) * *nb_lines);
+
     fclose(f);
-    return NULL;
+    return data;
+}
+
+void free_csv(size_t nb_lines, size_t nb_columns, float **data, char **columns)
+{
+    for (size_t i = 0; i < nb_columns; i++)
+    {
+        free(columns[i]);
+    }
+    for (size_t i = 0; i < nb_lines; i++)
+    {
+        free(data[i]);
+    }
+    free(data);
 }

@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 
 // Activation functions : takes neuron output z=wx+b, returns final neuron output
 // if second parameter is set to true, it will return the function's derivative
@@ -22,6 +23,9 @@ void generate_data_inputs(size_t data_size, size_t input_size,
                           float **inputs, int range_start, int range_end);
 void generate_data_outputs(size_t data_size, size_t output_size, float ** inputs,
                            float **outputs, float (*func)(float *));
+
+// Undefined behaviour when files doesnt have ending newline :)
 float **read_csv(char *filename, size_t *nb_lines, size_t *nb_columns, char **columns);
+void free_csv(size_t nb_lines, size_t nb_columns, float **data, char **columns);
 
 #endif
