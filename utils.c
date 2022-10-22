@@ -1,5 +1,7 @@
 #include "utils.h"
 
+#define MAX_LINE_SIZE 1024
+
 float relu(float x, int derivative)
 {
     if (derivative)
@@ -75,4 +77,42 @@ void generate_data_outputs(size_t data_size, size_t output_size, float **inputs,
         outputs[i] = malloc(sizeof(float) * output_size);
         *outputs[i] = func(inputs[i]);
     }
+}
+
+float **read_csv(char *filename, size_t *nb_lines, size_t *nb_columns, char **columns)
+{
+    (void)nb_lines;
+    FILE *f = fopen(filename, "r");
+    if (NULL == f)
+    {
+        fprintf(stderr, "Cannot open file %s\n", filename);
+        perror(NULL);
+        exit(0);
+    }
+
+    char line[MAX_LINE_SIZE];
+
+    if (NULL == fgets(line, MAX_LINE_SIZE, f))
+    {
+        fprintf(stderr, "Cannot read first line of csv file\n");
+        exit(0);
+    }
+
+    int offset = 0;
+    int c = 0;
+    *nb_columns = 1;
+    while (line[c + offset] != '\n')
+    {
+        if (line[c + offset] == ',')
+        {
+            offset += c;
+            c = 0;
+            *nb_columns += 1;
+            continue;
+        }
+        columns[*nb_columns - 1][c] = line[c + offset];
+    }
+
+    fclose(f);
+    return NULL;
 }

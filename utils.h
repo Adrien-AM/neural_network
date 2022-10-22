@@ -22,5 +22,6 @@ void generate_data_inputs(size_t data_size, size_t input_size,
                           float **inputs, int range_start, int range_end);
 void generate_data_outputs(size_t data_size, size_t output_size, float ** inputs,
                            float **outputs, float (*func)(float *));
+float **read_csv(char *filename, size_t *nb_lines, size_t *nb_columns, char **columns);
 
 #endif
