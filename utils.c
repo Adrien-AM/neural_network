@@ -25,6 +25,16 @@ float linear(float x, int derivative)
     return x;
 }
 
+float hypertan(float x, int derivative)
+{
+    if (derivative)
+    {
+        float r = tanh(x);
+        return 1 - (r * r);
+    }
+    return tanh(x);
+}
+
 // CREDITS https://www.tutorialspoint.com/generate-random-numbers-following-a-normal-distribution-in-c-cplusplus
 
 float rand_gen()
@@ -52,5 +62,18 @@ float mean_squared_error(float *y_true, float *y_pred, size_t size)
         total += error * error;
     }
 
+    return total / size;
+}
+
+float mean_absolute_error(float *y_true, float *y_pred, size_t size)
+{
+    if (0 == size)
+        return 0;
+    float total = 0;
+    for (size_t i = 0; i < size; i++)
+    {
+        float error = y_true[i] - y_pred[i];
+        total += fabs(error);
+    }
     return total / size;
 }

@@ -11,10 +11,10 @@ test: test_read_csv.c data_utils.o
 	${CC} ${CFLAGS} $^ -o $@ -lm
 	@./test
 
-house: house_data.c data_utils.o
+house: house_data.c data_utils.o neural_network.o utils.o
 	${CC} ${CFLAGS} $^ -o $@ -lm
 
 $(eval $(foreach f,src,$(echo $(f).o: $(f).c ${CC} ${CFLAGS} -c $@ -o $@ ${LDFLAGS})))
 
 clean:
-	rm *.o main test vgcore.*
+	rm *.o main test house vgcore.*

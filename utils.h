@@ -11,12 +11,13 @@
 float relu(float, int);
 float sigmoid(float, int);
 float linear(float, int);
+float hypertan(float, int);
 
 // Random number from normal function with parameters mu and sigma
 float rand_normal(float, float);
 
 // Loss functions
 float mean_squared_error(float *y_true, float *y_pred, size_t size);
-
+float mean_absolute_error(float *y_true, float *y_pred, size_t size);
 
 #endif
