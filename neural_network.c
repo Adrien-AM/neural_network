@@ -218,9 +218,11 @@ fit(struct neural_network* nn,
     float* inputs[],
     float* outputs[],
     size_t epochs,
+    size_t batch_size,
     float learning_rate,
     float gamma)
 {
+    (void)batch_size;
     reset_values(nn);
     reset_errors(nn);
 
@@ -237,6 +239,7 @@ fit(struct neural_network* nn,
                 loss += fabsf(result[v] - expected[v]);
             }
 
+            
             back_propagate(nn, expected, inp, learning_rate, gamma);
 
             free(result);

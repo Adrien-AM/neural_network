@@ -34,6 +34,7 @@ int main(void)
     const float initializer_stddev = 1;
     const int use_bias = 1;
     const size_t training_epochs = 25;
+    const size_t batch_size = 1;
 
     // define model shape
     size_t layers_size[] = {16, 8, 1};
@@ -50,7 +51,7 @@ int main(void)
     generate_data_outputs(DATA_SIZE, OUTPUT_SIZE, inputs, outputs, &f2);
 
     // Start training !
-    fit(nn, DATA_SIZE, inputs, outputs, training_epochs, learning_rate, momentum_constant);
+    fit(nn, DATA_SIZE, inputs, outputs, training_epochs, batch_size, learning_rate, momentum_constant);
 
     for (size_t i = 0; i < DATA_SIZE; i++)
     {

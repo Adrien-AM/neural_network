@@ -51,7 +51,7 @@ void back_propagate(struct neural_network *nn, float *output,
  * @param gamma momentum constant. If gamma = 0, doesn't have impact on computation. Lower gamma = lower momentum.
  */
 void fit(struct neural_network *nn, size_t data_size, float *inputs[],
-         float *outputs[], size_t epochs, float learning_rate, float gamma);
+         float *outputs[], size_t epochs, size_t batch_size, float learning_rate, float gamma);
 
 /*
  * Evaluates a trained model over a new data set.

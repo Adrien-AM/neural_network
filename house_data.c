@@ -7,7 +7,7 @@
 
 int main(void)
 {
-    struct csv *house_data = read_csv("./house_data_v2.csv");
+    struct csv *house_data = read_csv("./data/houses/house_data_v2.csv");
     struct csv *price_house_data = extract_target_from_data("price", house_data);
 
     // define all parameters
