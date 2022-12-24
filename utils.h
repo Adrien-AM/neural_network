@@ -8,16 +8,16 @@
 
 // Activation functions : takes neuron output z=wx+b, returns final neuron output
 // if second parameter is set to true, it will return the function's derivative
-float relu(float, int);
-float sigmoid(float, int);
-float linear(float, int);
-float hypertan(float, int);
+double relu(double, int);
+double sigmoid(double, int);
+double linear(double, int);
+double hypertan(double, int);
 
 // Random number from normal function with parameters mu and sigma
-float rand_normal(float, float);
+double rand_normal(double, double);
 
 // Loss functions
-float mean_squared_error(float *y_true, float *y_pred, size_t size);
-float mean_absolute_error(float *y_true, float *y_pred, size_t size);
+double mean_squared_error(double *y_true, double *y_pred, size_t size);
+double mean_absolute_error(double *y_true, double *y_pred, size_t size);
 
 #endif

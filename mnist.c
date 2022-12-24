@@ -77,13 +77,13 @@ main(void)
     unsigned char* labels_train_c = read_labels("./data/mnist/train-labels");
     unsigned char* labels_test_c = read_labels("./data/mnist/test-labels");
 
-    float* images_train[TRAIN_IMAGES];
+    double* images_train[TRAIN_IMAGES];
     convert_images_uc_to_f(images_train, images_train_c, TRAIN_IMAGES, 28*28);
-    float* labels_train[TRAIN_IMAGES];
+    double* labels_train[TRAIN_IMAGES];
     convert_labels_uc_to_f(labels_train, labels_train_c, TRAIN_IMAGES);
-    float* images_test[TEST_IMAGES];
+    double* images_test[TEST_IMAGES];
     convert_images_uc_to_f(images_test, images_test_c, TEST_IMAGES, 28*28);
-    float* labels_test[TEST_IMAGES];
+    double* labels_test[TEST_IMAGES];
     convert_labels_uc_to_f(labels_test, labels_test_c, TEST_IMAGES);
 
     struct norm normalization = get_norm_parameters(images_train, 28*28, TRAIN_IMAGES);
@@ -91,7 +91,7 @@ main(void)
     normalize_inputs(images_test, 28 * 28, TEST_IMAGES, normalization);
 
     size_t layers_size[] = { 16, 8, 1 };
-    float (*activations[])(float, int) = { &relu, &relu, &linear };
+    double (*activations[])(double, int) = { &relu, &relu, &linear };
     struct neural_network* nn = create_model(3, layers_size, 28 * 28, activations);
     randomize_weights(nn, 0, 0.2, 1);
 

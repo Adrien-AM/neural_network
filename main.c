@@ -6,12 +6,12 @@
 #include "data_utils.h"
 
 // Example function to approximate
-float f(float *x)
+double f(double *x)
 {
     return (0.23 * *x * *x) + 3.2 * *x;
 }
 
-float f2(float *x)
+double f2(double *x)
 {
     return (-123.78 * x[0]) + (648.25 * x[1]);
 }
@@ -28,24 +28,24 @@ int main(void)
     const size_t TEST_SIZE = 20;
 
     // for model
-    const float learning_rate = 1e-8;
-    const float momentum_constant = 0.2;
-    const float initializer_mean = 0;
-    const float initializer_stddev = 1;
+    const double learning_rate = 1e-8;
+    const double momentum_constant = 0.2;
+    const double initializer_mean = 0;
+    const double initializer_stddev = 1;
     const int use_bias = 1;
     const size_t training_epochs = 25;
     const size_t batch_size = 1;
 
     // define model shape
     size_t layers_size[] = {16, 8, 1};
-    float (*activations[])(float, int) = {&relu, &relu, &linear};
+    double (*activations[])(double, int) = {&relu, &relu, &linear};
 
     struct neural_network *nn = create_model(3, layers_size, INPUT_SIZE, activations);
     randomize_weights(nn, initializer_mean, initializer_stddev, use_bias);
 
     // generate data
-    float *inputs[DATA_SIZE];
-    float *outputs[DATA_SIZE];
+    double *inputs[DATA_SIZE];
+    double *outputs[DATA_SIZE];
 
     generate_data_inputs(DATA_SIZE, INPUT_SIZE, inputs, -10, 10);
     generate_data_outputs(DATA_SIZE, OUTPUT_SIZE, inputs, outputs, &f2);
@@ -59,8 +59,8 @@ int main(void)
         free(outputs[i]);
     }
 
-    float *test_inputs[TEST_SIZE];
-    float *test_outputs[TEST_SIZE];
+    double *test_inputs[TEST_SIZE];
+    double *test_outputs[TEST_SIZE];
 
     generate_data_inputs(TEST_SIZE, INPUT_SIZE, test_inputs, -10, 10);
     generate_data_outputs(TEST_SIZE, OUTPUT_SIZE, test_inputs, test_outputs, &f2);

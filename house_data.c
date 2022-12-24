@@ -19,17 +19,17 @@ int main(void)
     const size_t OUTPUT_SIZE = 1;
 
     // for model
-    const float learning_rate = 1e-6;
-    const float momentum_constant = 0.2;
-    const float initializer_mean = 0;
-    const float initializer_stddev = 1;
+    const double learning_rate = 1e-6;
+    const double momentum_constant = 0.2;
+    const double initializer_mean = 0;
+    const double initializer_stddev = 1;
     const int use_bias = 1;
     const size_t training_epochs = 7;
     const size_t batch_size = 1;
 
     // define model shape
     size_t layers_size[] = {4, 2, OUTPUT_SIZE};
-    float (*activations[])(float, int) = {&relu, &relu, &linear};
+    double (*activations[])(double, int) = {&relu, &relu, &linear};
 
     struct neural_network *nn = create_model(3, layers_size, INPUT_SIZE, activations);
     randomize_weights(nn, initializer_mean, initializer_stddev, use_bias);

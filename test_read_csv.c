@@ -26,7 +26,7 @@ int main(void)
 
     my_assert(csv->nb_lines == 2, "Wrong number of lines");
     
-    // Cannot test strict equality on floats
+    // Cannot test strict equality on doubles
     my_assert(fabs(csv->data[0][0] - 22.) < 1e-6, "Wrong 0-0 data value");
     my_assert(fabs(csv->data[0][1] - 3.) < 1e-6, "Wrong 0-1 data value");
     my_assert(fabs(csv->data[1][0] - 4.) < 1e-6, "Wrong 1-0 data value");

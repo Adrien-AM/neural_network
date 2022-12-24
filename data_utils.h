@@ -12,7 +12,7 @@
 
 struct csv
 {
-    float** data;
+    double** data;
     size_t nb_lines;
     char** columns;
     size_t nb_columns;
@@ -20,29 +20,29 @@ struct csv
 
 struct norm
 {
-    float mean;
-    float stddev;
+    double mean;
+    double stddev;
 };
 
 // Data functions
 void
 generate_data_inputs(size_t data_size,
                      size_t input_size,
-                     float** inputs,
+                     double** inputs,
                      int range_start,
                      int range_end);
 void
 generate_data_outputs(size_t data_size,
                       size_t output_size,
-                      float** inputs,
-                      float** outputs,
-                      float (*func)(float*));
+                      double** inputs,
+                      double** outputs,
+                      double (*func)(double*));
 
 struct norm
-get_norm_parameters(float** inputs, size_t input_size, size_t nb_inputs);
+get_norm_parameters(double** inputs, size_t input_size, size_t nb_inputs);
 
 void
-normalize_inputs(float** inputs, size_t input_size, size_t nb_inputs, struct norm normalization);
+normalize_inputs(double** inputs, size_t input_size, size_t nb_inputs, struct norm normalization);
 
 // CSV utils
 
@@ -58,11 +58,11 @@ extract_target_from_data(char* target, struct csv* data);
 
 // Image functions for MNIST
 
-// Allocates and copy data from an unsigned char image to a float image (or label)
+// Allocates and copy data from an unsigned char image to a double image (or label)
 void
-convert_images_uc_to_f(float** images, unsigned char** originals, size_t nb, size_t size);
+convert_images_uc_to_f(double** images, unsigned char** originals, size_t nb, size_t size);
 
 void
-convert_labels_uc_to_f(float** labels, unsigned char* originals, size_t nb);
+convert_labels_uc_to_f(double** labels, unsigned char* originals, size_t nb);
 
 #endif // __DATA_UTILS_H__

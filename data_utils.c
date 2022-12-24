@@ -3,15 +3,15 @@
 void
 generate_data_inputs(size_t data_size,
                      size_t input_size,
-                     float** inputs,
+                     double** inputs,
                      int range_start,
                      int range_end)
 {
     for (size_t i = 0; i < data_size; i++) {
-        inputs[i] = malloc(sizeof(float) * input_size);
+        inputs[i] = malloc(sizeof(double) * input_size);
         for (size_t j = 0; j < input_size; j++) {
             inputs[i][j] =
-              (float)rand() / (float)(RAND_MAX / (range_end - range_start)) + range_start;
+              (double)rand() / (double)(RAND_MAX / (range_end - range_start)) + range_start;
         }
     }
 }
@@ -19,18 +19,18 @@ generate_data_inputs(size_t data_size,
 void
 generate_data_outputs(size_t data_size,
                       size_t output_size,
-                      float** inputs,
-                      float** outputs,
-                      float (*func)(float*))
+                      double** inputs,
+                      double** outputs,
+                      double (*func)(double*))
 {
     for (size_t i = 0; i < data_size; i++) {
-        outputs[i] = malloc(sizeof(float) * output_size);
+        outputs[i] = malloc(sizeof(double) * output_size);
         *outputs[i] = func(inputs[i]);
     }
 }
 
 struct norm
-get_norm_parameters(float** inputs, size_t input_size, size_t nb_inputs)
+get_norm_parameters(double** inputs, size_t input_size, size_t nb_inputs)
 {
     struct norm norm;
     norm.mean = 0;
@@ -54,7 +54,7 @@ get_norm_parameters(float** inputs, size_t input_size, size_t nb_inputs)
 }
 
 void
-normalize_inputs(float** inputs, size_t input_size, size_t nb_inputs, struct norm norm)
+normalize_inputs(double** inputs, size_t input_size, size_t nb_inputs, struct norm norm)
 {
     for (size_t i = 0; i < nb_inputs; i++) {
         for (size_t j = 0; j < input_size; j++) {
@@ -115,12 +115,12 @@ read_csv(char* filename)
     size_t c;
     size_t col;
 
-    float** data = malloc(sizeof(float*) * MAX_NB_LINES);
+    double** data = malloc(sizeof(double*) * MAX_NB_LINES);
     csv->nb_lines = 0;
     char buffer[MAX_LINE_SIZE];
     while (fgets(line, MAX_LINE_SIZE, f) != NULL) {
         csv->nb_lines += 1;
-        data[csv->nb_lines - 1] = malloc(sizeof(float) * csv->nb_columns);
+        data[csv->nb_lines - 1] = malloc(sizeof(double) * csv->nb_columns);
         col = 0;
         offset = 0;
         c = 0;
@@ -138,7 +138,7 @@ read_csv(char* filename)
         }
     }
 
-    data = realloc(data, sizeof(float*) * csv->nb_lines);
+    data = realloc(data, sizeof(double*) * csv->nb_lines);
 
     csv->data = data;
 
@@ -176,15 +176,15 @@ extract_target_from_data(char* target, struct csv* data)
     target_data->columns[0] = malloc(sizeof(char) * strlen(target) + 1);
     strcpy(target_data->columns[0], target);
 
-    target_data->data = malloc(sizeof(float*) * data->nb_lines);
+    target_data->data = malloc(sizeof(double*) * data->nb_lines);
 
     for (size_t i = 0; i < data->nb_lines; i++) {
-        target_data->data[i] = malloc(sizeof(float));
+        target_data->data[i] = malloc(sizeof(double));
         target_data->data[i][0] = data->data[i][target_index];
 
         data->data[i][target_index] =
           data->data[i][data->nb_columns - 1]; // replace target by last col
-        data->data[i] = realloc(data->data[i], sizeof(float) * data->nb_columns - 1);
+        data->data[i] = realloc(data->data[i], sizeof(double) * data->nb_columns - 1);
     }
 
     // reallocate memory for column name, then rename
@@ -200,21 +200,21 @@ extract_target_from_data(char* target, struct csv* data)
 }
 
 void
-convert_images_uc_to_f(float** images, unsigned char** originals, size_t nb, size_t size)
+convert_images_uc_to_f(double** images, unsigned char** originals, size_t nb, size_t size)
 {
     for (size_t i = 0; i < nb; i++) {
-        images[i] = malloc(sizeof(float) * size);
+        images[i] = malloc(sizeof(double) * size);
         for (size_t j = 0; j < size; j++) {
-            images[i][j] = (float)originals[i][j];
+            images[i][j] = (double)originals[i][j];
         }
     }
 }
 
 void
-convert_labels_uc_to_f(float** labels, unsigned char* originals, size_t nb)
+convert_labels_uc_to_f(double** labels, unsigned char* originals, size_t nb)
 {
     for (size_t i = 0; i < nb; i++) {
-        labels[i] = malloc(sizeof(float));
-        labels[i][0] = (float)originals[i];
+        labels[i] = malloc(sizeof(double));
+        labels[i][0] = (double)originals[i];
     }
 }

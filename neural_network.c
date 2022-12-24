@@ -4,12 +4,12 @@
 
 struct neuron
 {
-    float* weights;
-    float bias;
-    float value;
-    float actv_value;
-    float error;
-    float momentum;
+    double* weights;
+    double bias;
+    double value;
+    double actv_value;
+    double error;
+    double momentum;
 };
 
 struct layer
@@ -17,7 +17,7 @@ struct layer
     struct neuron** neurons;
     size_t size;
     size_t input_size;
-    float (*activation)(float, int);
+    double (*activation)(double, int);
 };
 
 struct neural_network
@@ -30,7 +30,7 @@ struct neural_network*
 create_model(size_t number_of_layers,
              size_t layers_size[],
              size_t input_size,
-             float (**activation)(float, int))
+             double (**activation)(double, int))
 {
     struct neural_network* nn = (struct neural_network*)malloc(sizeof(struct neural_network));
     nn->number_of_layers = number_of_layers;
@@ -48,7 +48,7 @@ create_model(size_t number_of_layers,
             struct neuron* neuron = (struct neuron*)malloc(sizeof(struct neuron));
 
             // First layer receives input
-            neuron->weights = (float*)calloc(layer->input_size, sizeof(float));
+            neuron->weights = (double*)calloc(layer->input_size, sizeof(double));
             neuron->bias = 0;
             neuron->value = 0;
             neuron->actv_value = 0;
@@ -105,7 +105,7 @@ reset_errors(struct neural_network* nn)
 }
 
 void
-randomize_weights(struct neural_network* nn, float mu, float sigma, int use_bias)
+randomize_weights(struct neural_network* nn, double mu, double sigma, int use_bias)
 {
     for (size_t l = 0; l < nn->number_of_layers; l++) {
         for (size_t n = 0; n < nn->layers[l]->size; n++) {
@@ -118,8 +118,8 @@ randomize_weights(struct neural_network* nn, float mu, float sigma, int use_bias
     }
 }
 
-float*
-feed_forward(struct neural_network* nn, float inputs[])
+double*
+feed_forward(struct neural_network* nn, double inputs[])
 {
     reset_values(nn);
 
@@ -144,7 +144,7 @@ feed_forward(struct neural_network* nn, float inputs[])
     }
 
     struct layer* last_layer = nn->layers[nn->number_of_layers - 1];
-    float* result = (float*)malloc(sizeof(float) * last_layer->size); // last layer values
+    double* result = (double*)malloc(sizeof(double) * last_layer->size); // last layer values
     for (size_t n = 0; n < last_layer->size; n++) {
         last_layer->neurons[n]->actv_value =
           last_layer->activation(last_layer->neurons[n]->value, 0);
@@ -154,7 +154,7 @@ feed_forward(struct neural_network* nn, float inputs[])
     return result;
 }
 
-float *predict(struct neural_network *nn, float *inputs, size_t nb_inputs)
+double *predict(struct neural_network *nn, double *inputs, size_t nb_inputs)
 {
     // TODO
     // normalize_inputs(inputs, nn->layers[0]->input_size, nb_inputs);
@@ -164,10 +164,10 @@ float *predict(struct neural_network *nn, float *inputs, size_t nb_inputs)
 
 void
 back_propagate(struct neural_network* nn,
-               float* output,
-               float inputs[],
-               float learning_rate,
-               float gamma)
+               double* output,
+               double inputs[],
+               double learning_rate,
+               double gamma)
 {
     reset_errors(nn);
 
@@ -204,14 +204,14 @@ back_propagate(struct neural_network* nn,
         for (size_t n = 0; n < layer->size; n++) {
             struct neuron* neuron = layer->neurons[n];
             for (size_t i = 0; i < layer->input_size; i++) {
-                float input_value;
+                double input_value;
                 if (l == 0) {
                     input_value = inputs[i];
                 } else {
                     input_value = nn->layers[l - 1]->neurons[i]->actv_value;
                 }
 
-                float update = (gamma * neuron->momentum) +
+                double update = (gamma * neuron->momentum) +
                                ((1 - gamma) * learning_rate * neuron->error * input_value);
                 // printf("Error : %f, weight : %f, input %f, update : %f\n", neuron->error,
                 // neuron->weights[i], input_value, update);
@@ -226,12 +226,12 @@ back_propagate(struct neural_network* nn,
 void
 fit(struct neural_network* nn,
     size_t data_size,
-    float* inputs[],
-    float* outputs[],
+    double* inputs[],
+    double* outputs[],
     size_t epochs,
     size_t batch_size,
-    float learning_rate,
-    float gamma)
+    double learning_rate,
+    double gamma)
 {
     (void)batch_size;
     reset_values(nn);
@@ -239,15 +239,15 @@ fit(struct neural_network* nn,
 
     for (size_t epoch = 0; epoch < epochs; epoch++) {
         printf("Epoch : %zu\n", epoch);
-        float loss = 0;
+        double loss = 0;
         for (size_t i = 0; i < data_size; i++) {
-            float* expected = outputs[i];
-            float* inp = inputs[i];
+            double* expected = outputs[i];
+            double* inp = inputs[i];
 
-            float* result = feed_forward(nn, inp);
+            double* result = feed_forward(nn, inp);
 
             for (size_t v = 0; v < nn->layers[0]->input_size; v++) {
-                loss += fabsf(result[v] - expected[v]);
+                loss += fabs(result[v] - expected[v]);
             }
 
             back_propagate(nn, expected, inp, learning_rate, gamma);
@@ -262,21 +262,21 @@ fit(struct neural_network* nn,
     }
 }
 
-float
+double
 evaluate(struct neural_network* nn,
          size_t data_size,
-         float* inputs[],
-         float* outputs[],
-         float (*loss)(float*, float*, size_t),
+         double* inputs[],
+         double* outputs[],
+         double (*loss)(double*, double*, size_t),
          int verbose)
 {
     if (0 == data_size)
         return 0;
 
-    float total = 0;
+    double total = 0;
     for (size_t i = 0; i < data_size; i++) {
-        float* prediction = feed_forward(nn, inputs[i]);
-        float loss_value = loss(outputs[i], prediction, nn->layers[nn->number_of_layers - 1]->size);
+        double* prediction = feed_forward(nn, inputs[i]);
+        double loss_value = loss(outputs[i], prediction, nn->layers[nn->number_of_layers - 1]->size);
         printf("Real : %f, prediction : %f\n", outputs[i][0], prediction[0]);
         free(prediction);
         if (verbose)
