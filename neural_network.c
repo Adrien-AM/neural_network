@@ -1,5 +1,6 @@
 #include "neural_network.h"
 #include "utils.h"
+#include "data_utils.h"
 
 struct neuron
 {
@@ -121,6 +122,7 @@ float*
 feed_forward(struct neural_network* nn, float inputs[])
 {
     reset_values(nn);
+
     struct layer* layer = nn->layers[0];
     for (size_t i = 0; i < layer->input_size; i++) {
         for (size_t n = 0; n < layer->size; n++) {
@@ -152,6 +154,14 @@ feed_forward(struct neural_network* nn, float inputs[])
     return result;
 }
 
+float *predict(struct neural_network *nn, float *inputs, size_t nb_inputs)
+{
+    // TODO
+    // normalize_inputs(inputs, nn->layers[0]->input_size, nb_inputs);
+    (void)nb_inputs;
+    return feed_forward(nn, inputs);
+}
+
 void
 back_propagate(struct neural_network* nn,
                float* output,
@@ -160,6 +170,7 @@ back_propagate(struct neural_network* nn,
                float gamma)
 {
     reset_errors(nn);
+
     // Output layer
     struct layer* layer = nn->layers[nn->number_of_layers - 1];
     for (size_t n = 0; n < layer->size; n++) {
@@ -239,12 +250,15 @@ fit(struct neural_network* nn,
                 loss += fabsf(result[v] - expected[v]);
             }
 
-            
             back_propagate(nn, expected, inp, learning_rate, gamma);
 
             free(result);
         }
         printf("Mean loss : %f\n", loss / (data_size * nn->layers[nn->number_of_layers - 1]->size));
+        if (loss != loss) { // is NaN
+            printf("Network has diverged.\n");
+            exit(0);
+        }
     }
 }
 
@@ -258,6 +272,7 @@ evaluate(struct neural_network* nn,
 {
     if (0 == data_size)
         return 0;
+
     float total = 0;
     for (size_t i = 0; i < data_size; i++) {
         float* prediction = feed_forward(nn, inputs[i]);

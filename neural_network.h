@@ -26,7 +26,7 @@ void randomize_weights(struct neural_network *nn, float mu, float sigma, int use
  *
  * @return prediction vector
  */
-float *feed_forward(struct neural_network *nn, float inputs[]);
+float *predict(struct neural_network *nn, float inputs[], size_t nb_inputs);
 
 /*
  * Computes back propagation after a feed forward

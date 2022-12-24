@@ -35,9 +35,5 @@ int main(void)
     printf("%sAll tests passed !%s\n", GREEN, BLANK);
     free_csv(csv);
 
-    csv = read_csv("./validation_data.csv");
-
-    free_csv(csv);
-
     return EXIT_SUCCESS;
 }
