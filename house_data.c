@@ -31,7 +31,7 @@ int main(void)
     size_t layers_size[] = {4, 2, OUTPUT_SIZE};
     double (*activations[])(double, int) = {&relu, &relu, &linear};
 
-    struct neural_network *nn = create_model(3, layers_size, INPUT_SIZE, activations);
+    struct neural_network *nn = create_model(3, layers_size, INPUT_SIZE, activations, &mean_squared_error);
     randomize_weights(nn, initializer_mean, initializer_stddev, use_bias);
     fit(nn, house_data->nb_lines, house_data->data, price_house_data->data, training_epochs, batch_size, learning_rate, momentum_constant);
 

@@ -24,16 +24,19 @@ struct neural_network
 {
     struct layer** layers;
     size_t number_of_layers;
+    double (*loss)(double*, double*, size_t);
 };
 
 struct neural_network*
 create_model(size_t number_of_layers,
              size_t layers_size[],
              size_t input_size,
-             double (**activation)(double, int))
+             double (**activation)(double, int),
+             double (*loss)(double*, double*, size_t))
 {
     struct neural_network* nn = (struct neural_network*)malloc(sizeof(struct neural_network));
     nn->number_of_layers = number_of_layers;
+    nn->loss = loss;
     nn->layers = (struct layer**)malloc(sizeof(struct layer*) * nn->number_of_layers);
     for (size_t l = 0; l < number_of_layers; l++) {
         // instanciate layer
@@ -174,10 +177,16 @@ back_propagate(struct neural_network* nn,
 
     // Output layer
     struct layer* layer = nn->layers[nn->number_of_layers - 1];
+
+    double result[layer->size];
+    for (size_t i = 0; i < layer->size; i++) {
+        result[i] = layer->neurons[i]->actv_value;
+    }
+    double loss_value = nn->loss(output, result, layer->size);
+
     for (size_t n = 0; n < layer->size; n++) {
         struct neuron* neuron = layer->neurons[n];
-        neuron->error =
-          (neuron->actv_value - output[n]); // error = (value - output) * transfer_derivative(value)
+        neuron->error = loss_value;
         // transfer derivative is computed later
     }
 
@@ -246,16 +255,12 @@ fit(struct neural_network* nn,
             double* inp = inputs[i];
 
             double* result = feed_forward(nn, inp);
-
-            for (size_t v = 0; v < nn->layers[nn->number_of_layers - 1]->size; v++) {
-                loss += fabs(result[v] - expected[v]);
-            }
-
+            loss += nn->loss(expected, result, nn->layers[nn->number_of_layers - 1]->size);
             back_propagate(nn, expected, inp, learning_rate, gamma);
 
             free(result);
         }
-        printf("Mean loss : %f\n", loss / (data_size * nn->layers[nn->number_of_layers - 1]->size));
+        printf("Mean loss : %f\n", loss / (data_size));
         if (loss != loss) { // is NaN
             printf("Network has diverged.\n");
             exit(0);
@@ -279,7 +284,7 @@ evaluate(struct neural_network* nn,
         double* prediction = feed_forward(nn, inputs[i]);
         double loss_value =
           loss(outputs[i], prediction, nn->layers[nn->number_of_layers - 1]->size);
-        if (verbose) {
+        if (verbose == 2) {
             printf("Real : ");
             print_vector(outputs[i], nn->layers[nn->number_of_layers - 1]->size);
             printf(" - Prediction : ");
@@ -291,7 +296,7 @@ evaluate(struct neural_network* nn,
         total += loss_value;
     }
     total /= data_size;
-    if (verbose)
+    if (verbose == 1)
         printf("Final loss : %f\n", total);
     return total;
 }
