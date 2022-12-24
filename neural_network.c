@@ -1,6 +1,6 @@
 #include "neural_network.h"
-#include "utils.h"
 #include "data_utils.h"
+#include "utils.h"
 
 struct neuron
 {
@@ -154,7 +154,8 @@ feed_forward(struct neural_network* nn, double inputs[])
     return result;
 }
 
-double *predict(struct neural_network *nn, double *inputs, size_t nb_inputs)
+double*
+predict(struct neural_network* nn, double* inputs, size_t nb_inputs)
 {
     // TODO
     // normalize_inputs(inputs, nn->layers[0]->input_size, nb_inputs);
@@ -212,7 +213,7 @@ back_propagate(struct neural_network* nn,
                 }
 
                 double update = (gamma * neuron->momentum) +
-                               ((1 - gamma) * learning_rate * neuron->error * input_value);
+                                ((1 - gamma) * learning_rate * neuron->error * input_value);
                 // printf("Error : %f, weight : %f, input %f, update : %f\n", neuron->error,
                 // neuron->weights[i], input_value, update);
                 neuron->weights[i] -= update;
@@ -246,7 +247,7 @@ fit(struct neural_network* nn,
 
             double* result = feed_forward(nn, inp);
 
-            for (size_t v = 0; v < nn->layers[0]->input_size; v++) {
+            for (size_t v = 0; v < nn->layers[nn->number_of_layers - 1]->size; v++) {
                 loss += fabs(result[v] - expected[v]);
             }
 
@@ -276,11 +277,17 @@ evaluate(struct neural_network* nn,
     double total = 0;
     for (size_t i = 0; i < data_size; i++) {
         double* prediction = feed_forward(nn, inputs[i]);
-        double loss_value = loss(outputs[i], prediction, nn->layers[nn->number_of_layers - 1]->size);
-        printf("Real : %f, prediction : %f\n", outputs[i][0], prediction[0]);
+        double loss_value =
+          loss(outputs[i], prediction, nn->layers[nn->number_of_layers - 1]->size);
+        if (verbose) {
+            printf("Real : ");
+            print_vector(outputs[i], nn->layers[nn->number_of_layers - 1]->size);
+            printf(" - Prediction : ");
+            print_vector(prediction, nn->layers[nn->number_of_layers - 1]->size);
+        }
         free(prediction);
         if (verbose)
-            printf("Loss n°%zu : %f\n", i, loss_value);
+            printf("\nLoss n°%zu : %f\n", i, loss_value);
         total += loss_value;
     }
     total /= data_size;

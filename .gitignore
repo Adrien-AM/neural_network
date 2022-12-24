@@ -3,6 +3,7 @@ data/
 main
 test
 house
+mnist
 vgcore.*
 
 # data files

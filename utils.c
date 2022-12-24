@@ -1,5 +1,14 @@
 #include "utils.h"
 
+void print_vector(double *v, size_t size)
+{
+    printf("[ ");
+    for (size_t i = 0; i < size - 1; i++) {
+        printf("%f ", v[i]);
+    }
+    printf("%f ]", v[size - 1]);
+}
+
 double relu(double x, int derivative)
 {
     if (derivative)
@@ -33,6 +42,35 @@ double hypertan(double x, int derivative)
         return 1 - (r * r);
     }
     return tanh(x);
+}
+
+// Credits : ChatGPT :)
+double* softmax(double* x, int size) {
+    // allocate memory for the output vector
+    double* y = (double*)malloc(sizeof(double) * size);
+
+    // find the maximum value in the input vector
+    double max = x[0];
+    for (int i = 1; i < size; i++) {
+        if (x[i] > max) {
+            max = x[i];
+        }
+    }
+
+    // compute the numerator and denominator of the softmax function
+    double numerator = 0;
+    double denominator = 0;
+    for (int i = 0; i < size; i++) {
+        numerator += exp(x[i] - max);
+        denominator += numerator;
+    }
+
+    // compute the softmax of the input vector
+    for (int i = 0; i < size; i++) {
+        y[i] = numerator / denominator;
+    }
+
+    return y;
 }
 
 // CREDITS https://www.tutorialspoint.com/generate-random-numbers-following-a-normal-distribution-in-c-cplusplus
@@ -76,4 +114,15 @@ double mean_absolute_error(double *y_true, double *y_pred, size_t size)
         total += fabs(error);
     }
     return total / size;
+}
+
+double
+categorical_cross_entropy(double* y_true, double* y_pred, size_t size)
+{
+    double loss = 0;
+    for (size_t i = 0; i < size; i++) {
+        loss -= (y_true[i] * log(y_pred[i])) + ((1 - y_true[i]) * log(1 - y_pred[i]));
+    }
+
+    return loss / size;
 }

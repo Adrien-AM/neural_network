@@ -65,4 +65,8 @@ convert_images_uc_to_f(double** images, unsigned char** originals, size_t nb, si
 void
 convert_labels_uc_to_f(double** labels, unsigned char* originals, size_t nb);
 
+// Convert an output class (e.g. 3) to a softmax output of classes (e.g. [ 0, 0, 1, 0 ])
+void
+convert_labels_to_softmax(double** labels, size_t nb_classes, size_t nb_labels);
+
 #endif // __DATA_UTILS_H__

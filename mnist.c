@@ -90,12 +90,18 @@ main(void)
     normalize_inputs(images_train, 28 * 28, TRAIN_IMAGES, normalization);
     normalize_inputs(images_test, 28 * 28, TEST_IMAGES, normalization);
 
-    size_t layers_size[] = { 16, 8, 1 };
-    double (*activations[])(double, int) = { &relu, &relu, &linear };
-    struct neural_network* nn = create_model(3, layers_size, 28 * 28, activations);
+    size_t nb_classes = 10;
+    convert_labels_to_softmax(labels_train, nb_classes, TRAIN_IMAGES);
+    convert_labels_to_softmax(labels_test, nb_classes, TEST_IMAGES);
+
+    size_t layers_size[] = { 32, 16, 8, nb_classes };
+    double (*activations[])(double, int) = { &relu, &sigmoid, &sigmoid, &sigmoid };
+    struct neural_network* nn = create_model(4, layers_size, 28 * 28, activations);
     randomize_weights(nn, 0, 0.2, 1);
 
-    fit(nn, TRAIN_IMAGES, images_train, labels_train, 10, 1, 1e-6, 0.2);
+    fit(nn, TRAIN_IMAGES, images_train, labels_train, 15, 1, 1e-6, 0.2);
+
+    evaluate(nn, TEST_IMAGES, images_test, labels_test, &categorical_cross_entropy, 1);
 
     free_neural_network(nn);
     for (size_t im = 0; im < TRAIN_IMAGES; im++) {

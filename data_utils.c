@@ -218,3 +218,14 @@ convert_labels_uc_to_f(double** labels, unsigned char* originals, size_t nb)
         labels[i][0] = (double)originals[i];
     }
 }
+
+void
+convert_labels_to_softmax(double** labels, size_t nb_classes, size_t nb_labels)
+{
+    for (size_t i = 0; i < nb_labels; i++) {
+        size_t class = (size_t)labels[i][0];
+        labels[i] = realloc(labels[i], sizeof(double) * nb_classes);
+        memset(labels[i], 0, sizeof(double) * nb_classes);
+        labels[i][class] = 1.;
+    }
+}
