@@ -1,22 +1,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "data_utils.h"
+#include "layer.h"
 #include "neural_network.h"
 #include "utils.h"
-#include "data_utils.h"
 
 // Example function to approximate
-double f(double *x)
+double
+f(double* x)
 {
     return (0.23 * *x * *x) + 3.2 * *x;
 }
 
-double f2(double *x)
+double
+f2(double* x)
 {
     return (-123.78 * x[0]) + (648.25 * x[1]);
 }
 
-int main(void)
+int
+main(void)
 {
     srand(time(NULL));
 
@@ -37,38 +41,46 @@ int main(void)
     const size_t batch_size = 1;
 
     // define model shape
-    size_t layers_size[] = {16, 8, 1};
-    double (*activations[])(double, int) = {&relu, &relu, &linear};
+    struct neural_network* nn = create_model(
+        &mean_squared_error, use_bias, INPUT_SIZE, 3,
+        dense_layer(16, &relu),
+        dense_layer(8, &relu),
+        dense_layer(OUTPUT_SIZE, &relu)
+    );
 
-    struct neural_network *nn = create_model(3, layers_size, INPUT_SIZE, activations, &mean_squared_error);
-    randomize_weights(nn, initializer_mean, initializer_stddev, use_bias);
+    randomize_weights(nn, initializer_mean, initializer_stddev);
 
     // generate data
-    double *inputs[DATA_SIZE];
-    double *outputs[DATA_SIZE];
+    double* inputs[DATA_SIZE];
+    double* outputs[DATA_SIZE];
 
     generate_data_inputs(DATA_SIZE, INPUT_SIZE, inputs, -10, 10);
     generate_data_outputs(DATA_SIZE, OUTPUT_SIZE, inputs, outputs, &f2);
 
     // Start training !
-    fit(nn, DATA_SIZE, inputs, outputs, training_epochs, batch_size, learning_rate, momentum_constant);
+    fit(nn,
+        DATA_SIZE,
+        inputs,
+        outputs,
+        training_epochs,
+        batch_size,
+        learning_rate,
+        momentum_constant);
 
-    for (size_t i = 0; i < DATA_SIZE; i++)
-    {
+    for (size_t i = 0; i < DATA_SIZE; i++) {
         free(inputs[i]);
         free(outputs[i]);
     }
 
-    double *test_inputs[TEST_SIZE];
-    double *test_outputs[TEST_SIZE];
+    double* test_inputs[TEST_SIZE];
+    double* test_outputs[TEST_SIZE];
 
     generate_data_inputs(TEST_SIZE, INPUT_SIZE, test_inputs, -10, 10);
     generate_data_outputs(TEST_SIZE, OUTPUT_SIZE, test_inputs, test_outputs, &f2);
 
     evaluate(nn, TEST_SIZE, test_inputs, test_outputs, &mean_squared_error, 0);
 
-    for (size_t i = 0; i < TEST_SIZE; i++)
-    {
+    for (size_t i = 0; i < TEST_SIZE; i++) {
         free(test_inputs[i]);
         free(test_outputs[i]);
     }

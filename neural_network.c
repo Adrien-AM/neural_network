@@ -1,67 +1,37 @@
 #include "neural_network.h"
 #include "data_utils.h"
+#include "layer.h"
 #include "utils.h"
 
-struct neuron
-{
-    double* weights;
-    double bias;
-    double value;
-    double actv_value;
-    double error;
-    double momentum;
-};
-
-struct layer
-{
-    struct neuron** neurons;
-    size_t size;
-    size_t input_size;
-    double (*activation)(double, int);
-};
+#include <stdarg.h>
 
 struct neural_network
 {
     struct layer** layers;
     size_t number_of_layers;
     double (*loss)(double*, double*, size_t);
+    int use_bias;
 };
 
 struct neural_network*
-create_model(size_t number_of_layers,
-             size_t layers_size[],
+create_model(double (*loss)(double*, double*, size_t),
+             int use_bias,
              size_t input_size,
-             double (**activation)(double, int),
-             double (*loss)(double*, double*, size_t))
+             size_t number_of_layers,
+             ...)
 {
     struct neural_network* nn = (struct neural_network*)malloc(sizeof(struct neural_network));
     nn->number_of_layers = number_of_layers;
     nn->loss = loss;
+    nn->use_bias = use_bias;
     nn->layers = (struct layer**)malloc(sizeof(struct layer*) * nn->number_of_layers);
+    va_list args;
+    va_start(args, number_of_layers);
+
     for (size_t l = 0; l < number_of_layers; l++) {
-        // instanciate layer
-        struct layer* layer = (struct layer*)malloc(sizeof(struct layer));
-        layer->size = layers_size[l];
-        layer->activation = activation[l];
-        layer->input_size = l == 0 ? input_size : nn->layers[l - 1]->size;
-
-        // instanciate array of neurons
-        layer->neurons = (struct neuron**)malloc(sizeof(struct neuron*) * layer->size);
-        for (size_t n = 0; n < layer->size; n++) {
-            struct neuron* neuron = (struct neuron*)malloc(sizeof(struct neuron));
-
-            // First layer receives input
-            neuron->weights = (double*)calloc(layer->input_size, sizeof(double));
-            neuron->bias = 0;
-            neuron->value = 0;
-            neuron->actv_value = 0;
-            neuron->error = 0;
-            neuron->momentum = 0;
-
-            layer->neurons[n] = neuron;
-        }
-
-        nn->layers[l] = layer;
+        nn->layers[l] = va_arg(args, struct layer*);
+        nn->layers[l]->input_size = l == 0 ? input_size : nn->layers[l - 1]->size;
+        instanciate_neurons(nn->layers[l]);
     }
 
     return nn;
@@ -108,15 +78,15 @@ reset_errors(struct neural_network* nn)
 }
 
 void
-randomize_weights(struct neural_network* nn, double mu, double sigma, int use_bias)
+randomize_weights(struct neural_network* nn, double mu, double sigma)
 {
     for (size_t l = 0; l < nn->number_of_layers; l++) {
         for (size_t n = 0; n < nn->layers[l]->size; n++) {
             for (size_t i = 0; i < nn->layers[l]->input_size; i++) {
                 nn->layers[l]->neurons[n]->weights[i] = rand_normal(mu, sigma);
             }
-            if (use_bias)
-                nn->layers[l]->neurons[n]->bias = rand_normal(mu, sigma);
+
+            nn->layers[l]->neurons[n]->bias = nn->use_bias ? rand_normal(mu, sigma) : 0;
         }
     }
 }
@@ -127,30 +97,30 @@ feed_forward(struct neural_network* nn, double inputs[])
     reset_values(nn);
 
     struct layer* layer = nn->layers[0];
+
+    // Create false layer for inputs
+    struct layer input_layer;
+    struct neuron* neurons[layer->input_size];
+    input_layer.neurons = neurons;
+
     for (size_t i = 0; i < layer->input_size; i++) {
-        for (size_t n = 0; n < layer->size; n++) {
-            layer->neurons[n]->value += inputs[i] * layer->neurons[n]->weights[i]; // xi * wi
-        }
+        neurons[i] = malloc(sizeof(struct neuron));
+        input_layer.neurons[i]->actv_value = inputs[i];
     }
+    layer->forward(layer, &input_layer);
+    for (size_t i = 0; i < layer->input_size; i++) {
+        free(neurons[i]);
+    }
+    // End
 
     for (size_t l = 1; l < nn->number_of_layers; l++) {
         layer = nn->layers[l];
-        for (size_t i = 0; i < layer->input_size; i++) {
-            struct layer* input_layer = nn->layers[l - 1];
-            input_layer->neurons[i]->actv_value =
-              input_layer->activation(input_layer->neurons[i]->value, 0);
-            for (size_t n = 0; n < layer->size; n++) {
-                layer->neurons[n]->value +=
-                  input_layer->neurons[i]->actv_value * layer->neurons[n]->weights[i]; // xi * wi
-            }
-        }
+        layer->forward(layer, nn->layers[l - 1]);
     }
 
     struct layer* last_layer = nn->layers[nn->number_of_layers - 1];
     double* result = (double*)malloc(sizeof(double) * last_layer->size); // last layer values
     for (size_t n = 0; n < last_layer->size; n++) {
-        last_layer->neurons[n]->actv_value =
-          last_layer->activation(last_layer->neurons[n]->value, 0);
         result[n] = last_layer->neurons[n]->actv_value;
     }
 
@@ -178,34 +148,24 @@ back_propagate(struct neural_network* nn,
     // Output layer
     struct layer* layer = nn->layers[nn->number_of_layers - 1];
 
+    // Compute loss
     double result[layer->size];
     for (size_t i = 0; i < layer->size; i++) {
         result[i] = layer->neurons[i]->actv_value;
     }
     double loss_value = nn->loss(output, result, layer->size);
 
+    // Put it in the last layer
     for (size_t n = 0; n < layer->size; n++) {
         struct neuron* neuron = layer->neurons[n];
         neuron->error = loss_value;
         // transfer derivative is computed later
     }
 
-    for (int l = nn->number_of_layers - 1; l >= 0; l--) {
+    // Backpropagate it through every layer
+    for (int l = nn->number_of_layers - 1; l > 0; l--) {
         layer = nn->layers[l];
-        for (size_t n = 0; n < layer->size; n++) {
-            struct neuron* neuron = layer->neurons[n];
-
-            // here error = dactv
-            // compute derivative on current neuron error
-            neuron->error *= layer->activation(neuron->actv_value, 1);
-            // here error = dz
-
-            // propagate to previous layer, weighted
-            for (size_t i = 0; i < layer->input_size; i++) {
-                if (l != 0) // First layer doesn't have to backpropagate
-                    nn->layers[l - 1]->neurons[i]->error += neuron->error * neuron->weights[i];
-            }
-        }
+        layer->backprop(layer, nn->layers[l - 1]);
     }
 
     // Update weights
@@ -228,7 +188,8 @@ back_propagate(struct neural_network* nn,
                 neuron->weights[i] -= update;
                 neuron->momentum = update;
             }
-            neuron->bias -= (learning_rate * neuron->error);
+            if (nn->use_bias)
+                neuron->bias -= (learning_rate * neuron->error);
         }
     }
 }

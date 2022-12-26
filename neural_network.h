@@ -7,15 +7,31 @@
 #include <string.h>
 #include <time.h>
 
+struct neuron
+{
+    double* weights;
+    double bias;
+    double value;
+    double actv_value;
+    double error;
+    double momentum;
+};
+
 /*
- * Allocates empty model with weights and biases set to 0.
+ * Allocates sequential model from given architecture.
+ * @param loss : loss function (y_true, y_pred, size)
+ * @param use_bias : boolean. set to 0 to ignore bias in neurons
+ * @param input_size : dimension of input
+ * @param number_of_layers : should correspond to the number of varargs given
+ * @param ... : layers of the model. They should be initialized, except for input_size which is
+ * computed by this function.
  */
 struct neural_network*
-create_model(size_t number_of_layers,
-             size_t layers_size[],
+create_model(double (*loss)(double*, double*, size_t),
+             int use_bias,
              size_t input_size,
-             double (**activation)(double, int),
-             double (*loss)(double*, double*, size_t));
+             size_t number_of_layers,
+             ...);
 
 void
 free_neural_network(struct neural_network* nn);
@@ -25,7 +41,7 @@ free_neural_network(struct neural_network* nn);
  * mean mu and stddev sigma.
  */
 void
-randomize_weights(struct neural_network* nn, double mu, double sigma, int use_bias);
+randomize_weights(struct neural_network* nn, double mu, double sigma);
 
 /*
  * @param nn
