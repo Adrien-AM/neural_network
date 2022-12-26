@@ -6,6 +6,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <stdarg.h>
+
+#include "utils.h"
 
 struct neuron
 {
@@ -27,7 +30,7 @@ struct neuron
  * computed by this function.
  */
 struct neural_network*
-create_model(double (*loss)(double*, double*, size_t),
+create_model(struct loss loss,
              int use_bias,
              size_t input_size,
              size_t number_of_layers,
@@ -104,7 +107,7 @@ evaluate(struct neural_network* nn,
          size_t data_size,
          double* inputs[],
          double* outputs[],
-         double (*loss)(double*, double*, size_t),
+         struct loss loss,
          int verbose);
 
 #endif // __NEURAL_NETWORK_H__

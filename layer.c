@@ -44,9 +44,12 @@ dense_backprop(struct layer* layer, struct layer* input_layer)
         neuron->error *= layer->activation(neuron->actv_value, 1);
         // here error = dz
 
-        // propagate to previous layer, weighted
-        for (size_t i = 0; i < layer->input_size; i++) {
-            input_layer->neurons[i]->error += neuron->error * neuron->weights[i];
+        if (input_layer != NULL) {
+
+            // propagate to previous layer, weighted
+            for (size_t i = 0; i < layer->input_size; i++) {
+                input_layer->neurons[i]->error += neuron->error * neuron->weights[i];
+            }
         }
     }
 }

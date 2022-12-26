@@ -29,23 +29,23 @@ main(void)
     const size_t DATA_SIZE = 20000;
     const size_t INPUT_SIZE = 2;
     const size_t OUTPUT_SIZE = 1;
-    const size_t TEST_SIZE = 20;
+    const size_t TEST_SIZE = 50;
 
     // for model
-    const double learning_rate = 1e-8;
-    const double momentum_constant = 0.2;
+    const double learning_rate = 1e-7;
+    const double momentum_constant = 1e-3;
     const double initializer_mean = 0;
     const double initializer_stddev = 1;
-    const int use_bias = 1;
-    const size_t training_epochs = 25;
+    const int use_bias = 0;
+    const size_t training_epochs = 20;
     const size_t batch_size = 1;
 
     // define model shape
     struct neural_network* nn = create_model(
-        &mean_squared_error, use_bias, INPUT_SIZE, 3,
+        mean_squared_error, use_bias, INPUT_SIZE, 3,
         dense_layer(16, &relu),
         dense_layer(8, &relu),
-        dense_layer(OUTPUT_SIZE, &relu)
+        dense_layer(OUTPUT_SIZE, &linear)
     );
 
     randomize_weights(nn, initializer_mean, initializer_stddev);
@@ -56,6 +56,9 @@ main(void)
 
     generate_data_inputs(DATA_SIZE, INPUT_SIZE, inputs, -10, 10);
     generate_data_outputs(DATA_SIZE, OUTPUT_SIZE, inputs, outputs, &f2);
+
+    struct norm normalization = get_norm_parameters(inputs, INPUT_SIZE, DATA_SIZE);
+    normalize_inputs(inputs, INPUT_SIZE, DATA_SIZE, normalization);
 
     // Start training !
     fit(nn,
@@ -77,8 +80,9 @@ main(void)
 
     generate_data_inputs(TEST_SIZE, INPUT_SIZE, test_inputs, -10, 10);
     generate_data_outputs(TEST_SIZE, OUTPUT_SIZE, test_inputs, test_outputs, &f2);
+    normalize_inputs(test_inputs, INPUT_SIZE, TEST_SIZE, normalization);
 
-    evaluate(nn, TEST_SIZE, test_inputs, test_outputs, &mean_squared_error, 0);
+    evaluate(nn, TEST_SIZE, test_inputs, test_outputs, mean_squared_error, 1);
 
     for (size_t i = 0; i < TEST_SIZE; i++) {
         free(test_inputs[i]);
