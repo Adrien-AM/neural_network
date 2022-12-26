@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Werror -Wall -Wextra -std=c2x -g
+CFLAGS=-Werror -Wall -Wextra -std=c2x -Ofast
 LDFLAGS=-lm
 
 src=utils data_utils neural_network

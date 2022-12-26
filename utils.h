@@ -21,9 +21,6 @@ linear(double, int);
 double
 hypertan(double, int);
 
-double*
-softmax(double*, int);
-
 // Random number from normal function with parameters mu and sigma
 double
 rand_normal(double, double);
@@ -42,6 +39,6 @@ struct loss
 // Loss functions
 extern const struct loss mean_squared_error;
 extern const struct loss mean_absolute_error;
-extern const struct loss categorical_cross_entropy;
+extern const struct loss cross_entropy;
 
 #endif

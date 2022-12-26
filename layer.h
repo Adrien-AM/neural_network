@@ -36,4 +36,7 @@ instanciate_neurons(struct layer* layer);
 struct layer*
 dense_layer(size_t number_of_neurons, double (*activation)(double, int));
 
+struct layer*
+softmax_layer(size_t number_of_classes);
+
 #endif // __LAYER_H__

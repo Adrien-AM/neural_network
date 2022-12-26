@@ -47,17 +47,6 @@ hypertan(double x, int derivative)
     return tanh(x);
 }
 
-double*
-softmax(double* x, int size)
-{
-    // allocate memory for the output vector
-    double* y = (double*)malloc(sizeof(double) * size);
-    (void)x;
-    // TODO
-
-    return y;
-}
-
 // CREDITS
 // https://www.tutorialspoint.com/generate-random-numbers-following-a-normal-distribution-in-c-cplusplus
 
@@ -137,27 +126,26 @@ mae_d(double* y_true, double* y_pred, size_t size)
     return result;
 }
 
-// Categorical Cross Entropy evaluation
+// Cross Entropy evaluation
 double
-cce_f(double* y_true, double* y_pred, size_t size)
+ce_f(double* y_true, double* y_pred, size_t size)
 {
     double loss = 0;
     for (size_t i = 0; i < size; i++) {
-        loss -= (y_true[i] * log(y_pred[i])) + ((1 - y_true[i]) * log(1 - y_pred[i]));
+        loss -= (y_true[i] * log(y_pred[i]));
     }
 
     return loss / size;
 }
 
-// Categorical Cross Entropy derivative
+// Cross Entropy derivative
 double *
-cce_d(double* y_true, double* y_pred, size_t size)
+ce_d(double* y_true, double* y_pred, size_t size)
 {
     double* result = malloc(sizeof(double) * size);
 
     for (size_t i = 0; i < size; i++) {
-        // Hope none of the denominators is 0
-        result[i] = (-y_true[i] / y_pred[i]) + (1 - y_true[i]) / (1 - y_pred[i]);
+        result[i] = y_pred[i] - y_true[i];
     }
 
     return result;
@@ -165,4 +153,4 @@ cce_d(double* y_true, double* y_pred, size_t size)
 
 const struct loss mean_squared_error = { &mse_f, &mse_d };
 const struct loss mean_absolute_error = { &mae_f, &mae_d };
-const struct loss categorical_cross_entropy = { &cce_f, &cce_d };
+const struct loss cross_entropy = { &ce_f, &ce_d };

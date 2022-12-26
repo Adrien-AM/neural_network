@@ -8,6 +8,7 @@
 #include "data_utils.h"
 #include "neural_network.h"
 #include "utils.h"
+#include "layer.h"
 
 #define TRAIN_IMAGES 60000
 #define TEST_IMAGES 10000
@@ -94,14 +95,18 @@ main(void)
     convert_labels_to_softmax(labels_train, nb_classes, TRAIN_IMAGES);
     convert_labels_to_softmax(labels_test, nb_classes, TEST_IMAGES);
 
-    size_t layers_size[] = { 32, 8, nb_classes };
-    double (*activations[])(double, int) = { &sigmoid, &sigmoid, &sigmoid };
-    struct neural_network* nn = create_model(3, layers_size, 28 * 28, activations, &categorical_cross_entropy);
-    randomize_weights(nn, 0, 0.2, 1);
+    struct neural_network* nn = create_model(
+        cross_entropy, 1, 28 * 28, 4,
+        dense_layer(128, &sigmoid),
+        dense_layer(64, &sigmoid),
+        dense_layer(nb_classes, &sigmoid),
+        softmax_layer(nb_classes)
+    );
+    randomize_weights(nn, 0, 0.2);
 
-    fit(nn, TRAIN_IMAGES, images_train, labels_train, 15, 1, 1e-5, 0.2);
+    fit(nn, TRAIN_IMAGES, images_train, labels_train, 25, 1, 1e-4, 0.3);
 
-    evaluate(nn, TEST_IMAGES, images_test, labels_test, &categorical_cross_entropy, 1);
+    evaluate(nn, TEST_IMAGES, images_test, labels_test, cross_entropy, 3);
 
     free_neural_network(nn);
     for (size_t im = 0; im < TRAIN_IMAGES; im++) {

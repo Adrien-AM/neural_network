@@ -4,6 +4,7 @@
 #include "neural_network.h"
 #include "data_utils.h"
 #include "utils.h"
+#include "layer.h"
 
 int main(void)
 {
@@ -19,27 +20,29 @@ int main(void)
     const size_t OUTPUT_SIZE = 1;
 
     // for model
-    const double learning_rate = 1e-6;
-    const double momentum_constant = 0.2;
+    const double learning_rate = 1e-8;
+    const double momentum_constant = 0.;
     const double initializer_mean = 0;
     const double initializer_stddev = 1;
-    const int use_bias = 1;
-    const size_t training_epochs = 7;
+    const int use_bias = 0;
+    const size_t training_epochs = 50;
     const size_t batch_size = 1;
 
-    // define model shape
-    size_t layers_size[] = {4, 2, OUTPUT_SIZE};
-    double (*activations[])(double, int) = {&relu, &relu, &linear};
-
-    struct neural_network *nn = create_model(3, layers_size, INPUT_SIZE, activations, &mean_squared_error);
-    randomize_weights(nn, initializer_mean, initializer_stddev, use_bias);
+    // define model architecture
+    struct neural_network* nn = create_model(
+      mean_squared_error, use_bias, INPUT_SIZE, 3,
+      dense_layer(128, &sigmoid),
+      dense_layer(64, &linear),
+      dense_layer(OUTPUT_SIZE, &relu)
+    );
+    randomize_weights(nn, initializer_mean, initializer_stddev);
     fit(nn, house_data->nb_lines, house_data->data, price_house_data->data, training_epochs, batch_size, learning_rate, momentum_constant);
 
     struct csv *test_data = read_csv("./data/houses/validation_data.csv");
     struct csv *price_test_data = extract_target_from_data("price", test_data);
     normalize_inputs(test_data->data, test_data->nb_columns, test_data->nb_lines, normalization);
 
-    evaluate(nn, test_data->nb_lines, test_data->data, price_test_data->data, &mean_absolute_error, 1);
+    evaluate(nn, test_data->nb_lines, test_data->data, price_test_data->data, mean_absolute_error, 3);
 
     free_neural_network(nn);
     free_csv(price_test_data);

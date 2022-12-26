@@ -154,7 +154,9 @@ back_propagate(struct neural_network* nn,
         result[i] = layer->neurons[i]->actv_value;
     }
     double *loss_value = nn->loss.derivative(output, result, layer->size);
-    // printf("From input : %f %f : Expected : %f, Predicted : %f, Loss : %f\n", inputs[0], inputs[1], output[0], result[0], loss_value[0]);
+    // printf("Input : ");
+    // print_vector(inputs, nn->layers[0]->input_size);
+    // printf("Expected : %f, Predicted : %f, Loss : %f\n", output[0], result[0], loss_value[0]);
 
     // Put it in the last layer
     for (size_t n = 0; n < layer->size; n++) {
@@ -186,6 +188,11 @@ back_propagate(struct neural_network* nn,
                                 ((1 - gamma) * learning_rate * neuron->error * input_value);
                 // printf("Error : %f, weight : %f, input %f, update : %f\n", neuron->error,
                 // neuron->weights[i], input_value, update);
+                
+                if (update != update) { // is NaN
+                    printf("Network has diverged : %f.\n", update);
+                    exit(0);
+                }
                 neuron->weights[i] -= update;
                 neuron->momentum = update;
             }
@@ -210,7 +217,7 @@ fit(struct neural_network* nn,
     reset_errors(nn);
 
     for (size_t epoch = 0; epoch < epochs; epoch++) {
-        printf("Epoch : %zu\n", epoch);
+        printf("Epoch : %zu\t-\t", epoch);
         double loss = 0;
         for (size_t i = 0; i < data_size; i++) {
             double* expected = outputs[i];
@@ -223,10 +230,6 @@ fit(struct neural_network* nn,
             free(result);
         }
         printf("Mean loss : %f\n", loss / (data_size));
-        if (loss != loss) { // is NaN
-            printf("Network has diverged.\n");
-            exit(0);
-        }
     }
 }
 
@@ -246,19 +249,20 @@ evaluate(struct neural_network* nn,
         double* prediction = feed_forward(nn, inputs[i]);
         double loss_value =
           loss.evaluate(outputs[i], prediction, nn->layers[nn->number_of_layers - 1]->size);
-        if (verbose == 3) {
+        if (verbose >= 3) {
             printf("Real : ");
             print_vector(outputs[i], nn->layers[nn->number_of_layers - 1]->size);
             printf(" - Prediction : ");
             print_vector(prediction, nn->layers[nn->number_of_layers - 1]->size);
+            printf("\n");
         }
         free(prediction);
-        if (verbose == 2)
+        if (verbose >= 2)
             printf("\nLoss n°%zu : %f\n", i, loss_value);
         total += loss_value;
     }
     total /= data_size;
-    if (verbose == 1)
+    if (verbose >= 1)
         printf("Loss on test set : %f\n", total);
     return total;
 }
