@@ -8,15 +8,17 @@ struct neural_network
     size_t number_of_layers;
     struct loss loss;
     int use_bias;
+    double gradient_clip;
 };
 
 struct neural_network*
-create_model(struct loss loss, int use_bias, size_t input_size, size_t number_of_layers, ...)
+create_model(struct loss loss, int use_bias, double gradient_clip, size_t input_size, size_t number_of_layers, ...)
 {
     struct neural_network* nn = (struct neural_network*)malloc(sizeof(struct neural_network));
     nn->number_of_layers = number_of_layers;
     nn->loss = loss;
     nn->use_bias = use_bias;
+    nn->gradient_clip = gradient_clip;
     nn->layers = (struct layer**)malloc(sizeof(struct layer*) * nn->number_of_layers);
     va_list args;
     va_start(args, number_of_layers);
@@ -188,6 +190,12 @@ back_propagate(struct neural_network* nn,
                     printf("Network has diverged : %f.\n", update);
                     exit(0);
                 }
+
+                // Clipping
+                if(nn->gradient_clip != 0 && (update) > nn->gradient_clip) {
+                    update = copysign(nn->gradient_clip, update);
+                }
+
                 neuron->weights[i] -= update;
                 neuron->momentum = update;
             }

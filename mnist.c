@@ -96,7 +96,7 @@ main(void)
     convert_labels_to_softmax(labels_test, nb_classes, TEST_IMAGES);
 
     struct neural_network* nn = create_model(
-        cross_entropy, 1, 28 * 28, 3,
+        cross_entropy, 1, 0, 28 * 28, 3,
         dense_layer(96, &sigmoid),
         dense_layer(nb_classes, &sigmoid),
         softmax_layer(nb_classes)

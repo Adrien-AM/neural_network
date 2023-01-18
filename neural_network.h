@@ -26,12 +26,14 @@ struct neuron
  * @param use_bias : boolean. set to 0 to ignore bias in neurons
  * @param input_size : dimension of input
  * @param number_of_layers : should correspond to the number of varargs given
+ * @param gradient_clip : max value for gradient to avoid gradient explosion. Will not be used if 0
  * @param ... : layers of the model. They should be initialized, except for input_size which is
  * computed by this function.
  */
 struct neural_network*
 create_model(struct loss loss,
              int use_bias,
+             double gradient_clip,
              size_t input_size,
              size_t number_of_layers,
              ...);

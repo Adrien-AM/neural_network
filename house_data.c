@@ -27,10 +27,11 @@ int main(void)
     const int use_bias = 0;
     const size_t training_epochs = 50;
     const size_t batch_size = 1;
+    const double gradient_clip = 1;
 
     // define model architecture
     struct neural_network* nn = create_model(
-      mean_squared_error, use_bias, INPUT_SIZE, 3,
+      mean_squared_error, use_bias, gradient_clip, INPUT_SIZE, 3,
       dense_layer(64, &relu),
       dense_layer(32, &linear),
       dense_layer(OUTPUT_SIZE, &relu)
