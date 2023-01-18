@@ -87,7 +87,6 @@ softmax_forward(struct layer* layer, struct layer* input_layer)
     }
 }
 
-// https://towardsdatascience.com/derivative-of-the-softmax-function-and-the-categorical-cross-entropy-loss-ffceefc081d1
 void
 softmax_backprop(struct layer* layer, struct layer* input_layer)
 {

@@ -20,6 +20,15 @@ struct neuron
     double momentum;
 };
 
+struct neural_network
+{
+    struct layer** layers;
+    size_t number_of_layers;
+    struct loss loss;
+    int use_bias;
+    double gradient_clip;
+};
+
 /*
  * Allocates sequential model from given architecture.
  * @param loss : loss function (y_true, y_pred, size)

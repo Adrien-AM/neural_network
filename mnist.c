@@ -70,7 +70,7 @@ read_labels(char* filename)
 }
 
 int
-main(void)
+main(int argc, char **argv)
 {
 
     unsigned char** images_train_c = read_images("./data/mnist/train-images");
@@ -96,16 +96,19 @@ main(void)
     convert_labels_to_softmax(labels_test, nb_classes, TEST_IMAGES);
 
     struct neural_network* nn = create_model(
-        cross_entropy, 1, 0, 28 * 28, 3,
-        dense_layer(96, &sigmoid),
-        dense_layer(nb_classes, &sigmoid),
+        cross_entropy, 1, 1, 28 * 28, 3,
+        dense_layer(32, &sigmoid),
+        dense_layer(nb_classes, &linear),
         softmax_layer(nb_classes)
     );
     randomize_weights(nn, 0, 1);
 
-    fit(nn, TRAIN_IMAGES, images_train, labels_train, 20, 1, 5e-4, 0.2);
+    fit(nn, TRAIN_IMAGES, images_train, labels_train, 10, 1, 1e-4, 0.5);
 
     evaluate(nn, TEST_IMAGES, images_test, labels_test, cross_entropy, 3);
+
+    if(argc > 1)
+        save_nn(nn, argv[1]);
 
     free_neural_network(nn);
     for (size_t im = 0; im < TRAIN_IMAGES; im++) {

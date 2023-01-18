@@ -36,6 +36,12 @@ instanciate_neurons(struct layer* layer);
 struct layer*
 dense_layer(size_t number_of_neurons, double (*activation)(double, int));
 
+/*
+* Instanciates a softmax layer.
+* The previous layer should have number_of_classes nodes.
+* The activation of previous layer should be linear or ReLU for better results.
+* @param number_of_classes
+*/
 struct layer*
 softmax_layer(size_t number_of_classes);
 

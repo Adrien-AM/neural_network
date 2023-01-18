@@ -2,15 +2,6 @@
 #include "data_utils.h"
 #include "layer.h"
 
-struct neural_network
-{
-    struct layer** layers;
-    size_t number_of_layers;
-    struct loss loss;
-    int use_bias;
-    double gradient_clip;
-};
-
 struct neural_network*
 create_model(struct loss loss, int use_bias, double gradient_clip, size_t input_size, size_t number_of_layers, ...)
 {
@@ -192,7 +183,7 @@ back_propagate(struct neural_network* nn,
                 }
 
                 // Clipping
-                if(nn->gradient_clip != 0 && (update) > nn->gradient_clip) {
+                if(nn->gradient_clip != 0 && fabs(update) > nn->gradient_clip) {
                     update = copysign(nn->gradient_clip, update);
                 }
 
@@ -287,6 +278,10 @@ save_nn(struct neural_network* nn, char* filename)
             fwrite(&(neuron->bias), sizeof(double), 1, f);
         }
     }
+
+    char end = EOF;
+
+    fwrite(&end, 1, 1, f);
 
     fclose(f);
 }

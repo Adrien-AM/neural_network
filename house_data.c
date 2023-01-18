@@ -8,7 +8,7 @@
 
 int main(void)
 {
-    struct csv *house_data = read_csv("./data/houses/house_data_v2.csv");
+    struct csv *house_data = read_csv("./data/houses/kc_house_data.csv");
     struct csv *price_house_data = extract_target_from_data("price", house_data);
     struct norm normalization =
       get_norm_parameters(house_data->data, house_data->nb_columns, house_data->nb_lines);
