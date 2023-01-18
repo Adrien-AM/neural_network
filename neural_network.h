@@ -110,4 +110,10 @@ evaluate(struct neural_network* nn,
          struct loss loss,
          int verbose);
 
+// Raw dump
+void
+save_nn(struct neural_network* nn, char* filename);
+void
+read_nn(struct neural_network* nn, char* filename);
+
 #endif // __NEURAL_NETWORK_H__

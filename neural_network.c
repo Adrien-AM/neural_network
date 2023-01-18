@@ -2,7 +2,6 @@
 #include "data_utils.h"
 #include "layer.h"
 
-
 struct neural_network
 {
     struct layer** layers;
@@ -12,11 +11,7 @@ struct neural_network
 };
 
 struct neural_network*
-create_model(struct loss loss,
-             int use_bias,
-             size_t input_size,
-             size_t number_of_layers,
-             ...)
+create_model(struct loss loss, int use_bias, size_t input_size, size_t number_of_layers, ...)
 {
     struct neural_network* nn = (struct neural_network*)malloc(sizeof(struct neural_network));
     nn->number_of_layers = number_of_layers;
@@ -153,7 +148,7 @@ back_propagate(struct neural_network* nn,
     for (size_t i = 0; i < layer->size; i++) {
         result[i] = layer->neurons[i]->actv_value;
     }
-    double *loss_value = nn->loss.derivative(output, result, layer->size);
+    double* loss_value = nn->loss.derivative(output, result, layer->size);
     // printf("Input : ");
     // print_vector(inputs, nn->layers[0]->input_size);
     // printf("Expected : %f, Predicted : %f, Loss : %f\n", output[0], result[0], loss_value[0]);
@@ -188,7 +183,7 @@ back_propagate(struct neural_network* nn,
                                 ((1 - gamma) * learning_rate * neuron->error * input_value);
                 // printf("Error : %f, weight : %f, input %f, update : %f\n", neuron->error,
                 // neuron->weights[i], input_value, update);
-                
+
                 if (update != update) { // is NaN
                     printf("Network has diverged : %f.\n", update);
                     exit(0);
@@ -265,4 +260,46 @@ evaluate(struct neural_network* nn,
     if (verbose >= 1)
         printf("Loss on test set : %f\n", total);
     return total;
+}
+
+void
+save_nn(struct neural_network* nn, char* filename)
+{
+    FILE* f = fopen(filename, "w");
+    if (NULL == f) {
+        fprintf(stderr, "Could not open file %s\n", filename);
+        exit(-1);
+    }
+
+    for (size_t l = 0; l < nn->number_of_layers; l++) {
+        struct layer* layer = nn->layers[l];
+        for (size_t n = 0; n < layer->size; n++) {
+            struct neuron* neuron = layer->neurons[n];
+            fwrite(neuron->weights, sizeof(double), layer->input_size, f);
+            fwrite(&(neuron->bias), sizeof(double), 1, f);
+        }
+    }
+
+    fclose(f);
+}
+
+void
+read_nn(struct neural_network* nn, char* filename)
+{
+    FILE* f = fopen(filename, "w");
+    if (NULL == f) {
+        fprintf(stderr, "Could not open file %s\n", filename);
+        exit(-1);
+    }
+
+    for (size_t l = 0; l < nn->number_of_layers; l++) {
+        struct layer* layer = nn->layers[l];
+        for (size_t n = 0; n < layer->size; n++) {
+            struct neuron* neuron = layer->neurons[n];
+            fread(neuron->weights, sizeof(double), layer->input_size, f);
+            fread(&(neuron->bias), sizeof(double), 1, f);
+        }
+    }
+
+    fclose(f);
 }

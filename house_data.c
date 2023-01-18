@@ -31,8 +31,8 @@ int main(void)
     // define model architecture
     struct neural_network* nn = create_model(
       mean_squared_error, use_bias, INPUT_SIZE, 3,
-      dense_layer(128, &sigmoid),
-      dense_layer(64, &linear),
+      dense_layer(64, &relu),
+      dense_layer(32, &linear),
       dense_layer(OUTPUT_SIZE, &relu)
     );
     randomize_weights(nn, initializer_mean, initializer_stddev);

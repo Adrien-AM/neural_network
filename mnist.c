@@ -96,15 +96,14 @@ main(void)
     convert_labels_to_softmax(labels_test, nb_classes, TEST_IMAGES);
 
     struct neural_network* nn = create_model(
-        cross_entropy, 1, 28 * 28, 4,
-        dense_layer(128, &sigmoid),
-        dense_layer(64, &sigmoid),
+        cross_entropy, 1, 28 * 28, 3,
+        dense_layer(96, &sigmoid),
         dense_layer(nb_classes, &sigmoid),
         softmax_layer(nb_classes)
     );
-    randomize_weights(nn, 0, 0.2);
+    randomize_weights(nn, 0, 1);
 
-    fit(nn, TRAIN_IMAGES, images_train, labels_train, 25, 1, 1e-4, 0.3);
+    fit(nn, TRAIN_IMAGES, images_train, labels_train, 20, 1, 5e-4, 0.2);
 
     evaluate(nn, TEST_IMAGES, images_test, labels_test, cross_entropy, 3);
 

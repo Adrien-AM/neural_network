@@ -133,9 +133,10 @@ ce_f(double* y_true, double* y_pred, size_t size)
     double loss = 0;
     for (size_t i = 0; i < size; i++) {
         loss -= (y_true[i] * log(y_pred[i]));
+        // printf("Adding %f\n", (y_true[i] * log(y_pred[i])));
     }
 
-    return loss / size;
+    return loss;
 }
 
 // Cross Entropy derivative
@@ -145,7 +146,7 @@ ce_d(double* y_true, double* y_pred, size_t size)
     double* result = malloc(sizeof(double) * size);
 
     for (size_t i = 0; i < size; i++) {
-        result[i] = y_pred[i] - y_true[i];
+        result[i] = -(y_true[i] / y_pred[i]);
     }
 
     return result;

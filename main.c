@@ -29,7 +29,7 @@ main(void)
     const size_t DATA_SIZE = 20000;
     const size_t INPUT_SIZE = 2;
     const size_t OUTPUT_SIZE = 1;
-    const size_t TEST_SIZE = 50;
+    const size_t TEST_SIZE = 500;
 
     // for model
     const double learning_rate = 1e-7;

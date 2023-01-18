@@ -24,7 +24,7 @@ instanciate_neurons(struct layer* layer)
 void
 dense_forward(struct layer* layer, struct layer* input_layer)
 {
-    
+
     for (size_t n = 0; n < layer->size; n++) {
         for (size_t i = 0; i < layer->input_size; i++) {
             layer->neurons[n]->value +=
@@ -91,10 +91,10 @@ softmax_forward(struct layer* layer, struct layer* input_layer)
 void
 softmax_backprop(struct layer* layer, struct layer* input_layer)
 {
-    for (size_t i = 0; i < layer->size; i++) {
-        for (size_t j = 0; j < input_layer->size; j++) {
-            input_layer->neurons[j]->error +=
-              layer->neurons[i]->error * ((i == j) - layer->neurons[j]->error);
+    for (size_t j = 0; j < input_layer->size; j++) {
+        for (size_t i = 0; i < layer->size; i++) {
+            input_layer->neurons[j]->error += layer->neurons[i]->error * 
+              layer->neurons[i]->actv_value * ((i == j) - layer->neurons[j]->actv_value);
         }
     }
 }
