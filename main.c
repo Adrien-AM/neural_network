@@ -43,8 +43,9 @@ main(void)
 
     // define model shape
     struct neural_network* nn = create_model(
-        mean_squared_error, use_bias, gradient_clip, INPUT_SIZE, 3,
+        mean_squared_error, use_bias, gradient_clip, INPUT_SIZE, 4,
         dense_layer(16, &relu),
+        dropout_layer(16, 0.1),
         dense_layer(8, &relu),
         dense_layer(OUTPUT_SIZE, &linear)
     );

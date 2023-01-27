@@ -3,7 +3,12 @@
 #include "layer.h"
 
 struct neural_network*
-create_model(struct loss loss, int use_bias, double gradient_clip, size_t input_size, size_t number_of_layers, ...)
+create_model(struct loss loss,
+             int use_bias,
+             double gradient_clip,
+             size_t input_size,
+             size_t number_of_layers,
+             ...)
 {
     struct neural_network* nn = (struct neural_network*)malloc(sizeof(struct neural_network));
     nn->number_of_layers = number_of_layers;
@@ -183,7 +188,7 @@ back_propagate(struct neural_network* nn,
                 }
 
                 // Clipping
-                if(nn->gradient_clip != 0 && fabs(update) > nn->gradient_clip) {
+                if (nn->gradient_clip != 0 && fabs(update) > nn->gradient_clip) {
                     update = copysign(nn->gradient_clip, update);
                 }
 

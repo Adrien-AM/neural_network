@@ -45,4 +45,11 @@ dense_layer(size_t number_of_neurons, double (*activation)(double, int));
 struct layer*
 softmax_layer(size_t number_of_classes);
 
+
+/*
+* Instanciates a dropout layer. Drop rate is the same for every dropout layer, creating a new one will override old drop rate.
+*/
+struct layer*
+dropout_layer(size_t size, double drop_rate);
+
 #endif // __LAYER_H__

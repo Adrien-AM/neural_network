@@ -10,6 +10,24 @@ print_vector(double* v, size_t size)
     printf("%f ]", v[size - 1]);
 }
 
+void print_softmax(double *result, size_t nb_classes, double until)
+{
+    double max = 0;
+    size_t imax = 0;
+    do {
+        for (size_t i = 0; i < nb_classes; i++) {
+            if(result[i] > max) {
+                imax = i;
+                max = result[i];
+            }
+        }
+        printf("Class %zu : %f%%\t-\t", imax, max * 100);
+        result[imax] = 0;
+        max = 0;
+    } while (max > until);
+    printf("Others too low.\n");
+}
+
 double
 relu(double x, int derivative)
 {
