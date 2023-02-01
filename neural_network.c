@@ -223,12 +223,12 @@ fit(struct neural_network* nn,
             double* inp = inputs[i];
 
             double* result = feed_forward(nn, inp);
-            loss += nn->loss.evaluate(expected, result, nn->layers[nn->number_of_layers - 1]->size);
+            loss += (nn->loss.evaluate(expected, result, nn->layers[nn->number_of_layers - 1]->size) - loss) / (i + 1); // avoid overflow
             back_propagate(nn, expected, inp, learning_rate, gamma);
 
             free(result);
         }
-        printf("Mean loss : %f\n", loss / (data_size));
+        printf("Mean loss : %f\n", loss);
     }
 }
 
@@ -258,9 +258,8 @@ evaluate(struct neural_network* nn,
         free(prediction);
         if (verbose >= 2)
             printf("\nLoss n°%zu : %f\n", i, loss_value);
-        total += loss_value;
+        total += (loss_value - total) / (i + 1); // avoid overflow
     }
-    total /= data_size;
     if (verbose >= 1)
         printf("Loss on test set : %f\n", total);
     return total;

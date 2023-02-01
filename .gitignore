@@ -5,6 +5,7 @@ test
 house
 mnist
 vgcore.*
+*.nn # nn dumps
 
 # data files
 *.csv

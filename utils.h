@@ -44,5 +44,7 @@ struct loss
 extern const struct loss mean_squared_error;
 extern const struct loss mean_absolute_error;
 extern const struct loss cross_entropy;
+extern const struct loss psnr;
+extern const struct loss ssim;
 
 #endif

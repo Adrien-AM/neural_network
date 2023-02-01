@@ -7,10 +7,11 @@
 #include "data_utils.h"
 #include "layer.h"
 
-#define LATENT_SPACE 12
+#define LATENT_SPACE 32
 
 int main(void)
 {
+    srand(time(NULL));
     unsigned char** images_train_c = read_images("./data/mnist/train-images");
     unsigned char** images_test_c = read_images("./data/mnist/test-images");
 
@@ -20,22 +21,30 @@ int main(void)
     convert_images_uc_to_f(images_test, images_test_c, TEST_IMAGES, IMAGE_SIZE);
 
     struct neural_network* nn = create_model(
-        mean_squared_error, 1, 1, IMAGE_SIZE, 6,
-        dense_layer(32, sigmoid),
-        dense_layer(LATENT_SPACE, linear),
-        dense_layer(32, sigmoid),
+        ssim, 1, 10, IMAGE_SIZE, 6,
+        dense_layer(128, sigmoid),
+        // dense_layer(96, sigmoid),
+        dense_layer(64, sigmoid),
+        // dense_layer(48, sigmoid),
+        dense_layer(LATENT_SPACE, sigmoid),
+        // dense_layer(48, sigmoid),
+        dense_layer(64, sigmoid),
+        // dense_layer(96, relu),
+        dense_layer(128, sigmoid),
         dense_layer(IMAGE_SIZE, relu)
     );
 
-    randomize_weights(nn, 0, 1);
-    fit(nn, 1000, images_train, images_train, 10, 1, 5e-4, 0);
-
+    randomize_weights(nn, 0, 2);
+    fit(nn, 5000, images_train, images_train, 25, 1, 1e-1, 0);
+    evaluate(nn, 100, images_test, images_test, ssim, 1);
 
     // Generation
-    size_t latent_pos = 1;
+    /*
+    size_t latent_pos = 4;
+    reset_values(nn);
     struct layer* latent_layer = nn->layers[latent_pos];
     for (size_t i = 0; i < LATENT_SPACE; i++) {
-        latent_layer->neurons[i]->actv_value = rand() / RAND_MAX;
+        latent_layer->neurons[i]->actv_value = latent_layer->activation(rand() / RAND_MAX, 0);
     }
 
     for (size_t l = latent_pos + 1; l < nn->number_of_layers; l++) {
@@ -50,7 +59,21 @@ int main(void)
     }
 
     display_image(result, 10000);
+    free(result);
+    */
 
+   // Reconstruction :
+
+    size_t img = rand() % TEST_IMAGES;
+
+    display_image(images_test[img], 2000);
+
+    double* reconstructed = predict(nn, images_test[img], 1);
+
+    display_image(reconstructed, 5000);
+    free(reconstructed);
+
+    save_nn(nn, "generator.nn");
     free_neural_network(nn);
 
     for (size_t im = 0; im < TRAIN_IMAGES; im++) {

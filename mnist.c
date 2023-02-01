@@ -22,6 +22,7 @@ main(int argc, char **argv)
     double* labels_test[TEST_IMAGES];
     convert_labels_uc_to_f(labels_test, labels_test_c, TEST_IMAGES);
 
+
     // struct norm normalization = get_norm_parameters(images_train, IMAGE_SIZE, TRAIN_IMAGES);
     // normalize_inputs(images_train, 28 * 28, TRAIN_IMAGES, normalization);
     // normalize_inputs(images_test, 28 * 28, TEST_IMAGES, normalization);
@@ -32,16 +33,18 @@ main(int argc, char **argv)
 
     struct neural_network* nn = create_model(
         cross_entropy, 1, 1, IMAGE_SIZE, 3,
-        dense_layer(32, &sigmoid),
+        dense_layer(8, &sigmoid),
         dense_layer(nb_classes, &linear),
         softmax_layer(nb_classes)
     );
     randomize_weights(nn, 0, 1);
 
     size_t img = rand() % TRAIN_IMAGES;
-    fit(nn, TRAIN_IMAGES, images_train, labels_train, 5, 1, 1e-4, 0.5);
-    print_softmax(predict(nn, images_train[img], 1), 10, 0.3);
-    display_image(images_train[img], 10000);
+    fit(nn, TRAIN_IMAGES, images_train, labels_train, 1, 1, 1e-4, 0.5);
+    double* prediction = predict(nn, images_train[img], 1);
+    print_softmax(prediction, 10, 0.3);
+    free(prediction);
+    // display_image(images_train[img], 10000);
 
     // evaluate(nn, TEST_IMAGES, images_test, labels_test, cross_entropy, 3);
 
