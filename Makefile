@@ -3,7 +3,7 @@ CFLAGS=-Werror -Wall -Wextra -std=c2x -Ofast
 LDFLAGS=-lm
 
 src=utils data_utils neural_network layer
-exe=main house mnist
+exe=main house mnist mnist_generator
 
 all: ${exe}
 
