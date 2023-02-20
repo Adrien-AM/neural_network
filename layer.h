@@ -13,6 +13,7 @@
  * @var backprop : (layer, input_layer) : propagate the error of this layer to the precedent layer.
  * Supposes the error of actv_value is already known for each neuron. input_layer may be NULL if
  * this is the first layer.
+ * @var instanciate : Allocates memory and initializes neurons, given the input size.
  */
 struct layer
 {
@@ -22,27 +23,33 @@ struct layer
     double (*activation)(double, int);
     void (*forward)(struct layer*, struct layer*);
     void (*backprop)(struct layer*, struct layer*);
+    void (*instanciate)(struct layer*, size_t);
 };
 
-// Allocates memory and initializes neurons. Input size must be known
-void
-instanciate_neurons(struct layer* layer);
-
 /*
-* Instanciates a simple, fully connected dense layer of size `number_of_neurons.
-* @param number_of_neurons
-* @param activation
-*/
+ * Instanciates a simple, fully connected dense layer of size `number_of_neurons.
+ * @param number_of_neurons
+ * @param activation
+ */
 struct layer*
 dense_layer(size_t number_of_neurons, double (*activation)(double, int));
 
 /*
-* Instanciates a softmax layer.
-* The previous layer should have number_of_classes nodes.
-* The activation of previous layer should be linear or ReLU for better results.
-* @param number_of_classes
-*/
+ * Instanciates a softmax layer.
+ * The previous layer should have number_of_classes nodes.
+ * The activation of previous layer should be linear or ReLU for better results.
+ * @param number_of_classes
+ */
 struct layer*
 softmax_layer(size_t number_of_classes);
+
+/*
+ * Instanciates a 2D convolutional layer.
+ * @param number_of_neurons
+ * @param activation
+ * @param kernel_size side of the convolutional kernel (e.g. 3 for a 3x3 matrix)
+ */
+struct layer*
+conv2d_layer(size_t number_of_neurons, double (*activation)(double, int), size_t kernel_size);
 
 #endif // __LAYER_H__

@@ -16,8 +16,7 @@ create_model(struct loss loss, int use_bias, double gradient_clip, size_t input_
 
     for (size_t l = 0; l < number_of_layers; l++) {
         nn->layers[l] = va_arg(args, struct layer*);
-        nn->layers[l]->input_size = l == 0 ? input_size : nn->layers[l - 1]->size;
-        instanciate_neurons(nn->layers[l]);
+        nn->layers[l]->instanciate(nn->layers[l], l == 0 ? input_size : nn->layers[l - 1]->size);
     }
 
     va_end(args);
