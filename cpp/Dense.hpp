@@ -2,24 +2,20 @@
 #define __DENSE_HPP__
 
 #include <vector>
+#include <iostream>
+#include <random>
 
 #include "Layer.hpp"
-#include "Neuron.hpp"
+#include "Activation.hpp"
+
 
 class Dense : public Layer
 {
-  private:
-    double (*const activation)(double, int);
-    std::vector<Neuron *> neurons;
-
   public:
-    Dense(double (*const activation)(double, int), std::vector<Neuron *> neurons)
-      : activation(activation), neurons(neurons) {
-    };
-    Dense(const Dense& d) : activation(d.activation), neurons(d.neurons) {};
-    void forward();
-    void backprop();
-    ~Dense();
+    Dense(const Activation& act, unsigned int layer_size);
+    void forward(std::vector<double>);
+    void backprop(Layer *l, double);
+    void init(unsigned int);
 };
 
 #endif // __DENSE_HPP__
