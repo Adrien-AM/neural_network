@@ -9,5 +9,8 @@ all: ${exe}
 main: Main.cpp Dense.o Layer.o NeuralNetwork.o Loss.o Activation.o Utils.o Input.o
 	${CC} ${CFLAGS} $^ -o $@
 
+mnist: Mnist.cpp MnistUtils.o Utils.o
+	${CC} ${CFLAGS} $^ -o $@ -lSDL2
+
 clean:
 	rm *.o ${exe} vgcore.*
