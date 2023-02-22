@@ -1,6 +1,6 @@
 #include "Input.hpp"
 
-Input::Input(std::vector<double> values) : Layer(Linear(), values.size()) {
+Input::Input(std::vector<double> values) : Layer(Linear(), values.size(), false) {
     this->actv_values = values;
 }
 void Input::forward(std::vector<double> inputs) {
@@ -13,3 +13,8 @@ Input::backprop(Layer*, double) {}
 
 void
 Input::init(unsigned int) {}
+
+void
+Input::summarize() {
+    printf("Input | Size %u\n", this->values.size());
+}

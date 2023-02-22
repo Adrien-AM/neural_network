@@ -54,7 +54,8 @@ NeuralNetwork::backpropagation(std::vector<double> real, std::vector<double> inp
         this->layers[i]->backprop(this->layers[i - 1], this->alpha);
     }
 
-    this->layers[0]->backprop(new Input(inputs), this->alpha);
+    Input fake_input(inputs);
+    this->layers[0]->backprop(&fake_input, this->alpha);
 
     return;
 }
@@ -92,6 +93,17 @@ NeuralNetwork::predict(std::vector<double> inputs)
     this->reset_values();
 
     return this->feed_forward(inputs);
+}
+
+void NeuralNetwork::summarize()
+{
+    printf("\nNeural Net :\n");
+    for (unsigned int i = 0; i < this->layers.size(); i++) {
+        printf("--Layer %u--\n\t", i);
+        this->layers[i]->summarize();
+        printf("------------\n");
+    }
+    printf("\n");
 }
 
 NeuralNetwork::~NeuralNetwork()

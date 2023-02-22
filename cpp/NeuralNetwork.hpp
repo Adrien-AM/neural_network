@@ -26,6 +26,7 @@ class NeuralNetwork
              double learning_rate,
              unsigned int epochs);
     std::vector<double> predict(std::vector<double> inputs);
+    void summarize();
     ~NeuralNetwork();
 };
 

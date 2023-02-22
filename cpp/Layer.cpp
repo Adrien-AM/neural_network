@@ -1,6 +1,6 @@
 #include "Layer.hpp"
 
-Layer::Layer(const Activation& act, unsigned int layer_size)
+Layer::Layer(const Activation& act, unsigned int layer_size, bool use_bias)
   : activation(act)
 {
     this->values = std::vector<double>(layer_size);
@@ -9,6 +9,10 @@ Layer::Layer(const Activation& act, unsigned int layer_size)
     this->delta_errors = std::vector<double>(layer_size);
 
     this->weights = std::vector<std::vector<double>>(layer_size);
+    if(use_bias)
+        this->biases = std::vector<double>(layer_size);
+    else
+        this->biases = std::vector<double>(0);
 };
 
 void
