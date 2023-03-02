@@ -16,9 +16,12 @@ class Loss
 };
 
 Loss
-mae();
+MeanAbsoluteError();
 
 Loss
-mse();
+MeanSquaredError();
+
+Loss
+CategoricalCrossEntropy();
 
 #endif // __LOSS_HPP__

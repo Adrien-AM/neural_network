@@ -2,44 +2,42 @@
 #define __ACTIVATION_H__
 
 #include <vector>
+#include <cmath>
+#include <iostream>
 
 class Activation
 {
   public:
-    virtual double compute(double) const = 0;
-    virtual double derivative(double) const = 0;
+    virtual std::vector<double> compute(std::vector<double>) const = 0;
+    virtual std::vector<double> derivative(std::vector<double>) const = 0;
 };
 
 class Linear : public Activation
 {
   public:
-    double compute(double) const;
-    double derivative(double) const;
+    std::vector<double> compute(std::vector<double>) const;
+    std::vector<double> derivative(std::vector<double>) const;
 };
 
 class ReLU : public Activation
 {
   public:
-    double compute(double) const;
-    double derivative(double) const;
+    std::vector<double> compute(std::vector<double>) const;
+    std::vector<double> derivative(std::vector<double>) const;
 };
 
 class Sigmoid : public Activation
 {
   public:
-    double compute(double) const;
-    double derivative(double) const;
+    std::vector<double> compute(std::vector<double>) const;
+    std::vector<double> derivative(std::vector<double>) const;
 };
 
 class Softmax : public Activation
 {
-  private:
-    unsigned int nb_of_classes;
-
   public:
-    Softmax(unsigned int nb_of_classes);
-    double compute(double) const;
-    double derivative(double) const;
+    std::vector<double> compute(std::vector<double>) const;
+    std::vector<double> derivative(std::vector<double>) const;
 };
 
 #endif // __ACTIVATION_H__

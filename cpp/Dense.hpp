@@ -12,9 +12,9 @@
 class Dense : public Layer
 {
   public:
-    Dense(const Activation& act, unsigned int layer_size, bool use_bias = true);
-    void forward(std::vector<double>);
-    void backprop(Layer *l, double);
+    Dense(unsigned int layer_size, const Activation& act, bool use_bias = true);
+    void forward(const std::vector<double>&);
+    void backprop(Layer *l, double, double);
     void init(unsigned int);
     void summarize();
 };

@@ -1,16 +1,20 @@
-CC=g++
-CFLAGS=-Werror -Wall -Wextra -std=c++2a -g
+DEBUG ?= 0
+CXXFLAGS=-Werror -Wall -Wextra -std=c++2a
+ifeq ($(DEBUG), 1)
+    CXXFLAGS += -DDEBUG
+endif
+CXX=g++
 
 src=Layer Dense NeuralNetwork Neuron
-exe=main
+exe=main mnist
 
 all: ${exe}
 
 main: Main.cpp Dense.o Layer.o NeuralNetwork.o Loss.o Activation.o Utils.o Input.o
-	${CC} ${CFLAGS} $^ -o $@
+	${CXX} ${CXXFLAGS} $^ -o $@
 
-mnist: Mnist.cpp MnistUtils.o Utils.o
-	${CC} ${CFLAGS} $^ -o $@ -lSDL2
+mnist: Mnist.cpp MnistUtils.o Dense.o Layer.o NeuralNetwork.o Loss.o Activation.o Utils.o Input.o
+	${CXX} ${CXXFLAGS} $^ -o $@ -lSDL2
 
 clean:
 	rm *.o ${exe} vgcore.*

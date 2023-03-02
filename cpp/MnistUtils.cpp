@@ -71,9 +71,14 @@ read_idx_labels_file(const std::string& filename)
     file.read(reinterpret_cast<char*>(&num_labels), sizeof(num_labels));
     num_labels = ntohl(num_labels);
 
-    std::vector<uint8_t> data(num_labels);
-    for (int32_t i = 0; i < num_labels; i++) {
-        file.read(reinterpret_cast<char*>(data.data()), sizeof(uint8_t));
+    std::vector<uint8_t> data;
+    uint8_t byte;
+    while (file.read(reinterpret_cast<char*>(&byte), sizeof(uint8_t))) {
+        data.push_back(byte);
+    }
+
+    if(data.size() != (unsigned int)num_labels) {
+        throw std::runtime_error("Data read is not the expected size.\n");
     }
 
     // Close the file
@@ -83,7 +88,7 @@ read_idx_labels_file(const std::string& filename)
 }
 
 std::vector<std::vector<double>>
-uint_to_double_images(std::vector<std::vector<uint8_t>> images)
+uint_to_double_images(const std::vector<std::vector<uint8_t>>& images)
 {
     std::vector<std::vector<double>> new_images(images.size());
     for (unsigned int i = 0; i < images.size(); i++) {
@@ -97,19 +102,19 @@ uint_to_double_images(std::vector<std::vector<uint8_t>> images)
 }
 
 std::vector<std::vector<double>>
-uint_to_one_hot_labels(std::vector<uint8_t> labels, unsigned int nb_classes)
+uint_to_one_hot_labels(const std::vector<uint8_t>& labels, unsigned int nb_classes)
 {
     std::vector<std::vector<double>> result(labels.size());
     for (unsigned int i = 0; i < labels.size(); i++) {
         result[i] = std::vector<double>(nb_classes);
-        result[i][labels[i] + 1] = 1;
+        result[i][labels[i]] = 1;
     }
 
     return result;
 }
 
 void
-display_image(std::vector<double> image, unsigned int time, int upscale)
+display_image(const std::vector<double>& image, unsigned int time, int upscale)
 {
 
     SDL_Init(SDL_INIT_VIDEO);
@@ -123,7 +128,8 @@ display_image(std::vector<double> image, unsigned int time, int upscale)
 
     for (int y = 0; y < 28; y++) {
         for (int x = 0; x < 28; x++) {
-            uint8_t pixel = (uint8_t)image[y * 28 + x];
+            // put pixel back in [0, 255] from [0, 1]
+            uint8_t pixel = (uint8_t)(image[y * 28 + x] * 255);
             SDL_SetRenderDrawColor(renderer, pixel, pixel, pixel, 255);
             for (int i = 0; i < upscale; i++) {
                 for (int j = 0; j < upscale; j++) {
@@ -138,4 +144,34 @@ display_image(std::vector<double> image, unsigned int time, int upscale)
     SDL_Delay(time * 1000);
     SDL_DestroyWindow(window);
     SDL_Quit();
+}
+
+void
+shuffle_images_labels(std::vector<std::vector<double>>& images,
+                      std::vector<std::vector<double>>& labels)
+{
+    // Create a vector of indices for train_images and train_labels
+    std::vector<int> indices(images.size());
+    std::iota(indices.begin(), indices.end(), 0);
+
+    // Shuffle the indices vector using a random number generator
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(indices.begin(), indices.end(), g);
+
+    // Shuffle train_images and train_labels in place using the shuffled indices
+    for (size_t i = 0; i < indices.size(); ++i) {
+        std::swap(images[i], images[indices[i]]);
+        std::swap(labels[i], labels[indices[i]]);
+    }
+}
+
+void
+normalize_pixels(std::vector<std::vector<double>>& images)
+{
+    for(auto& row : images) {
+        for(double& pixel : row) {
+            pixel /= 255;
+        }
+    }
 }

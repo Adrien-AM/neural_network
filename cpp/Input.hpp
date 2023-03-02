@@ -8,8 +8,8 @@ class Input : public Layer
 {
   public:
     Input(std::vector<double>);
-    void forward(std::vector<double>);
-    void backprop(Layer*, double);
+    void forward(const std::vector<double>&);
+    void backprop(Layer*, double, double);
     void init(unsigned int);
     void summarize();
 };

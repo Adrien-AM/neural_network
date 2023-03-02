@@ -1,9 +1,9 @@
 #include "NeuralNetwork.hpp"
 
-NeuralNetwork::NeuralNetwork(unsigned int input_size, std::vector<Layer*> layers, Loss l)
+NeuralNetwork::NeuralNetwork(unsigned int input_size, std::vector<Layer*> layers, Loss loss)
   : input_size(input_size)
   , layers(layers)
-  , loss(l)
+  , loss(loss)
 {
     if (this->layers.size() == 0)
         return;
@@ -33,69 +33,106 @@ NeuralNetwork::reset_errors()
 }
 
 std::vector<double>
-NeuralNetwork::feed_forward(std::vector<double> inputs)
+NeuralNetwork::feed_forward(const std::vector<double>& inputs)
 {
+    std::vector<double> moving_inputs = inputs;
     for (Layer*& layer : this->layers) {
-        layer->forward(inputs);
-        inputs = layer->actv_values;
+        layer->forward(moving_inputs);
+        moving_inputs = layer->actv_values;
     }
 
     // Last element actv values are the output
-    return this->layers.back()->actv_values;
+    return moving_inputs;
 }
 
 void
-NeuralNetwork::backpropagation(std::vector<double> real, std::vector<double> inputs)
+NeuralNetwork::backpropagation(const std::vector<double>& real, const std::vector<double>& inputs)
 {
-    std::vector<double> partial_errors = this->loss.derivate(real, this->layers.back()->actv_values);
+    std::vector<double> partial_errors =
+      this->loss.derivate(real, this->layers.back()->actv_values);
     this->layers.back()->errors = partial_errors;
+    #ifdef DEBUG
+    printf("Partial errors : ");
+    print_vector(partial_errors);
+#endif
 
     for (unsigned int i = this->layers.size() - 1; i > 0; i--) {
-        this->layers[i]->backprop(this->layers[i - 1], this->alpha);
+        this->layers[i]->backprop(this->layers[i - 1], this->alpha, this->gamma);
     }
 
     Input fake_input(inputs);
-    this->layers[0]->backprop(&fake_input, this->alpha);
+    this->layers[0]->backprop(&fake_input, this->alpha, this->gamma);
 
     return;
 }
 
 void
-NeuralNetwork::fit(std::vector<std::vector<double>> inputs,
-                   std::vector<std::vector<double>> outputs,
+NeuralNetwork::fit(const std::vector<std::vector<double>>& inputs,
+                   const std::vector<std::vector<double>>& outputs,
                    double learning_rate,
+                   double momentum,
                    unsigned int epochs)
 {
     if (inputs.size() != outputs.size()) {
         fprintf(stderr,
-                "Inputs (%u) and outputs (%u) should have the same size.\n",
+                "Inputs (%zu) and outputs (%zu) should have the same size.\n",
                 inputs.size(),
                 outputs.size());
     }
     this->alpha = learning_rate;
+    this->gamma = momentum;
     for (unsigned int epoch = 0; epoch < epochs; epoch++) {
         printf("- Epoch %u -- ", epoch + 1);
         double loss = 0;
         for (unsigned int row = 0; row < inputs.size(); row++) {
             reset_values();
             std::vector<double> predicted = this->predict(inputs[row]);
-            loss += this->loss.evaluate(outputs[row], predicted);
+            double curr_loss = this->loss.evaluate(outputs[row], predicted);
+            loss += (curr_loss - loss) / (row + 1); // Moving average
+            if (loss != loss) {
+                printf("Networked diverged during training.\n");
+                exit(0);
+            }
+            // print_vector(predicted);
+            // print_vector(outputs[row]);
+            // printf("Curr loss : %f - New loss : %f\n--\n", curr_loss, loss);
             reset_errors();
             this->backpropagation(outputs[row], inputs[row]);
         }
-        printf("Mean loss : %f\n", loss / inputs.size());
+        printf("Mean loss : %f\n", loss);
     }
 }
 
 std::vector<double>
-NeuralNetwork::predict(std::vector<double> inputs)
+NeuralNetwork::predict(const std::vector<double>& inputs)
 {
     this->reset_values();
 
     return this->feed_forward(inputs);
 }
 
-void NeuralNetwork::summarize()
+double
+NeuralNetwork::evaluate(const std::vector<std::vector<double>>& inputs,
+                        const std::vector<std::vector<double>>& outputs,
+                        Loss loss)
+{
+    if (inputs.size() != outputs.size()) {
+        fprintf(stderr,
+                "Inputs (%zu) and outputs (%zu) should have the same size.\n",
+                inputs.size(),
+                outputs.size());
+    }
+    double total_loss = 0;
+    for (unsigned int i = 0; i < inputs.size(); i++) {
+        double current_loss = loss.evaluate(outputs[i], this->predict(inputs[i]));
+        total_loss += (current_loss - total_loss) / (i + 1); // moving average
+    }
+
+    return total_loss;
+}
+
+void
+NeuralNetwork::summarize()
 {
     printf("\nNeural Net :\n");
     for (unsigned int i = 0; i < this->layers.size(); i++) {
