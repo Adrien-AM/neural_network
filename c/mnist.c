@@ -72,11 +72,10 @@ read_labels(char* filename)
 int
 main(int argc, char **argv)
 {
-
-    unsigned char** images_train_c = read_images("./data/mnist/train-images");
-    unsigned char** images_test_c = read_images("./data/mnist/test-images");
-    unsigned char* labels_train_c = read_labels("./data/mnist/train-labels");
-    unsigned char* labels_test_c = read_labels("./data/mnist/test-labels");
+    unsigned char** images_train_c = read_images("../data/mnist/train-images");
+    unsigned char** images_test_c = read_images("../data/mnist/test-images");
+    unsigned char* labels_train_c = read_labels("../data/mnist/train-labels");
+    unsigned char* labels_test_c = read_labels("../data/mnist/test-labels");
 
     double* images_train[TRAIN_IMAGES];
     convert_images_uc_to_f(images_train, images_train_c, TRAIN_IMAGES, 28*28);
