@@ -7,7 +7,7 @@
 #include "Utils.hpp"
 
 #define IMAGE_SIZE 28 * 28
-#define DATA_SIZE 2000
+#define DATA_SIZE 60000
 #define NB_CLASSES 10
 
 int
@@ -47,12 +47,12 @@ main()
     double momentum = 0.5;
     unsigned int epochs = 10;
 
-    NeuralNetwork nn(IMAGE_SIZE, { new Dense(32, activation), new Dense(NB_CLASSES, softmax) }, cce);
+    NeuralNetwork nn(IMAGE_SIZE, { new Dense(32, activation), new Dense(NB_CLASSES, softmax, true) }, cce);
 
     nn.fit(train_images, train_labels, learning_rate, momentum, epochs);
 
     printf("Loss on test set : %f\n", nn.evaluate(test_images, test_labels, cce));
-    unsigned int random_image = 105;
+    unsigned int random_image = 62;
     // display_image(test_images[random_image], 2, 10);
     printf("Label : %u\n", mnist_test_labels[random_image]);
     print_vector(test_labels[random_image]);

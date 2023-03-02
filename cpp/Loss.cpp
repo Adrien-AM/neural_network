@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "Loss.hpp"
+#include "Utils.hpp"
 
 // Mean Absolute Error evaluation
 double
@@ -95,6 +96,11 @@ std::vector<double>
 ce_d(std::vector<double> y_true, std::vector<double> y_pred)
 {
     std::vector<double> result = std::vector<double>(y_true.size());
+
+#ifdef DEBUG
+    printf("Derivatives predictions :\n");
+    print_vector(y_pred);
+#endif
 
     for (size_t i = 0; i < y_true.size(); i++) {
         result[i] = -(y_true[i] / y_pred[i]);

@@ -52,7 +52,7 @@ NeuralNetwork::backpropagation(const std::vector<double>& real, const std::vecto
       this->loss.derivate(real, this->layers.back()->actv_values);
     this->layers.back()->errors = partial_errors;
     #ifdef DEBUG
-    printf("Partial errors : ");
+    printf("Partial errors (loss derivatives) : ");
     print_vector(partial_errors);
 #endif
 

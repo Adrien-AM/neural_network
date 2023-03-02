@@ -20,35 +20,32 @@ Dense::forward(const std::vector<double>& inputs)
     // Then compute activation
     this->actv_values = this->activation.compute(this->values);
 #ifdef DEBUG
-    printf("Values :\n");
-    print_vector(this->values);
-    print_vector(this->actv_values);
+    // printf("Values :\n");
+    // print_vector(this->values);
+    // print_vector(this->actv_values);
 #endif
 }
 
 void
 Dense::backprop(Layer* input_layer, double learning_rate, double momentum)
 {
-    std::vector<double> derrors = this->activation.derivative(this->values); // dav/dv
+    std::vector<std::vector<double>> jacobian =
+      this->activation.derivative(this->actv_values); // dav/dv
 #ifdef DEBUG
-    printf("Errors :\n");
-    print_vector(this->errors);
-    printf("Delta (should be 0) :\n");
-    print_vector(this->delta_errors);
-    printf("Actv derivatives :\n");
-    print_vector(derrors);
+    // printf("Errors :\n");
+    // print_vector(this->errors);
+    // printf("Delta (should be 0) :\n");
+    // print_vector(this->delta_errors);
+    // printf("Actv derivatives :\n");
+    // print_vector(derrors);
 #endif
     for (unsigned int i = 0; i < this->errors.size(); i++) {
-        this->delta_errors[i] += this->errors[i] * derrors[i]; // de/dav
-
-        // this disappears when using -Ofast :)
-        if (std::isnan(this->delta_errors[i]) || std::isinf(this->delta_errors[i])) {
-            printf("Delta errors diverged.\n");
-            exit(0);
+        for (unsigned int j = 0; j < this->errors.size(); j++) {
+            this->delta_errors[i] += this->errors[j] * jacobian[i][j]; // de/dav
         }
     }
 #ifdef DEBUG
-    printf("After mult : \n");
+    printf("After mult (sum ...) : \n");
     print_vector(this->delta_errors);
     printf("---\n");
 #endif
