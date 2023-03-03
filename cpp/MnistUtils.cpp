@@ -93,8 +93,12 @@ uint_to_double_images(const std::vector<std::vector<uint8_t>>& images)
     std::vector<std::vector<double>> new_images(images.size());
     for (unsigned int i = 0; i < images.size(); i++) {
         new_images[i] = std::vector<double>(images[i].size());
+
+        // Avoid calling []
+        std::vector<double>& new_img = new_images[i];
+        const std::vector<uint8_t>& old_img = images[i];
         for (unsigned int pixel = 0; pixel < images[i].size(); pixel++) {
-            new_images[i][pixel] = (double)(images[i][pixel]);
+            new_img[pixel] = (double)(old_img[pixel]);
         }
     }
 

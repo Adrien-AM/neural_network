@@ -19,37 +19,22 @@ Dense::forward(const std::vector<double>& inputs)
 
     // Then compute activation
     this->actv_values = this->activation.compute(this->values);
-#ifdef DEBUG
-    // printf("Values :\n");
-    // print_vector(this->values);
-    // print_vector(this->actv_values);
-#endif
 }
 
 void
 Dense::backprop(Layer* input_layer, double learning_rate, double momentum)
 {
+    unsigned int size = this->size();
     std::vector<std::vector<double>> jacobian =
       this->activation.derivative(this->actv_values); // dav/dv
-#ifdef DEBUG
-    // printf("Errors :\n");
-    // print_vector(this->errors);
-    // printf("Delta (should be 0) :\n");
-    // print_vector(this->delta_errors);
-    // printf("Actv derivatives :\n");
-    // print_vector(derrors);
-#endif
-    for (unsigned int i = 0; i < this->errors.size(); i++) {
-        for (unsigned int j = 0; j < this->errors.size(); j++) {
-            this->delta_errors[i] += this->errors[j] * jacobian[i][j]; // de/dav
+      
+    for (unsigned int i = 0; i < size; i++) {
+        double& de = this->delta_errors[i];
+        for (unsigned int j = 0; j < size; j++) {
+            de += this->errors[j] * jacobian[i][j]; // de/dav
         }
     }
-#ifdef DEBUG
-    printf("After mult (sum ...) : \n");
-    print_vector(this->delta_errors);
-    printf("---\n");
-#endif
-    for (unsigned int i = 0; i < this->size(); i++) {
+    for (unsigned int i = 0; i < size; i++) {
 
         // update = alpha x input x error, for each weight
         double update = this->delta_errors[i] * learning_rate;

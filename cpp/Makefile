@@ -1,5 +1,5 @@
 DEBUG ?= 0
-CXXFLAGS=-Werror -Wall -Wextra -std=c++2a
+CXXFLAGS=-Werror -Wall -Wextra -std=c++2a -Ofast
 ifeq ($(DEBUG), 1)
     CXXFLAGS += -DDEBUG
 endif

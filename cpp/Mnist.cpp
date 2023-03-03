@@ -8,6 +8,7 @@
 
 #define IMAGE_SIZE 28 * 28
 #define DATA_SIZE 60000
+#define TEST_SIZE 10000
 #define NB_CLASSES 10
 
 int
@@ -35,6 +36,8 @@ main()
     shuffle_images_labels(train_images, train_labels);
     train_images.resize(DATA_SIZE);
     train_labels.resize(DATA_SIZE);
+    test_images.resize(TEST_SIZE);
+    test_labels.resize(TEST_SIZE);
     // shuffle_images_labels(test_images, test_labels);
 
     normalize_pixels(train_images);
@@ -52,7 +55,7 @@ main()
     nn.fit(train_images, train_labels, learning_rate, momentum, epochs);
 
     printf("Loss on test set : %f\n", nn.evaluate(test_images, test_labels, cce));
-    unsigned int random_image = 62;
+    unsigned int random_image = 124;
     // display_image(test_images[random_image], 2, 10);
     printf("Label : %u\n", mnist_test_labels[random_image]);
     print_vector(test_labels[random_image]);
