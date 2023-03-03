@@ -1,91 +1,72 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "data_utils.h"
-#include "layer.h"
 #include "neural_network.h"
 #include "utils.h"
 
 // Example function to approximate
-double
-f(double* x)
+float f(float *x)
 {
     return (0.23 * *x * *x) + 3.2 * *x;
 }
 
-double
-f2(double* x)
+float f2(float *x)
 {
-    return (-123.78 * x[0]) + (648.25 * x[1]);
+    return (0.78 * x[0]) + (1.25 * x[1]);
 }
 
-int
-main(void)
+int main(void)
 {
     srand(time(NULL));
 
     // define all parameters
     // for data
-    const size_t DATA_SIZE = 20000;
-    const size_t INPUT_SIZE = 2;
+    const size_t DATA_SIZE = 1000;
+    const size_t INPUT_SIZE = 1;
     const size_t OUTPUT_SIZE = 1;
-    const size_t TEST_SIZE = 500;
+    const size_t TEST_SIZE = 20;
 
     // for model
-    const double learning_rate = 1e-7;
-    const double momentum_constant = 1e-3;
-    const double initializer_mean = 0;
-    const double initializer_stddev = 1;
-    const int use_bias = 0;
-    const size_t training_epochs = 20;
-    const size_t batch_size = 1;
-    const double gradient_clip = 5;
+    const float learning_rate = 1e-5;
+    const float momentum_constant = 0.3;
+    const float initializer_mean = 0;
+    const float initializer_stddev = 0.5;
+    const int use_bias = 1;
+    const size_t training_epochs = 15;
 
     // define model shape
-    struct neural_network* nn = create_model(
-        mean_squared_error, use_bias, gradient_clip, INPUT_SIZE, 3,
-        dense_layer(16, &relu),
-        dense_layer(8, &relu),
-        dense_layer(OUTPUT_SIZE, &linear)
-    );
+    size_t layers_size[] = {4, 3, 1};
+    float (*activations[])(float, int) = {&relu, &relu, &linear};
 
-    randomize_weights(nn, initializer_mean, initializer_stddev);
+    struct neural_network *nn = create_model(3, layers_size, INPUT_SIZE, activations);
+    randomize_weights(nn, initializer_mean, initializer_stddev, use_bias);
 
     // generate data
-    double* inputs[DATA_SIZE];
-    double* outputs[DATA_SIZE];
+    float *inputs[DATA_SIZE];
+    float *outputs[DATA_SIZE];
 
-    generate_data_inputs(DATA_SIZE, INPUT_SIZE, inputs, -10, 10);
+    generate_data_inputs(DATA_SIZE, INPUT_SIZE, inputs, -25, 25);
     generate_data_outputs(DATA_SIZE, OUTPUT_SIZE, inputs, outputs, &f2);
 
-    struct norm normalization = get_norm_parameters(inputs, INPUT_SIZE, DATA_SIZE);
-    normalize_inputs(inputs, INPUT_SIZE, DATA_SIZE, normalization);
-
     // Start training !
-    fit(nn,
-        DATA_SIZE,
-        inputs,
-        outputs,
-        training_epochs,
-        batch_size,
-        learning_rate,
-        momentum_constant);
+    fit(nn, DATA_SIZE, inputs, outputs, training_epochs, learning_rate, momentum_constant);
 
-    for (size_t i = 0; i < DATA_SIZE; i++) {
+    for (size_t i = 0; i < DATA_SIZE; i++)
+    {
         free(inputs[i]);
         free(outputs[i]);
     }
 
-    double* test_inputs[TEST_SIZE];
-    double* test_outputs[TEST_SIZE];
+    float *test_inputs[TEST_SIZE];
+    float *test_outputs[TEST_SIZE];
 
-    generate_data_inputs(TEST_SIZE, INPUT_SIZE, test_inputs, -10, 10);
+    generate_data_inputs(TEST_SIZE, INPUT_SIZE, test_inputs, -25, 25);
     generate_data_outputs(TEST_SIZE, OUTPUT_SIZE, test_inputs, test_outputs, &f2);
-    normalize_inputs(test_inputs, INPUT_SIZE, TEST_SIZE, normalization);
 
-    evaluate(nn, TEST_SIZE, test_inputs, test_outputs, mean_squared_error, 1);
+    evaluate(nn, TEST_SIZE, test_inputs, test_outputs, &mean_squared_error, 1);
 
-    for (size_t i = 0; i < TEST_SIZE; i++) {
+    for (size_t i = 0; i < TEST_SIZE; i++)
+    {
         free(test_inputs[i]);
         free(test_outputs[i]);
     }
