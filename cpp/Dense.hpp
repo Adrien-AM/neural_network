@@ -5,6 +5,8 @@
 #include <iostream>
 #include <random>
 
+#include <omp.h>
+
 #include "Layer.hpp"
 #include "Activation.hpp"
 

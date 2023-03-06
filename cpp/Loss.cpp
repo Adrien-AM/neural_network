@@ -101,7 +101,9 @@ ce_d(std::vector<double> y_true, std::vector<double> y_pred)
     printf("Derivatives predictions :\n");
     print_vector(y_pred);
 #endif
-
+    #ifdef PARALLEL
+    #pragma omp parallel for
+    #endif
     for (size_t i = 0; i < y_true.size(); i++) {
         result[i] = -(y_true[i] / y_pred[i]);
     }

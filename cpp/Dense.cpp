@@ -8,6 +8,9 @@ Dense::Dense(unsigned int layer_size, const Activation& act, bool use_bias)
 void
 Dense::forward(const std::vector<double>& inputs)
 {
+#ifdef PARALLEL
+#pragma omp parallel for
+#endif
     for (unsigned int n = 0; n < this->size(); n++) {
         if (!this->biases.empty())
             this->values[n] = this->biases[n];
@@ -27,19 +30,38 @@ Dense::backprop(Layer* input_layer, double learning_rate, double momentum)
     unsigned int size = this->size();
     std::vector<std::vector<double>> jacobian =
       this->activation.derivative(this->actv_values); // dav/dv
-      
-    for (unsigned int i = 0; i < size; i++) {
-        double& de = this->delta_errors[i];
-        for (unsigned int j = 0; j < size; j++) {
-            de += this->errors[j] * jacobian[i][j]; // de/dav
+
+#ifdef PARALLEL
+#pragma omp parallel for
+#endif
+    for (unsigned int j = 0; j < size; j++) {
+        double& ej = this->errors[j];
+        if (ej != 0) {
+            for (unsigned int i = 0; i < size; i++) {
+                this->delta_errors[i] += ej * jacobian[i][j]; // de/dav
+            }
         }
     }
-    for (unsigned int i = 0; i < size; i++) {
 
+#ifdef PARALLEL
+    omp_lock_t lock;
+    omp_init_lock(&lock);
+#pragma omp parallel for
+#endif
+    for (unsigned int i = 0; i < size; i++) {
         // update = alpha x input x error, for each weight
         double update = this->delta_errors[i] * learning_rate;
+#ifdef PARALLEL
+#pragma omp parallel for
+#endif
         for (unsigned int j = 0; j < input_layer->size(); j++) {
+#ifdef PARALLEL
+            omp_set_lock(&lock);
             input_layer->errors[j] += this->delta_errors[i] * this->weights[i][j];
+#endif
+#ifdef PARALLEL
+            omp_unset_lock(&lock);
+#endif
             this->updates[i][j] = (momentum * this->updates[i][j]) +
                                   (1 - momentum) * update * input_layer->actv_values[j];
             this->weights[i][j] -= this->updates[i][j];
@@ -56,6 +78,9 @@ Dense::backprop(Layer* input_layer, double learning_rate, double momentum)
             this->biases[i] -= this->delta_errors[i] * learning_rate;
         }
     }
+#ifdef PARALLEL
+    omp_destroy_lock(&lock);
+#endif
     return;
 }
 

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <time.h>
 
 #include "Dense.hpp"
 #include "MnistUtils.hpp"
@@ -7,8 +8,8 @@
 #include "Utils.hpp"
 
 #define IMAGE_SIZE 28 * 28
-#define DATA_SIZE 60000
-#define TEST_SIZE 10000
+#define DATA_SIZE 10000
+#define TEST_SIZE 1000
 #define NB_CLASSES 10
 
 int
@@ -50,9 +51,15 @@ main()
     double momentum = 0.5;
     unsigned int epochs = 10;
 
+    time_t t_start = time(NULL);
+
     NeuralNetwork nn(IMAGE_SIZE, { new Dense(32, activation), new Dense(NB_CLASSES, softmax, true) }, cce);
 
     nn.fit(train_images, train_labels, learning_rate, momentum, epochs);
+
+    time_t t_end = time(NULL);
+
+    printf("Time taken : %ld\n", t_end - t_start);
 
     printf("Loss on test set : %f\n", nn.evaluate(test_images, test_labels, cce));
     unsigned int random_image = 124;

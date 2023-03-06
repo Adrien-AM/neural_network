@@ -1,7 +1,12 @@
 DEBUG ?= 0
-CXXFLAGS=-Werror -Wall -Wextra -std=c++2a -Ofast
+PARALLEL ?= 0
+CXXFLAGS=-Werror -Wall -Wextra -std=c++2a
 ifeq ($(DEBUG), 1)
-    CXXFLAGS += -DDEBUG
+    CXXFLAGS += -DDEBUG -Og
+else ifeq ($(PARALLEL), 1)
+    CXXFLAGS += -DPARALLEL -fopenmp
+else
+	CXXFLAGS += -Ofast
 endif
 CXX=g++
 
