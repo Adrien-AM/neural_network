@@ -11,10 +11,10 @@
 #include <random>
 
 std::vector<std::vector<uint8_t>>
-read_idx_images_file(const std::string& filename);
+read_idx_images_file(const std::string& filename, int max_images);
 
 std::vector<uint8_t>
-read_idx_labels_file(const std::string& filename);
+read_idx_labels_file(const std::string& filename, int max_labels);
 
 std::vector<std::vector<double>>
 uint_to_double_images(const std::vector<std::vector<uint8_t>>& images);

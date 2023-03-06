@@ -1,20 +1,44 @@
 #include "Input.hpp"
 
-Input::Input(std::vector<double> values) : Layer(values.size(), Linear(), false) {
-    this->actv_values = values;
+Input::Input(std::vector<double> values)
+{
+    this->output_values = values;
+    this->errors = std::vector<double>(values.size()); // useless but needed
 }
-void Input::forward(const std::vector<double>& inputs) {
+
+void
+Input::init(unsigned int)
+{
+}
+
+void
+Input::forward(const std::vector<double>& inputs)
+{
     for (unsigned int i = 0; i < inputs.size(); i++) {
-        this->values[i] = this->actv_values[i] = inputs[i];
+        this->output_values[i] = inputs[i];
     }
 }
-void
-Input::backprop(Layer*, double, double) {}
 
 void
-Input::init(unsigned int) {}
+Input::backprop(Layer*, double, double)
+{
+}
 
 void
-Input::summarize() {
-    printf("Input | Size %zu\n", this->values.size());
+Input::summarize() const
+{
+    printf("Input | Size %zu\n", this->output_values.size());
+}
+
+unsigned int
+Input::size() const
+{
+    return this->output_values.size();
+}
+
+void
+Input::print_layer() const
+{
+    printf("Input values :\n");
+    print_vector(this->output_values);
 }

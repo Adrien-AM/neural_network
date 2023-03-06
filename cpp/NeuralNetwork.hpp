@@ -15,10 +15,7 @@ class NeuralNetwork
     double alpha;
     double gamma;
 
-    std::vector<double> feed_forward(const std::vector<double>& inputs);
     void backpropagation(const std::vector<double>&, const std::vector<double>&);
-    void reset_values();
-    void reset_errors();
 
   public:
     NeuralNetwork(unsigned int input_size, std::vector<Layer*> layers, Loss loss);

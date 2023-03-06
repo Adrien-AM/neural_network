@@ -14,31 +14,13 @@ NeuralNetwork::NeuralNetwork(unsigned int input_size, std::vector<Layer*> layers
     }
 }
 
-void
-NeuralNetwork::reset_values()
-{
-    for (Layer*& l : this->layers) {
-        std::fill(l->actv_values.begin(), l->actv_values.end(), 0);
-        std::fill(l->values.begin(), l->values.end(), 0);
-    }
-}
-
-void
-NeuralNetwork::reset_errors()
-{
-    for (Layer*& l : this->layers) {
-        std::fill(l->delta_errors.begin(), l->delta_errors.end(), 0);
-        std::fill(l->errors.begin(), l->errors.end(), 0);
-    }
-}
-
 std::vector<double>
-NeuralNetwork::feed_forward(const std::vector<double>& inputs)
+NeuralNetwork::predict(const std::vector<double>& inputs)
 {
     std::vector<double> moving_inputs = inputs;
     for (Layer*& layer : this->layers) {
         layer->forward(moving_inputs);
-        moving_inputs = layer->actv_values;
+        moving_inputs = layer->output_values;
     }
 
     // Last element actv values are the output
@@ -49,7 +31,7 @@ void
 NeuralNetwork::backpropagation(const std::vector<double>& real, const std::vector<double>& inputs)
 {
     std::vector<double> partial_errors =
-      this->loss.derivate(real, this->layers.back()->actv_values);
+      this->loss.derivate(real, this->layers.back()->output_values);
     this->layers.back()->errors = partial_errors;
     #ifdef DEBUG
     printf("Partial errors (loss derivatives) : ");
@@ -85,7 +67,6 @@ NeuralNetwork::fit(const std::vector<std::vector<double>>& inputs,
         printf("- Epoch %u -- ", epoch + 1);
         double loss = 0;
         for (unsigned int row = 0; row < inputs.size(); row++) {
-            reset_values();
             std::vector<double> predicted = this->predict(inputs[row]);
             double curr_loss = this->loss.evaluate(outputs[row], predicted);
             loss += (curr_loss - loss) / (row + 1); // Moving average
@@ -96,19 +77,10 @@ NeuralNetwork::fit(const std::vector<std::vector<double>>& inputs,
             // print_vector(predicted);
             // print_vector(outputs[row]);
             // printf("Curr loss : %f - New loss : %f\n--\n", curr_loss, loss);
-            reset_errors();
             this->backpropagation(outputs[row], inputs[row]);
         }
         printf("Mean loss : %f\n", loss);
     }
-}
-
-std::vector<double>
-NeuralNetwork::predict(const std::vector<double>& inputs)
-{
-    this->reset_values();
-
-    return this->feed_forward(inputs);
 }
 
 double

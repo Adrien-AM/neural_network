@@ -3,7 +3,7 @@
 // Function to read IDX file format and return a vector of elements
 // (mainly) DONE BY CHATGPT
 std::vector<std::vector<uint8_t>>
-read_idx_images_file(const std::string& filename)
+read_idx_images_file(const std::string& filename, int max_images)
 {
     // Open the IDX file
     std::ifstream file(filename, std::ios::binary);
@@ -23,6 +23,7 @@ read_idx_images_file(const std::string& filename)
     int32_t num_images;
     file.read(reinterpret_cast<char*>(&num_images), sizeof(num_images));
     num_images = ntohl(num_images);
+    num_images = num_images > max_images ? max_images : num_images;
 
     int32_t side;
     file.read(reinterpret_cast<char*>(&side), sizeof(side));
@@ -50,7 +51,7 @@ read_idx_images_file(const std::string& filename)
 }
 
 std::vector<uint8_t>
-read_idx_labels_file(const std::string& filename)
+read_idx_labels_file(const std::string& filename, int max_labels)
 {
     // Open the IDX file
     std::ifstream file(filename, std::ios::binary);
@@ -70,6 +71,7 @@ read_idx_labels_file(const std::string& filename)
     int32_t num_labels;
     file.read(reinterpret_cast<char*>(&num_labels), sizeof(num_labels));
     num_labels = ntohl(num_labels);
+    max_labels = num_labels > max_labels ? max_labels : num_labels;
 
     std::vector<uint8_t> data;
     uint8_t byte;

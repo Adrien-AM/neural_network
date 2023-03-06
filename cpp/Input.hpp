@@ -8,10 +8,12 @@ class Input : public Layer
 {
   public:
     Input(std::vector<double>);
+    void init(unsigned int);
     void forward(const std::vector<double>&);
     void backprop(Layer*, double, double);
-    void init(unsigned int);
-    void summarize();
+    void summarize() const;
+    unsigned int size() const;
+    void print_layer() const;
 };
 
 #endif // __INPUT_HPP__

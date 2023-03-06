@@ -1,22 +1,34 @@
 #ifndef __DENSE_HPP__
 #define __DENSE_HPP__
 
-#include <vector>
 #include <iostream>
 #include <random>
+#include <vector>
 
-#include "Layer.hpp"
 #include "Activation.hpp"
-
+#include "Layer.hpp"
 
 class Dense : public Layer
 {
+    std::vector<double> values;
+    std::vector<double> delta_errors;
+    std::vector<double> biases;
+    std::vector<std::vector<double>> weights;
+    std::vector<std::vector<double>> updates;
+
+    const Activation& activation;
+
   public:
     Dense(unsigned int layer_size, const Activation& act, bool use_bias = true);
-    void forward(const std::vector<double>&);
-    void backprop(Layer *l, double, double);
     void init(unsigned int);
-    void summarize();
+    void forward(const std::vector<double>&);
+    void backprop(Layer* l, double, double);
+    void summarize() const;
+
+    unsigned int size() const;
+    void print_layer() const;
+
+    ~Dense();
 };
 
 #endif // __DENSE_HPP__

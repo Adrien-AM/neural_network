@@ -2,13 +2,14 @@
 #include <vector>
 
 #include "Dense.hpp"
+#include "Conv2D.hpp"
 #include "MnistUtils.hpp"
 #include "NeuralNetwork.hpp"
 #include "Utils.hpp"
 
 #define IMAGE_SIZE 28 * 28
-#define DATA_SIZE 10000
-#define TEST_SIZE 1000
+#define DATA_SIZE 100
+#define TEST_SIZE 20
 #define NB_CLASSES 10
 
 int
@@ -48,14 +49,14 @@ main()
     Loss cce = CategoricalCrossEntropy();
     double learning_rate = 1e-4;
     double momentum = 0.5;
-    unsigned int epochs = 5;
+    unsigned int epochs = 10;
 
-    NeuralNetwork nn(IMAGE_SIZE, { new Dense(16, activation), new Dense(NB_CLASSES, softmax, true) }, cce);
+    NeuralNetwork nn(IMAGE_SIZE, { new Conv2D(32, 2, 28, activation), new Dense(NB_CLASSES, softmax, true) }, cce);
 
     nn.fit(train_images, train_labels, learning_rate, momentum, epochs);
 
     printf("Loss on test set : %f\n", nn.evaluate(test_images, test_labels, cce));
-    unsigned int random_image = 2;
+    unsigned int random_image = 62;
     // display_image(test_images[random_image], 2, 10);
     printf("Label : %u\n", mnist_test_labels[random_image]);
     print_vector(test_labels[random_image]);
