@@ -21,6 +21,8 @@ class Layer
     virtual void summarize() const = 0;
     // getters and setters
     virtual unsigned int size() const = 0;
+    virtual void reset_values() = 0;
+    virtual void reset_errors() = 0;
     // debug
     virtual void print_layer() const = 0;
 

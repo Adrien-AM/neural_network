@@ -14,6 +14,9 @@ std::vector<std::vector<double>>
 Linear::derivative(std::vector<double> x) const
 {
     std::vector<std::vector<double>> result(x.size());
+    #ifdef PARALLEL
+    #pragma omp parallel for
+    #endif
     for (unsigned int i = 0; i < x.size(); i++) {
         result[i] = std::vector<double>(x.size());
         result[i][i] = 1;
@@ -50,6 +53,9 @@ std::vector<double>
 Sigmoid::compute(std::vector<double> x) const
 {
     std::vector<double> result(x.size());
+    #ifdef PARALLEL
+    #pragma omp parallel for
+    #endif
     for (unsigned int i = 0; i < x.size(); i++) {
         result[i] = 1 / (1 + exp(-x[i]));
     }
@@ -61,6 +67,9 @@ Sigmoid::derivative(std::vector<double> x) const
 {
     std::vector<std::vector<double>> result(x.size());
     std::vector<double> sigmas = this->compute(x);
+    #ifdef PARALLEL
+    #pragma omp parallel for
+    #endif
     for (unsigned int i = 0; i < x.size(); i++) {
         result[i] = std::vector<double>(x.size());
         result[i][i] = sigmas[i] * (1 - sigmas[i]);
@@ -96,17 +105,18 @@ Softmax::compute(std::vector<double> x) const
 std::vector<std::vector<double>>
 Softmax::derivative(std::vector<double> x) const
 {
-    std::vector<std::vector<double>> result(x.size());
+    unsigned int size = x.size();
+    std::vector<std::vector<double>> result(size);
 
 #ifdef DEBUG
     printf("Actv values :\n");
     print_vector(x);
 #endif
 
-    for (unsigned int i = 0; i < x.size(); i++) {
-        result[i] = std::vector<double>(x.size());
+    for (unsigned int i = 0; i < size; i++) {
+        result[i] = std::vector<double>(size);
         for (unsigned int j = 0; j <= i; j++) {
-            // note : this is symetric ! maybe optimize later
+            // note : this is symetric !
             result[i][j] = x[i] * ((i == j) - x[j]);
             result[j][i] = result[i][j];
 

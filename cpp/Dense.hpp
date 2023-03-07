@@ -24,8 +24,11 @@ class Dense : public Layer
     void forward(const std::vector<double>&);
     void backprop(Layer* l, double, double);
     void summarize() const;
-
+    
     unsigned int size() const;
+    void reset_values();
+    void reset_errors();
+
     void print_layer() const;
 
     ~Dense();

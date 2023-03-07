@@ -14,7 +14,7 @@ Conv2D::Conv2D(unsigned int features,
     for (unsigned int i = 0; i < features; i++) {
         this->weights[i] = std::vector<double>(kernel_size * kernel_size);
     }
-    if(use_bias)
+    if (use_bias)
         this->biases = std::vector<double>(features);
     else
         this->biases = std::vector<double>();
@@ -93,9 +93,19 @@ Conv2D::size() const
 }
 
 void
+Conv2D::reset_values()
+{
+}
+
+void
+Conv2D::reset_errors()
+{
+}
+
+void
 Conv2D::print_layer() const
 {
     // TODO
 }
 
-Conv2D::~Conv2D(){}
+Conv2D::~Conv2D() {}

@@ -13,6 +13,8 @@ class Input : public Layer
     void backprop(Layer*, double, double);
     void summarize() const;
     unsigned int size() const;
+    void reset_values();
+    void reset_errors();
     void print_layer() const;
 };
 

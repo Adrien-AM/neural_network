@@ -48,6 +48,20 @@ NeuralNetwork::backpropagation(const std::vector<double>& real, const std::vecto
     return;
 }
 
+void NeuralNetwork::reset_values()
+{
+    for (Layer*& layer : this->layers) {
+        layer->reset_values();
+    }
+}
+
+void NeuralNetwork::reset_errors()
+{
+    for (Layer*& layer : this->layers) {
+        layer->reset_errors();
+    }
+}
+
 void
 NeuralNetwork::fit(const std::vector<std::vector<double>>& inputs,
                    const std::vector<std::vector<double>>& outputs,
@@ -67,6 +81,7 @@ NeuralNetwork::fit(const std::vector<std::vector<double>>& inputs,
         printf("- Epoch %u -- ", epoch + 1);
         double loss = 0;
         for (unsigned int row = 0; row < inputs.size(); row++) {
+            this->reset_values();
             std::vector<double> predicted = this->predict(inputs[row]);
             double curr_loss = this->loss.evaluate(outputs[row], predicted);
             loss += (curr_loss - loss) / (row + 1); // Moving average
@@ -77,6 +92,7 @@ NeuralNetwork::fit(const std::vector<std::vector<double>>& inputs,
             // print_vector(predicted);
             // print_vector(outputs[row]);
             // printf("Curr loss : %f - New loss : %f\n--\n", curr_loss, loss);
+            this->reset_errors();
             this->backpropagation(outputs[row], inputs[row]);
         }
         printf("Mean loss : %f\n", loss);

@@ -29,6 +29,8 @@ class Conv2D : public Layer
 
     void summarize() const;
     unsigned int size() const;
+    void reset_values();
+    void reset_errors();
     void print_layer() const;
 
     ~Conv2D();

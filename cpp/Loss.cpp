@@ -10,26 +10,28 @@
 double
 mae_f(std::vector<double> y_true, std::vector<double> y_pred)
 {
-    if (0 == y_true.size())
+    unsigned int size = y_true.size();
+    if (0 == size)
         return 0;
     double total = 0;
-    for (unsigned int i = 0; i < y_true.size(); i++) {
+    for (unsigned int i = 0; i < size; i++) {
         double error = y_pred[i] - y_true[i];
         total += std::fabs(error);
     }
-    return total / y_true.size();
+    return total / size;
 }
 
 // Mean Absolute Error derivative
 std::vector<double>
 mae_d(std::vector<double> y_true, std::vector<double> y_pred)
 {
-    if (0 == y_true.size())
+    unsigned int size = y_true.size();
+    if (0 == size)
         return {};
 
-    std::vector<double> result(y_true.size());
+    std::vector<double> result(size);
 
-    for (size_t i = 0; i < y_true.size(); i++) {
+    for (size_t i = 0; i < size; i++) {
         result[i] = y_pred[i] - y_true[i];
     }
 
@@ -46,26 +48,28 @@ MeanAbsoluteError()
 double
 mse_f(std::vector<double> y_true, std::vector<double> y_pred)
 {
-    if (0 == y_true.size())
+    unsigned int size = y_true.size();
+    if (0 == size)
         return 0;
     double total = 0;
-    for (size_t i = 0; i < y_true.size(); i++) {
+    for (size_t i = 0; i < size; i++) {
         double error = y_pred[i] - y_true[i];
         total += error * error;
     }
 
-    return total / y_true.size();
+    return total / size;
 }
 
 // Mean Squared Error derivative
 std::vector<double>
 mse_d(std::vector<double> y_true, std::vector<double> y_pred)
 {
-    if (0 == y_true.size())
+    unsigned int size = y_true.size();
+    if (0 == size)
         return {};
 
-    std::vector<double> result = std::vector<double>(y_true.size());
-    for (size_t i = 0; i < y_true.size(); i++) {
+    std::vector<double> result = std::vector<double>(size);
+    for (size_t i = 0; i < size; i++) {
         result[i] = 2 * (y_pred[i] - y_true[i]);
     }
 
@@ -83,7 +87,8 @@ double
 ce_f(std::vector<double> y_true, std::vector<double> y_pred)
 {
     double loss = 0;
-    for (size_t i = 0; i < y_true.size(); i++) {
+    unsigned int size = y_true.size();
+    for (size_t i = 0; i < size; i++) {
         // y_pred cannot be 0 after a softmax because of exp
         loss -= (y_true[i] * log(y_pred[i]));
     }
@@ -95,14 +100,17 @@ ce_f(std::vector<double> y_true, std::vector<double> y_pred)
 std::vector<double>
 ce_d(std::vector<double> y_true, std::vector<double> y_pred)
 {
-    std::vector<double> result = std::vector<double>(y_true.size());
+    unsigned int size = y_true.size();
+    std::vector<double> result = std::vector<double>(size);
 
 #ifdef DEBUG
     printf("Derivatives predictions :\n");
     print_vector(y_pred);
 #endif
-
-    for (size_t i = 0; i < y_true.size(); i++) {
+    #ifdef PARALLEL
+    #pragma omp parallel for
+    #endif
+    for (size_t i = 0; i < size; i++) {
         result[i] = -(y_true[i] / y_pred[i]);
     }
 

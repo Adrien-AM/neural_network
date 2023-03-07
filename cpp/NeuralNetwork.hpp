@@ -15,6 +15,8 @@ class NeuralNetwork
     double alpha;
     double gamma;
 
+    void reset_values();
+    void reset_errors();
     void backpropagation(const std::vector<double>&, const std::vector<double>&);
 
   public:

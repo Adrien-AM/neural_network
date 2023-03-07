@@ -12,3 +12,23 @@ print_vector(std::vector<double> vec)
     }
     std::cout << "]\n";
 }
+
+void
+print_softmax_output(std::vector<double> vec)
+{
+    printf("Class : ");
+    double max;
+    do {
+        max = 0;
+        int argmax = 0;
+        for (unsigned int x = 0; x < vec.size(); x++) {
+            if (vec[x] > max) {
+                max = vec[x];
+                argmax = x;
+            }
+        }
+        printf("%d with %.3f certainty ; ", argmax, max);
+        vec[argmax] = 0;
+    } while (max > MIN_SOFTMAX_OUTPUT);
+    printf("Others too low.\n");
+}

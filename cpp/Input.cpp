@@ -37,6 +37,16 @@ Input::size() const
 }
 
 void
+Input::reset_values()
+{
+}
+
+void
+Input::reset_errors()
+{
+}
+
+void
 Input::print_layer() const
 {
     printf("Input values :\n");
