@@ -8,8 +8,8 @@
 #include "Utils.hpp"
 
 #define IMAGE_SIZE 28 * 28
-#define DATA_SIZE 10000
-#define TEST_SIZE 1000
+#define DATA_SIZE 60000
+#define TEST_SIZE 10000
 #define NB_CLASSES 10
 
 int
@@ -17,7 +17,7 @@ main()
 {
     std::vector<std::vector<uint8_t>> mnist_train_images =
       read_idx_images_file("../data/mnist/train-images");
-    std::cout << "Number of train images: " << mnist_train_images.size() << std::endl;
+    std::cout << "Number of train images: " << DATA_SIZE << std::endl;
     std::vector<std::vector<double>> train_images = uint_to_double_images(mnist_train_images);
 
     std::vector<uint8_t> mnist_train_labels = read_idx_labels_file("../data/mnist/train-labels");
@@ -26,7 +26,7 @@ main()
 
     std::vector<std::vector<uint8_t>> mnist_test_images =
       read_idx_images_file("../data/mnist/test-images");
-    std::cout << "Number of test images: " << mnist_test_images.size() << std::endl;
+    std::cout << "Number of test images: " << TEST_SIZE << std::endl;
     std::vector<std::vector<double>> test_images = uint_to_double_images(mnist_test_images);
 
     std::vector<uint8_t> mnist_test_labels = read_idx_labels_file("../data/mnist/test-labels");
@@ -53,7 +53,7 @@ main()
 
     time_t t_start = time(NULL);
 
-    NeuralNetwork nn(IMAGE_SIZE, { new Dense(32, activation), new Dense(NB_CLASSES, softmax, true) }, cce);
+    NeuralNetwork nn(IMAGE_SIZE, { new Dense(32, activation), new Dense(NB_CLASSES, softmax) }, cce);
 
     nn.fit(train_images, train_labels, learning_rate, momentum, epochs);
 
@@ -62,13 +62,12 @@ main()
     printf("Time taken : %ld\n", t_end - t_start);
 
     printf("Loss on test set : %f\n", nn.evaluate(test_images, test_labels, cce));
-    unsigned int random_image = 124;
+    unsigned int random_image = 118;
     // display_image(test_images[random_image], 2, 10);
     printf("Label : %u\n", mnist_test_labels[random_image]);
-    print_vector(test_labels[random_image]);
 
     std::vector<double> prediction = nn.predict(test_images[0]);
-    print_vector(prediction);
+    print_softmax_output(prediction);
     printf("Loss : %f\n--\n", cce.evaluate(test_labels[random_image], prediction));
 
     return 0;

@@ -8,13 +8,15 @@ Dense::Dense(unsigned int layer_size, const Activation& act, bool use_bias)
 void
 Dense::forward(const std::vector<double>& inputs)
 {
+    unsigned int size = this->size();
+    unsigned int input_size = inputs.size();
 #ifdef PARALLEL
 #pragma omp parallel for
 #endif
-    for (unsigned int n = 0; n < this->size(); n++) {
+    for (unsigned int n = 0; n < size; n++) {
         if (!this->biases.empty())
             this->values[n] = this->biases[n];
-        for (unsigned int i = 0; i < inputs.size(); i++) {
+        for (unsigned int i = 0; i < input_size; i++) {
             // Sum of weighted outputs from previous layer
             this->values[n] += inputs[i] * this->weights[n][i];
         }
@@ -28,6 +30,7 @@ void
 Dense::backprop(Layer* input_layer, double learning_rate, double momentum)
 {
     unsigned int size = this->size();
+    unsigned int input_size = input_layer->size();
     std::vector<std::vector<double>> jacobian =
       this->activation.derivative(this->actv_values); // dav/dv
 
@@ -54,11 +57,11 @@ Dense::backprop(Layer* input_layer, double learning_rate, double momentum)
 #ifdef PARALLEL
 #pragma omp parallel for
 #endif
-        for (unsigned int j = 0; j < input_layer->size(); j++) {
+        for (unsigned int j = 0; j < input_size; j++) {
 #ifdef PARALLEL
             omp_set_lock(&lock);
-            input_layer->errors[j] += this->delta_errors[i] * this->weights[i][j];
 #endif
+            input_layer->errors[j] += this->delta_errors[i] * this->weights[i][j];
 #ifdef PARALLEL
             omp_unset_lock(&lock);
 #endif
@@ -96,8 +99,10 @@ Dense::init(unsigned int input_size)
     std::random_device rd;
     std::mt19937 gen(rd()); // Mersenne Twister engine
     std::normal_distribution<double> normal(0, 1);
-    for (unsigned int n = 0; n < this->weights.size(); n++) {
-        for (unsigned int p = 0; p < this->weights[n].size(); p++) {
+    unsigned int size = this->weights.size();
+    unsigned int w_size = this->weights[0].size(); // Assume equally dimensioned
+    for (unsigned int n = 0; n < size; n++) {
+        for (unsigned int p = 0; p < w_size; p++) {
             this->weights[n][p] = normal(gen);
         }
         if (use_bias) {

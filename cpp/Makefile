@@ -22,4 +22,4 @@ mnist: Mnist.cpp MnistUtils.o Dense.o Layer.o NeuralNetwork.o Loss.o Activation.
 	${CXX} ${CXXFLAGS} $^ -o $@ -lSDL2
 
 clean:
-	rm *.o ${exe} vgcore.*
+	rm *.o ${exe} vgcore.* gmon.out
