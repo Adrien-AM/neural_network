@@ -2,7 +2,7 @@
 
 ## Description
 
-Implémentation en C d'un réseau de neurones.
+Implémentation en C et C++ d'un réseau de neurones.
 L'objectif à terme est d'avoir un programme relativement optimisé et parallélisé pour faire des calculs sur des données importantes comme des images.
 
 ## État actuel

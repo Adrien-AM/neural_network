@@ -12,8 +12,8 @@
 int main(void)
 {
     srand(time(NULL));
-    unsigned char** images_train_c = read_images("./data/mnist/train-images");
-    unsigned char** images_test_c = read_images("./data/mnist/test-images");
+    unsigned char** images_train_c = read_images("../data/mnist/train-images");
+    unsigned char** images_test_c = read_images("../data/mnist/test-images");
 
     double* images_train[TRAIN_IMAGES];
     convert_images_uc_to_f(images_train, images_train_c, TRAIN_IMAGES, IMAGE_SIZE);
