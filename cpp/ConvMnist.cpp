@@ -43,6 +43,9 @@ main()
 
     normalize_pixels(train_images);
     normalize_pixels(test_images);
+    display_image(add_padding(train_images[0], 32, 2), 5, 10);
+    exit(0);
+
 
     Sigmoid activation;
     Softmax softmax;
