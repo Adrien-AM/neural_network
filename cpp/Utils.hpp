@@ -13,4 +13,3 @@ void
 print_softmax_output(std::vector<double> vec);
 
 #endif // __UTILS_HPP__
-

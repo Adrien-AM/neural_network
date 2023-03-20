@@ -6,7 +6,7 @@ ifeq ($(DEBUG), 1)
 else ifeq ($(PARALLEL), 1)
     CXXFLAGS += -DPARALLEL -fopenmp
 else
-	CXXFLAGS += -Ofast
+	CXXFLAGS += -Ofast -pg
 endif
 CXX=g++
 
@@ -18,10 +18,10 @@ all: ${exe}
 main: Main.cpp Dense.o Layer.o NeuralNetwork.o Loss.o Activation.o Utils.o Input.o
 	${CXX} ${CXXFLAGS} $^ -o $@
 
-mnist: Mnist.cpp MnistUtils.o Dense.o Layer.o NeuralNetwork.o Loss.o Activation.o Utils.o Input.o
+mnist: Mnist.cpp MnistUtils.o Dense.o Layer.o NeuralNetwork.o Loss.o Activation.o Utils.o Input.o Metric.o
 	${CXX} ${CXXFLAGS} $^ -o $@ -lSDL2
 
-mnist_generator: MnistGenerator.cpp MnistUtils.o Dense.o Layer.o NeuralNetwork.o Loss.o Activation.o Utils.o Input.o
+mnist_generator: MnistGenerator.cpp MnistUtils.o Dense.o Layer.o NeuralNetwork.o Loss.o Activation.o Utils.o Input.o Metric.o
 	${CXX} ${CXXFLAGS} $^ -o $@ -lSDL2
 
 clean:

@@ -12,7 +12,7 @@
 #define SIZE 28 * 28
 #define DATA_SIZE 60000
 #define TEST_SIZE 1000
-#define LATENT_SPACE 128
+#define LATENT_SPACE 256
 
 int
 main(void)
@@ -31,19 +31,19 @@ main(void)
     normalize_pixels(test_images);
 
     Sigmoid activation;
-    ReLU output_activation;
+    Sigmoid output_activation;
     Loss loss = MeanAbsoluteError();
     std::vector<Layer*> layers = {
-        new Dense(512, activation), new Dense(256, activation), new Dense(LATENT_SPACE, activation),
-        new Dense(256, activation), new Dense(512, activation), new Dense(SIZE, output_activation)
+        new Dense(1024, activation), new Dense(256, activation), new Dense(LATENT_SPACE, activation),
+        new Dense(256, activation), new Dense(1024, activation), new Dense(SIZE, output_activation)
     };
 
     NeuralNetwork nn = NeuralNetwork(SIZE, layers, loss);
 
-    double lr = 1e-3;
-    double momentum = 0.9;
-    size_t epochs = 10;
-    size_t batch_size = 2048;
+    double lr = 1e-4;
+    double momentum = 0.1;
+    size_t epochs = 50;
+    size_t batch_size = 128;
 
     nn.fit(train_images, train_images, lr, momentum, batch_size, epochs);
 
@@ -74,7 +74,7 @@ main(void)
     }
 
     std::vector<double> result = layers.back()->actv_values;
-    display_image(result, 3, 10);
+    display_image(result, 10, 10);
 
     return 0;
 }

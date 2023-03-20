@@ -92,9 +92,11 @@ NeuralNetwork::fit(const std::vector<std::vector<double>>& inputs,
         std::sample(data_idx.begin(), data_idx.end(), sample_idx.begin(), batch_size, std::mt19937(std::random_device()()));
         
         for (unsigned int row = 0; row < batch_size; row++) {
+            const std::vector<double>& input = inputs[sample_idx[row]];
+            const std::vector<double> output = outputs[sample_idx[row]];
             reset_values();
-            std::vector<double> predicted = this->predict(inputs[sample_idx[row]]);
-            double curr_loss = this->loss.evaluate(outputs[sample_idx[row]], predicted);
+            std::vector<double> predicted = this->predict(input);
+            double curr_loss = this->loss.evaluate(output, predicted);
             loss += (curr_loss - loss) / (row + 1); // Moving average
             if (loss != loss) {
                 printf("Networked diverged during training.\n");
@@ -104,9 +106,10 @@ NeuralNetwork::fit(const std::vector<std::vector<double>>& inputs,
             // print_vector(outputs[row]);
             // printf("Curr loss : %f - New loss : %f\n--\n", curr_loss, loss);
             reset_errors();
-            this->backpropagation(outputs[sample_idx[row]], inputs[sample_idx[row]]);
+            this->backpropagation(output, input);
         }
         printf("Mean loss : %f\n", loss);
+        this->alpha *= 0.95;
     }
 }
 
@@ -121,7 +124,7 @@ NeuralNetwork::predict(const std::vector<double>& inputs)
 double
 NeuralNetwork::evaluate(const std::vector<std::vector<double>>& inputs,
                         const std::vector<std::vector<double>>& outputs,
-                        Loss loss)
+                        Loss loss, Metric* metric)
 {
     if (inputs.size() != outputs.size()) {
         fprintf(stderr,
@@ -131,7 +134,9 @@ NeuralNetwork::evaluate(const std::vector<std::vector<double>>& inputs,
     }
     double total_loss = 0;
     for (unsigned int i = 0; i < inputs.size(); i++) {
-        double current_loss = loss.evaluate(outputs[i], this->predict(inputs[i]));
+        std::vector<double> prediction = this->predict(inputs[i]);
+        metric->add_entry(outputs[i], prediction);
+        double current_loss = loss.evaluate(outputs[i], prediction);
         total_loss += (current_loss - total_loss) / (i + 1); // moving average
     }
 

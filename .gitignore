@@ -6,6 +6,7 @@ main
 test
 house
 mnist
+mnist_generator
 vgcore.*
 *.nn # nn dumps
 

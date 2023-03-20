@@ -4,6 +4,7 @@
 #include "Input.hpp"
 #include "Layer.hpp"
 #include "Loss.hpp"
+#include "Metric.hpp"
 
 #include <vector>
 #include <algorithm>
@@ -33,7 +34,7 @@ class NeuralNetwork
     std::vector<double> predict(const std::vector<double>& inputs);
     double evaluate(const std::vector<std::vector<double>>& inputs,
                     const std::vector<std::vector<double>>& outputs,
-                    Loss loss);
+                    Loss loss, Metric* metric);
     void reset_values();
     void reset_errors();
     void summarize();
