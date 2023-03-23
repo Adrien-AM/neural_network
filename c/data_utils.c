@@ -229,3 +229,14 @@ convert_labels_to_softmax(double** labels, size_t nb_classes, size_t nb_labels)
         labels[i][class] = 1.;
     }
 }
+
+double 
+convert_softmax_to_label(double* labels, size_t nb_classes)
+{
+    for (size_t i = 0; i < nb_classes; i++) {
+        if(labels[i] != 0) {
+            return i;
+        }
+    }
+    return -1;
+}

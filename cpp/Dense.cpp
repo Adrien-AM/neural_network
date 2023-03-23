@@ -31,6 +31,10 @@ Dense::forward(const std::vector<double>& inputs)
 {
     unsigned int size = this->size();
     unsigned int input_size = inputs.size();
+
+    #ifdef PARALLEL
+    #pragma omp parallel for
+    #endif
     for (unsigned int n = 0; n < size; n++) {
         if (!this->biases.empty())
             this->values[n] = this->biases[n];
@@ -80,6 +84,9 @@ Dense::backprop(Layer* input_layer, double learning_rate, double momentum)
     for (unsigned int j = 0; j < size; j++) {
         double& ej = this->errors[j];
         if (ej != 0) {
+            #ifdef PARALLEL
+            #pragma omp parallel for
+            #endif
             for (unsigned int i = 0; i < size; i++) {
                 this->delta_errors[i] += ej * jacobian[i][j]; // de/dav
             }
@@ -89,6 +96,9 @@ Dense::backprop(Layer* input_layer, double learning_rate, double momentum)
     for (unsigned int i = 0; i < size; i++) {
         // update = alpha x input x error, for each weight
         double update = this->delta_errors[i] * learning_rate;
+        #ifdef PARALLEL
+        #pragma omp parallel for
+        #endif
         for (unsigned int j = 0; j < input_size; j++) {
             input_layer->errors[j] += this->delta_errors[i] * this->weights[i][j];
             this->updates[i][j] = (momentum * this->updates[i][j]) +
@@ -109,7 +119,7 @@ Dense::init(unsigned int input_size)
 
     std::random_device rd;
     std::mt19937 gen(rd()); // Mersenne Twister engine
-    std::normal_distribution<double> normal(0, 1);
+    std::normal_distribution<double> normal(0, 0.3);
     unsigned int size = this->weights.size();
     for (unsigned int n = 0; n < size; n++) {
         this->weights[n] = std::vector<double>(input_size);

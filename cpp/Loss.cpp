@@ -57,7 +57,7 @@ mse_f(std::vector<double> y_true, std::vector<double> y_pred)
         total += error * error;
     }
 
-    return total / size;
+    return total / (2 * size);
 }
 
 // Mean Squared Error derivative
@@ -70,7 +70,7 @@ mse_d(std::vector<double> y_true, std::vector<double> y_pred)
 
     std::vector<double> result = std::vector<double>(size);
     for (size_t i = 0; i < size; i++) {
-        result[i] = 2 * (y_pred[i] - y_true[i]);
+        result[i] = y_pred[i] - y_true[i];
     }
 
     return result;

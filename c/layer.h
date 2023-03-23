@@ -52,4 +52,10 @@ softmax_layer(size_t number_of_classes);
 struct layer*
 conv2d_layer(size_t number_of_neurons, double (*activation)(double, int), size_t kernel_size);
 
+/*
+* Instanciates a dropout layer. Drop rate is the same for every dropout layer, creating a new one will override old drop rate.
+*/
+struct layer*
+dropout_layer(size_t size, double drop_rate);
+
 #endif // __LAYER_H__

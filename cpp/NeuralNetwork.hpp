@@ -4,9 +4,11 @@
 #include "Input.hpp"
 #include "Layer.hpp"
 #include "Loss.hpp"
+#include "Metric.hpp"
 
 #include <vector>
 #include <algorithm>
+#include <numeric>
 #include <random>
 
 class NeuralNetwork
@@ -20,6 +22,7 @@ class NeuralNetwork
 
     void reset_values();
     void reset_errors();
+    std::vector<double> feed_forward(const std::vector<double>& inputs);
     void backpropagation(const std::vector<double>&, const std::vector<double>&);
 
   public:
@@ -60,7 +63,7 @@ class NeuralNetwork
     */
     double evaluate(const std::vector<std::vector<double>>& inputs,
                     const std::vector<std::vector<double>>& outputs,
-                    Loss loss);
+                    Loss loss, Metric *metric);
 
     /*
     * Show a brief description of Neural Network's architecture

@@ -156,3 +156,42 @@ conv2d_layer(size_t number_of_neurons, double (*activation)(double, int), size_t
 
     return layer;
 }
+static double DROP_RATE = 0.1;
+void
+dropout_forward(struct layer* layer, struct layer* input_layer)
+{
+    if (layer->size != input_layer->size) {
+        printf("Dropout layer should have same size as previous layer.\n");
+        exit(0);
+    }
+    for (size_t i = 0; i < layer->size; i++) {
+        if(rand() / RAND_MAX > DROP_RATE)
+            layer->neurons[i]->actv_value = input_layer->neurons[i]->actv_value;
+    }
+}
+
+void
+dropout_backprop(struct layer* layer, struct layer* input_layer)
+{
+    if (layer->size != input_layer->size) {
+        printf("Dropout layer should have same size as previous layer.\n");
+        exit(0);
+    }
+    for (size_t i = 0; i < layer->size; i++) {
+        input_layer->neurons[i]->error = layer->neurons[i]->error;
+    }
+}
+
+struct layer*
+dropout_layer(size_t size, double drop_rate)
+{
+    DROP_RATE = drop_rate;
+    struct layer* layer = malloc(sizeof(struct layer));
+    layer->size = size;
+    layer->forward = &dropout_forward;
+    layer->backprop = &dropout_backprop;
+    layer->input_size = 0; // unknown
+    layer->activation = &linear;
+
+    return layer;
+}
