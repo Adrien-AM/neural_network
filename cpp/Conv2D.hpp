@@ -8,19 +8,22 @@
 class Conv2D : public Layer
 {
   private:
-    unsigned int features_size;
+    unsigned int filters_size;
     unsigned int kernel_size;
     unsigned int input_width;
+    unsigned int padding;
     const Activation& activation;
     std::vector<std::vector<double>> weights;
+    std::vector<std::vector<double>> updates;
     std::vector<double> biases;
-    std::vector<double> output_values;
     std::vector<double> values;
+    std::vector<double> padded_input;
 
   public:
-    Conv2D(unsigned int features,
+    Conv2D(unsigned int filters,
            unsigned int kernel_size,
            unsigned int input_width,
+           unsigned int padding,
            const Activation& act,
            bool use_bias = true);
     void init(unsigned int);

@@ -8,8 +8,8 @@
 #include "Utils.hpp"
 
 #define IMAGE_SIZE 28 * 28
-#define DATA_SIZE 100
-#define TEST_SIZE 20
+#define DATA_SIZE 60000
+#define TEST_SIZE 10000
 #define NB_CLASSES 10
 
 int
@@ -43,29 +43,26 @@ main()
 
     normalize_pixels(train_images);
     normalize_pixels(test_images);
-    display_image(add_padding(train_images[0], 32, 2), 5, 10);
-    exit(0);
-
 
     Sigmoid activation;
     Softmax softmax;
     Loss cce = CategoricalCrossEntropy();
-    double learning_rate = 1e-4;
+    double learning_rate = 1e-2;
     double momentum = 0.5;
-    unsigned int epochs = 10;
+    size_t batch_size = 1024;
+    unsigned int epochs = 30;
 
-    NeuralNetwork nn(IMAGE_SIZE, { new Conv2D(32, 2, 28, activation), new Dense(NB_CLASSES, softmax, true) }, cce);
+    NeuralNetwork nn(IMAGE_SIZE, { new Conv2D(16, 3, 28, 1, activation), new Dense(NB_CLASSES, softmax, true) }, cce);
 
-    nn.fit(train_images, train_labels, learning_rate, momentum, epochs);
+    nn.fit(train_images, train_labels, learning_rate, momentum, batch_size, epochs);
 
     printf("Loss on test set : %f\n", nn.evaluate(test_images, test_labels, cce));
-    unsigned int random_image = 62;
+    unsigned int random_image = 13;
     // display_image(test_images[random_image], 2, 10);
     printf("Label : %u\n", mnist_test_labels[random_image]);
-    print_vector(test_labels[random_image]);
 
     std::vector<double> prediction = nn.predict(test_images[0]);
-    print_vector(prediction);
+    print_softmax_output(prediction);
     printf("Loss : %f\n--\n", cce.evaluate(test_labels[random_image], prediction));
 
     return 0;

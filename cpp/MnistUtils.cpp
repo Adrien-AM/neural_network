@@ -123,19 +123,21 @@ void
 display_image(const std::vector<double>& image, unsigned int time, int upscale)
 {
 
+    int side = sqrt(image.size());
     SDL_Init(SDL_INIT_VIDEO);
     SDL_Window* window = SDL_CreateWindow("MNIST Image",
                                           SDL_WINDOWPOS_UNDEFINED,
                                           SDL_WINDOWPOS_UNDEFINED,
-                                          28 * upscale,
-                                          28 * upscale,
+                                          side * upscale,
+                                          side * upscale,
                                           0);
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, 0);
 
-    for (int y = 0; y < 28; y++) {
-        for (int x = 0; x < 28; x++) {
+
+    for (int y = 0; y < side; y++) {
+        for (int x = 0; x < side; x++) {
             // put pixel back in [0, 255] from [0, 1]
-            uint8_t pixel = (uint8_t)(image[y * 28 + x] * 255);
+            uint8_t pixel = (uint8_t)(image[y * side + x] * 255);
             SDL_SetRenderDrawColor(renderer, pixel, pixel, pixel, 255);
             for (int i = 0; i < upscale; i++) {
                 for (int j = 0; j < upscale; j++) {

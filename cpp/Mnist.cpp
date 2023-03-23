@@ -50,12 +50,13 @@ main()
     Loss cce = CategoricalCrossEntropy();
     double learning_rate = 1e-4;
     double momentum = 0.5;
+    size_t batch_size = 1024;
     unsigned int epochs = 5;
 
     NeuralNetwork nn(
       IMAGE_SIZE, { new Dense(32, activation), new Dense(NB_CLASSES, softmax) }, cce);
 
-    nn.fit(train_images, train_labels, learning_rate, momentum, epochs);
+    nn.fit(train_images, train_labels, learning_rate, momentum, batch_size, epochs);
 
     printf("Loss on test set : %f\n", nn.evaluate(test_images, test_labels, cce));
     unsigned int random_image = 118;

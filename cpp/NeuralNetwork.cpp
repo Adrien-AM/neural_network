@@ -33,7 +33,7 @@ NeuralNetwork::backpropagation(const std::vector<double>& real, const std::vecto
     std::vector<double> partial_errors =
       this->loss.derivate(real, this->layers.back()->output_values);
     this->layers.back()->errors = partial_errors;
-    #ifdef DEBUG
+#ifdef DEBUG
     printf("Partial errors (loss derivatives) : ");
     print_vector(partial_errors);
 #endif
@@ -48,14 +48,16 @@ NeuralNetwork::backpropagation(const std::vector<double>& real, const std::vecto
     return;
 }
 
-void NeuralNetwork::reset_values()
+void
+NeuralNetwork::reset_values()
 {
     for (Layer*& layer : this->layers) {
         layer->reset_values();
     }
 }
 
-void NeuralNetwork::reset_errors()
+void
+NeuralNetwork::reset_errors()
 {
     for (Layer*& layer : this->layers) {
         layer->reset_errors();
@@ -67,6 +69,7 @@ NeuralNetwork::fit(const std::vector<std::vector<double>>& inputs,
                    const std::vector<std::vector<double>>& outputs,
                    double learning_rate,
                    double momentum,
+                   size_t batch_size,
                    unsigned int epochs)
 {
     if (inputs.size() != outputs.size()) {
@@ -79,11 +82,24 @@ NeuralNetwork::fit(const std::vector<std::vector<double>>& inputs,
     this->gamma = momentum;
     for (unsigned int epoch = 0; epoch < epochs; epoch++) {
         printf("- Epoch %u -- ", epoch + 1);
+        fflush(stdout);
+        std::vector<size_t> data_idx(inputs.size());
+        std::iota(data_idx.begin(), data_idx.end(), 0);
+        std::vector<size_t> sample_idx(batch_size);
+        std::sample(data_idx.begin(),
+                    data_idx.end(),
+                    sample_idx.begin(),
+                    batch_size,
+                    std::mt19937(std::random_device()()));
+
         double loss = 0;
-        for (unsigned int row = 0; row < inputs.size(); row++) {
+        for (unsigned int row = 0; row < batch_size; row++) {
+            const std::vector<double>& input = inputs[sample_idx[row]];
+            const std::vector<double> output = outputs[sample_idx[row]];
             this->reset_values();
-            std::vector<double> predicted = this->predict(inputs[row]);
-            double curr_loss = this->loss.evaluate(outputs[row], predicted);
+            std::vector<double> predicted = this->predict(input);
+            double curr_loss = this->loss.evaluate(output, predicted);
+
             loss += (curr_loss - loss) / (row + 1); // Moving average
             if (loss != loss) {
                 printf("Networked diverged during training.\n");
@@ -93,8 +109,9 @@ NeuralNetwork::fit(const std::vector<std::vector<double>>& inputs,
             // print_vector(outputs[row]);
             // printf("Curr loss : %f - New loss : %f\n--\n", curr_loss, loss);
             this->reset_errors();
-            this->backpropagation(outputs[row], inputs[row]);
+            this->backpropagation(output, input);
         }
+        this->alpha *= 0.95;
         printf("Mean loss : %f\n", loss);
     }
 }

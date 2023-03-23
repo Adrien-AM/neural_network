@@ -14,12 +14,12 @@ void
 print_softmax_output(std::vector<double> vec);
 
 std::vector<double>
-add_padding(std::vector<double>& image, unsigned int width, unsigned int pad_size);
+add_padding(const std::vector<double>& image, unsigned int width, unsigned int pad_size);
 
 std::vector<double>
-convolution_product(const std::vector<double>&,
-                    const std::vector<double>&,
-                    unsigned int,
-                    unsigned int);
+convolution_product(const std::vector<double>& input,
+                    const std::vector<double>& filter,
+                    unsigned int width,
+                    unsigned int stride);
 
 #endif // __UTILS_HPP__

@@ -34,7 +34,7 @@ main()
     for (unsigned int i = 0; i < inputs.size(); i++) {
         outputs[i] = {f(inputs[i][0])};
     }
-    nn.fit(inputs, outputs, 1e-3, 0, 10);
+    nn.fit(inputs, outputs, 1e-3, 0, inputs.size(), 10);
     double newrand = dis(gen);
     printf("f(%f) -> %f (should be %f)\n", newrand, nn.predict({ newrand })[0], f(newrand));
 

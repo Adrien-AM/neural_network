@@ -4,7 +4,10 @@
 #include "Input.hpp"
 #include "Layer.hpp"
 #include "Loss.hpp"
+
 #include <vector>
+#include <algorithm>
+#include <random>
 
 class NeuralNetwork
 {
@@ -33,14 +36,16 @@ class NeuralNetwork
     * @param outputs : groundtruth
     * @param learning_rate
     * @param momentum : high momentum = high impact of previous updates
+    * @param batch_size : number of samples to backpropagate per epoch
     * @param epochs
     */
     void fit(const std::vector<std::vector<double>>& inputs,
              const std::vector<std::vector<double>>& outputs,
              double learning_rate,
              double momentum,
+             size_t batch_size,
              unsigned int epochs);
-    
+
     /*
     * Forward pass of Neural Net
     * @param inputs : data

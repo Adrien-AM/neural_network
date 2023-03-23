@@ -10,7 +10,7 @@ else
 endif
 CXX=g++
 
-exe=main mnist conv-mnist
+exe=main mnist conv-mnist test-conv
 
 all: ${exe}
 
@@ -22,6 +22,9 @@ mnist: Mnist.cpp MnistUtils.o Dense.o Layer.o NeuralNetwork.o Loss.o Activation.
 
 conv-mnist: ConvMnist.cpp MnistUtils.o Dense.o Layer.o NeuralNetwork.o Loss.o Activation.o Utils.o Input.o Conv2D.o
 	${CXX} ${CXXFLAGS} $^ -o $@ -lSDL2
+
+test-conv: testConv.cpp Utils.o
+	${CXX} ${CXXFLAGS} $^ -o $@
 
 clean:
 	rm *.o ${exe} vgcore.* gmon.out
