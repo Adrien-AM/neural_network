@@ -8,20 +8,22 @@
 #include "Activation.hpp"
 #include "Layer.hpp"
 
+using namespace std;
+
 class Dense : public Layer
 {
-    std::vector<double> values;
-    std::vector<double> delta_errors;
-    std::vector<double> biases;
-    std::vector<std::vector<double>> weights;
-    std::vector<std::vector<double>> updates;
+    vector<double> values;
+    vector<double> delta_errors;
+    vector<double> biases;
+    vector<vector<double>> weights;
+    vector<vector<double>> updates;
 
     const Activation& activation;
 
   public:
     Dense(unsigned int layer_size, const Activation& act, bool use_bias = true);
     void init(unsigned int);
-    void forward(const std::vector<double>&);
+    void forward(const vector<double>&);
     void backprop(Layer* l, double, double);
     void summarize() const;
     

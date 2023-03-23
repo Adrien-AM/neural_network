@@ -2,7 +2,7 @@
 
 // Function to read IDX file format and return a vector of elements
 // (mainly) DONE BY CHATGPT
-std::vector<std::vector<uint8_t>>
+vector<vector<uint8_t>>
 read_idx_images_file(const std::string& filename, int max_images)
 {
     // Open the IDX file
@@ -38,9 +38,9 @@ read_idx_images_file(const std::string& filename, int max_images)
     }
 
     // Read the data
-    std::vector<std::vector<uint8_t>> data(num_images);
+    vector<vector<uint8_t>> data(num_images);
     for (int32_t i = 0; i < num_images; i++) {
-        data[i] = std::vector<uint8_t>(side * side);
+        data[i] = vector<uint8_t>(side * side);
         file.read(reinterpret_cast<char*>(data[i].data()), sizeof(uint8_t) * side * side);
     }
 
@@ -50,7 +50,7 @@ read_idx_images_file(const std::string& filename, int max_images)
     return data;
 }
 
-std::vector<uint8_t>
+vector<uint8_t>
 read_idx_labels_file(const std::string& filename, int max_labels)
 {
     // Open the IDX file
@@ -73,7 +73,7 @@ read_idx_labels_file(const std::string& filename, int max_labels)
     num_labels = ntohl(num_labels);
     max_labels = num_labels > max_labels ? max_labels : num_labels;
 
-    std::vector<uint8_t> data;
+    vector<uint8_t> data;
     uint8_t byte;
     while (file.read(reinterpret_cast<char*>(&byte), sizeof(uint8_t))) {
         data.push_back(byte);
@@ -89,16 +89,16 @@ read_idx_labels_file(const std::string& filename, int max_labels)
     return data;
 }
 
-std::vector<std::vector<double>>
-uint_to_double_images(const std::vector<std::vector<uint8_t>>& images)
+vector<vector<double>>
+uint_to_double_images(const vector<vector<uint8_t>>& images)
 {
-    std::vector<std::vector<double>> new_images(images.size());
+    vector<vector<double>> new_images(images.size());
     for (unsigned int i = 0; i < images.size(); i++) {
-        new_images[i] = std::vector<double>(images[i].size());
+        new_images[i] = vector<double>(images[i].size());
 
         // Avoid calling []
-        std::vector<double>& new_img = new_images[i];
-        const std::vector<uint8_t>& old_img = images[i];
+        vector<double>& new_img = new_images[i];
+        const vector<uint8_t>& old_img = images[i];
         for (unsigned int pixel = 0; pixel < images[i].size(); pixel++) {
             new_img[pixel] = (double)(old_img[pixel]);
         }
@@ -107,12 +107,12 @@ uint_to_double_images(const std::vector<std::vector<uint8_t>>& images)
     return new_images;
 }
 
-std::vector<std::vector<double>>
-uint_to_one_hot_labels(const std::vector<uint8_t>& labels, unsigned int nb_classes)
+vector<vector<double>>
+uint_to_one_hot_labels(const vector<uint8_t>& labels, unsigned int nb_classes)
 {
-    std::vector<std::vector<double>> result(labels.size());
+    vector<vector<double>> result(labels.size());
     for (unsigned int i = 0; i < labels.size(); i++) {
-        result[i] = std::vector<double>(nb_classes);
+        result[i] = vector<double>(nb_classes);
         result[i][labels[i]] = 1;
     }
 
@@ -120,7 +120,7 @@ uint_to_one_hot_labels(const std::vector<uint8_t>& labels, unsigned int nb_class
 }
 
 void
-display_image(const std::vector<double>& image, unsigned int time, int upscale)
+display_image(const vector<double>& image, unsigned int time, int upscale)
 {
 
     int side = sqrt(image.size());
@@ -155,11 +155,11 @@ display_image(const std::vector<double>& image, unsigned int time, int upscale)
 }
 
 void
-shuffle_images_labels(std::vector<std::vector<double>>& images,
-                      std::vector<std::vector<double>>& labels)
+shuffle_images_labels(vector<vector<double>>& images,
+                      vector<vector<double>>& labels)
 {
     // Create a vector of indices for train_images and train_labels
-    std::vector<int> indices(images.size());
+    vector<int> indices(images.size());
     std::iota(indices.begin(), indices.end(), 0);
 
     // Shuffle the indices vector using a random number generator
@@ -175,7 +175,7 @@ shuffle_images_labels(std::vector<std::vector<double>>& images,
 }
 
 void
-normalize_pixels(std::vector<std::vector<double>>& images)
+normalize_pixels(vector<vector<double>>& images)
 {
     for(auto& row : images) {
         for(double& pixel : row) {

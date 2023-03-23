@@ -6,17 +6,19 @@
 #include <iostream>
 #include <vector>
 
+using namespace std;
+
 class Layer
 {
   protected:
 
   public:
-    std::vector<double> output_values;
-    std::vector<double> errors;
+    vector<double> output_values;
+    vector<double> errors;
 
     // abstraction
     virtual void init(unsigned int) = 0;
-    virtual void forward(const std::vector<double>&) = 0;
+    virtual void forward(const vector<double>&) = 0;
     virtual void backprop(Layer*, double, double) = 0;
     virtual void summarize() const = 0;
     // getters and setters

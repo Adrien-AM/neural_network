@@ -1,9 +1,9 @@
 #include "Input.hpp"
 
-Input::Input(std::vector<double> values)
+Input::Input(vector<double> values)
 {
     this->output_values = values;
-    this->errors = std::vector<double>(values.size()); // useless but needed
+    this->errors = vector<double>(values.size()); // useless but needed
 }
 
 void
@@ -12,7 +12,7 @@ Input::init(unsigned int)
 }
 
 void
-Input::forward(const std::vector<double>& inputs)
+Input::forward(const vector<double>& inputs)
 {
     for (unsigned int i = 0; i < inputs.size(); i++) {
         this->output_values[i] = inputs[i];

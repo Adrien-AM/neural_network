@@ -14,26 +14,28 @@
 #define TEST_SIZE 1000
 #define LATENT_SPACE 256
 
+using namespace std;
+
 int
 main(void)
 {
-    std::vector<std::vector<uint8_t>> mnist_train_images =
+    vector<vector<uint8_t>> mnist_train_images =
       read_idx_images_file("../data/mnist/train-images");
-    std::vector<std::vector<double>> train_images = uint_to_double_images(mnist_train_images);
+    vector<vector<double>> train_images = uint_to_double_images(mnist_train_images);
     std::random_shuffle(train_images.begin(), train_images.end());
     train_images.resize(DATA_SIZE);
     normalize_pixels(train_images);
 
-    std::vector<std::vector<uint8_t>> mnist_test_images =
+    vector<vector<uint8_t>> mnist_test_images =
       read_idx_images_file("../data/mnist/test-images");
-    std::vector<std::vector<double>> test_images = uint_to_double_images(mnist_test_images);
+    vector<vector<double>> test_images = uint_to_double_images(mnist_test_images);
     test_images.resize(TEST_SIZE);
     normalize_pixels(test_images);
 
     Sigmoid activation;
     Sigmoid output_activation;
     Loss loss = MeanAbsoluteError();
-    std::vector<Layer*> layers = {
+    vector<Layer*> layers = {
         new Dense(1024, activation), new Dense(256, activation), new Dense(LATENT_SPACE, activation),
         new Dense(256, activation), new Dense(1024, activation), new Dense(SIZE, output_activation)
     };
@@ -49,7 +51,7 @@ main(void)
 
     size_t idx_test = 23;
     display_image(test_images[idx_test], 1, 10);
-    std::vector<double> restored = nn.predict(test_images[idx_test]);
+    vector<double> restored = nn.predict(test_images[idx_test]);
     display_image(restored, 2, 10);
 
     printf("Loss : %f\n", loss.evaluate(test_images[idx_test], restored));
@@ -62,7 +64,7 @@ main(void)
     std::default_random_engine generator;
 
     // Generate 10 random values from the normal distribution and store them in a vector
-    std::vector<double> noise(LATENT_SPACE);
+    vector<double> noise(LATENT_SPACE);
     for (int i = 0; i < LATENT_SPACE; ++i) {
         noise[i] = dist(generator);
     }
@@ -73,7 +75,7 @@ main(void)
         layers[i]->forward(layers[i - 1]->actv_values);
     }
 
-    std::vector<double> result = layers.back()->actv_values;
+    vector<double> result = layers.back()->actv_values;
     display_image(result, 10, 10);
 
     return 0;

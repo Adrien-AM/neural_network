@@ -11,19 +11,21 @@
 #include <numeric>
 #include <random>
 
+using namespace std;
+
 class NeuralNetwork
 {
   private:
     unsigned int input_size;
-    std::vector<Layer*> layers;
+    vector<Layer*> layers;
     Loss loss;
     double alpha;
     double gamma;
 
     void reset_values();
     void reset_errors();
-    std::vector<double> feed_forward(const std::vector<double>& inputs);
-    void backpropagation(const std::vector<double>&, const std::vector<double>&);
+    vector<double> feed_forward(const vector<double>& inputs);
+    void backpropagation(const vector<double>&, const vector<double>&);
 
   public:
     /*
@@ -32,7 +34,7 @@ class NeuralNetwork
      * @param layers
      * @param loss : loss function used as evaluation and in GD
      */
-    NeuralNetwork(unsigned int input_size, std::vector<Layer*> layers, Loss loss);
+    NeuralNetwork(unsigned int input_size, vector<Layer*> layers, Loss loss);
     /*
     * Train a Neural Network on data
     * @param inputs : data
@@ -42,8 +44,8 @@ class NeuralNetwork
     * @param batch_size : number of samples to backpropagate per epoch
     * @param epochs
     */
-    void fit(const std::vector<std::vector<double>>& inputs,
-             const std::vector<std::vector<double>>& outputs,
+    void fit(const vector<vector<double>>& inputs,
+             const vector<vector<double>>& outputs,
              double learning_rate,
              double momentum,
              size_t batch_size,
@@ -53,7 +55,7 @@ class NeuralNetwork
     * Forward pass of Neural Net
     * @param inputs : data
     */
-    std::vector<double> predict(const std::vector<double>& inputs);
+    vector<double> predict(const vector<double>& inputs);
 
     /*
     * Evaluate Neural Net on new dataset
@@ -61,8 +63,8 @@ class NeuralNetwork
     * @param outputs : data
     * @param loss
     */
-    double evaluate(const std::vector<std::vector<double>>& inputs,
-                    const std::vector<std::vector<double>>& outputs,
+    double evaluate(const vector<vector<double>>& inputs,
+                    const vector<vector<double>>& outputs,
                     Loss loss, Metric *metric);
 
     /*

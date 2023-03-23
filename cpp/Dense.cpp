@@ -3,17 +3,17 @@
 Dense::Dense(unsigned int layer_size, const Activation& act, bool use_bias)
   : activation(act)
 {
-    this->values = std::vector<double>(layer_size);
-    this->errors = std::vector<double>(layer_size);
-    this->delta_errors = std::vector<double>(layer_size);
-    this->output_values = std::vector<double>(layer_size);
+    this->values = vector<double>(layer_size);
+    this->errors = vector<double>(layer_size);
+    this->delta_errors = vector<double>(layer_size);
+    this->output_values = vector<double>(layer_size);
 
-    this->updates = std::vector<std::vector<double>>(layer_size);
-    this->weights = std::vector<std::vector<double>>(layer_size);
+    this->updates = vector<vector<double>>(layer_size);
+    this->weights = vector<vector<double>>(layer_size);
     if (use_bias)
-        this->biases = std::vector<double>(layer_size);
+        this->biases = vector<double>(layer_size);
     else
-        this->biases = std::vector<double>(0);
+        this->biases = vector<double>(0);
 };
 
 void
@@ -27,7 +27,7 @@ Dense::print_layer() const
 }
 
 void
-Dense::forward(const std::vector<double>& inputs)
+Dense::forward(const vector<double>& inputs)
 {
     unsigned int size = this->size();
     unsigned int input_size = inputs.size();
@@ -78,7 +78,7 @@ Dense::backprop(Layer* input_layer, double learning_rate, double momentum)
     unsigned int size = this->size();
     unsigned int input_size = input_layer->size();
 
-    std::vector<std::vector<double>> jacobian =
+    vector<vector<double>> jacobian =
       this->activation.derivative(this->output_values); // dav/dv
 
     for (unsigned int j = 0; j < size; j++) {
@@ -122,8 +122,8 @@ Dense::init(unsigned int input_size)
     std::normal_distribution<double> normal(0, 0.3);
     unsigned int size = this->weights.size();
     for (unsigned int n = 0; n < size; n++) {
-        this->weights[n] = std::vector<double>(input_size);
-        this->updates[n] = std::vector<double>(input_size);
+        this->weights[n] = vector<double>(input_size);
+        this->updates[n] = vector<double>(input_size);
         for (unsigned int p = 0; p < input_size; p++) {
             this->weights[n][p] = normal(gen);
         }

@@ -4,12 +4,14 @@
 #include "Layer.hpp"
 #include <vector>
 
+using namespace std;
+
 class Input : public Layer
 {
   public:
-    Input(std::vector<double>);
+    Input(vector<double>);
     void init(unsigned int);
-    void forward(const std::vector<double>&);
+    void forward(const vector<double>&);
     void backprop(Layer*, double, double);
     void summarize() const;
     unsigned int size() const;

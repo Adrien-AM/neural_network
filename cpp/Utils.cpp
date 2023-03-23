@@ -1,7 +1,7 @@
 #include "Utils.hpp"
 
 void
-print_vector(std::vector<double> vec)
+print_vector(vector<double> vec)
 {
     std::cout << "[";
     for (std::size_t i = 0; i < vec.size(); ++i) {
@@ -14,7 +14,7 @@ print_vector(std::vector<double> vec)
 }
 
 void
-print_softmax_output(std::vector<double> vec)
+print_softmax_output(vector<double> vec)
 {
     printf("Class : ");
     double max;
@@ -33,8 +33,8 @@ print_softmax_output(std::vector<double> vec)
     printf("Others too low.\n");
 }
 
-std::vector<double>
-add_padding(const std::vector<double>& image, unsigned int width, unsigned int pad_size)
+vector<double>
+add_padding(const vector<double>& image, unsigned int width, unsigned int pad_size)
 {
     // Padded image dimensions
     unsigned int height = image.size() / width;
@@ -42,7 +42,7 @@ add_padding(const std::vector<double>& image, unsigned int width, unsigned int p
     unsigned int padded_height = height + 2 * pad_size;
 
     // Create a new vector to hold the padded image
-    std::vector<double> padded_image(padded_width * padded_height);
+    vector<double> padded_image(padded_width * padded_height);
 
     // Copy the values from the original image to the padded image
     for (unsigned int y = 0; y < padded_height; y++) {
@@ -62,16 +62,16 @@ add_padding(const std::vector<double>& image, unsigned int width, unsigned int p
     return padded_image;
 }
 
-std::vector<double>
-convolution_product(const std::vector<double>& input,
-                    const std::vector<double>& filter,
+vector<double>
+convolution_product(const vector<double>& input,
+                    const vector<double>& filter,
                     unsigned int width,
                     unsigned int stride)
 {
     unsigned int size = input.size();
     unsigned int kernel_size = sqrt(filter.size());
     unsigned int output_width = sqrt(size) - kernel_size + 1;
-    std::vector<double> output(pow(output_width, 2) / stride);
+    vector<double> output(pow(output_width, 2) / stride);
 
     for (unsigned int i = 0; i <= width - kernel_size; i += stride) {
         for (unsigned int j = 0; j <= width - kernel_size; j += stride) {

@@ -4,21 +4,21 @@
 
 // -- Linear --
 
-std::vector<double>
-Linear::compute(std::vector<double> x) const
+vector<double>
+Linear::compute(vector<double> x) const
 {
     return x;
 }
 
-std::vector<std::vector<double>>
-Linear::derivative(std::vector<double> x) const
+vector<vector<double>>
+Linear::derivative(vector<double> x) const
 {
-    std::vector<std::vector<double>> result(x.size());
+    vector<vector<double>> result(x.size());
     #ifdef PARALLEL
     #pragma omp parallel for
     #endif
     for (unsigned int i = 0; i < x.size(); i++) {
-        result[i] = std::vector<double>(x.size());
+        result[i] = vector<double>(x.size());
         result[i][i] = 1;
     }
     return result;
@@ -26,22 +26,22 @@ Linear::derivative(std::vector<double> x) const
 
 // -- ReLU --
 
-std::vector<double>
-ReLU::compute(std::vector<double> x) const
+vector<double>
+ReLU::compute(vector<double> x) const
 {
-    std::vector<double> result(x.size());
+    vector<double> result(x.size());
     for (unsigned int i = 0; i < x.size(); i++) {
         result[i] = x[i] > 0 ? x[i] : 0;
     }
     return result;
 }
 
-std::vector<std::vector<double>>
-ReLU::derivative(std::vector<double> x) const
+vector<vector<double>>
+ReLU::derivative(vector<double> x) const
 {
-    std::vector<std::vector<double>> result(x.size());
+    vector<vector<double>> result(x.size());
     for (unsigned int i = 0; i < x.size(); i++) {
-        result[i] = std::vector<double>(x.size());
+        result[i] = vector<double>(x.size());
         result[i][i] = x[i] > 0 ? 1 : 0;
     }
     return result;
@@ -49,10 +49,10 @@ ReLU::derivative(std::vector<double> x) const
 
 // -- Sigmoid --
 
-std::vector<double>
-Sigmoid::compute(std::vector<double> x) const
+vector<double>
+Sigmoid::compute(vector<double> x) const
 {
-    std::vector<double> result(x.size());
+    vector<double> result(x.size());
     #ifdef PARALLEL
     #pragma omp parallel for
     #endif
@@ -62,16 +62,16 @@ Sigmoid::compute(std::vector<double> x) const
     return result;
 }
 
-std::vector<std::vector<double>>
-Sigmoid::derivative(std::vector<double> x) const
+vector<vector<double>>
+Sigmoid::derivative(vector<double> x) const
 {
-    std::vector<std::vector<double>> result(x.size());
-    std::vector<double> sigmas = this->compute(x);
+    vector<vector<double>> result(x.size());
+    vector<double> sigmas = this->compute(x);
     #ifdef PARALLEL
     #pragma omp parallel for
     #endif
     for (unsigned int i = 0; i < x.size(); i++) {
-        result[i] = std::vector<double>(x.size());
+        result[i] = vector<double>(x.size());
         result[i][i] = sigmas[i] * (1 - sigmas[i]);
     }
     return result;
@@ -79,11 +79,11 @@ Sigmoid::derivative(std::vector<double> x) const
 
 // -- Softmax --
 
-std::vector<double>
-Softmax::compute(std::vector<double> x) const
+vector<double>
+Softmax::compute(vector<double> x) const
 {
     double sum = 0;
-    std::vector<double> result(x.size());
+    vector<double> result(x.size());
     for (unsigned int i = 0; i < x.size(); i++) {
         double e = exp(x[i]);
         sum += e;
@@ -102,11 +102,11 @@ Softmax::compute(std::vector<double> x) const
     return result;
 }
 
-std::vector<std::vector<double>>
-Softmax::derivative(std::vector<double> x) const
+vector<vector<double>>
+Softmax::derivative(vector<double> x) const
 {
     unsigned int size = x.size();
-    std::vector<std::vector<double>> result(size);
+    vector<vector<double>> result(size);
 
 #ifdef DEBUG
     printf("Actv values :\n");
@@ -114,7 +114,7 @@ Softmax::derivative(std::vector<double> x) const
 #endif
 
     for (unsigned int i = 0; i < size; i++) {
-        result[i] = std::vector<double>(size);
+        result[i] = vector<double>(size);
         for (unsigned int j = 0; j <= i; j++) {
             // note : this is symetric !
             result[i][j] = x[i] * ((i == j) - x[j]);

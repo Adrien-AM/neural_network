@@ -4,10 +4,12 @@
 #include <algorithm>
 #include <vector>
 
+using namespace std;
+
 class Metric
 {
   public:
-    virtual void add_entry(std::vector<double> truth, std::vector<double> output) = 0;
+    virtual void add_entry(vector<double> truth, vector<double> output) = 0;
     virtual double get_result() = 0;
 };
 
@@ -21,7 +23,7 @@ class Accuracy : public Metric
     Accuracy()
       : positive(0)
       , total(0){}
-    void add_entry(std::vector<double>, std::vector<double>);
+    void add_entry(vector<double>, vector<double>);
     double get_result();
 };
 

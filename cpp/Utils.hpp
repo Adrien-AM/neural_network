@@ -7,18 +7,20 @@
 
 #define MIN_SOFTMAX_OUTPUT 0.1
 
-void
-print_vector(std::vector<double> vec);
+using namespace std;
 
 void
-print_softmax_output(std::vector<double> vec);
+print_vector(vector<double> vec);
 
-std::vector<double>
-add_padding(const std::vector<double>& image, unsigned int width, unsigned int pad_size);
+void
+print_softmax_output(vector<double> vec);
 
-std::vector<double>
-convolution_product(const std::vector<double>& input,
-                    const std::vector<double>& filter,
+vector<double>
+add_padding(const vector<double>& image, unsigned int width, unsigned int pad_size);
+
+vector<double>
+convolution_product(const vector<double>& input,
+                    const vector<double>& filter,
                     unsigned int width,
                     unsigned int stride);
 

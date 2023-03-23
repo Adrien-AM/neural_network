@@ -3,7 +3,7 @@
 #include "Utils.hpp"
 
 void
-Accuracy::add_entry(std::vector<double> truth, std::vector<double> output)
+Accuracy::add_entry(vector<double> truth, vector<double> output)
 {
     unsigned int predicted_class =
       std::distance(output.begin(), std::max_element(output.begin(), output.end())) - 1;

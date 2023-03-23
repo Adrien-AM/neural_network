@@ -2,37 +2,36 @@
 
 Conv2D::Conv2D(unsigned int filters,
                unsigned int kernel_size,
-               unsigned int input_width,
                unsigned int padding,
                const Activation& act,
                bool use_bias)
   : filters_size(filters)
   , kernel_size(kernel_size)
-  , input_width(input_width)
   , padding(padding)
   , activation(act)
 {
-    this->weights = std::vector<std::vector<double>>(filters);
-    this->updates = std::vector<std::vector<double>>(filters);
-    for (unsigned int i = 0; i < filters; i++) {
-        this->weights[i] = std::vector<double>(kernel_size * kernel_size);
-        this->updates[i] = std::vector<double>(kernel_size * kernel_size);
-    }
-    if (use_bias)
-        this->biases = std::vector<double>(filters);
-    else
-        this->biases = std::vector<double>();
-
-    this->output_values = std::vector<double>(filters_size * input_width * input_width);
-    this->values = std::vector<double>(filters_size * input_width * input_width);
-    this->errors = std::vector<double>(filters_size * input_width * input_width);
+    
 }
 
 void
 Conv2D::init(unsigned int input_size)
 {
-    (void)input_size;
     bool use_bias = !this->biases.empty();
+    this->input_width = sqrt(input_size);
+    this->output_values = vector<double>(filters_size * input_width * input_width);
+    this->values = vector<double>(filters_size * input_width * input_width);
+    this->errors = vector<double>(filters_size * input_width * input_width);
+
+    this->weights = vector<vector<double>>(filters_size);
+    this->updates = vector<vector<double>>(filters_size);
+    for (unsigned int i = 0; i < filters_size; i++) {
+        this->weights[i] = vector<double>(kernel_size * kernel_size);
+        this->updates[i] = vector<double>(kernel_size * kernel_size);
+    }
+    if (use_bias)
+        this->biases = vector<double>(filters_size);
+    else
+        this->biases = vector<double>();
 
     std::random_device rd;
     std::mt19937 gen(rd()); // Mersenne Twister engine
@@ -48,12 +47,12 @@ Conv2D::init(unsigned int input_size)
 }
 
 void
-Conv2D::forward(const std::vector<double>& inputs)
+Conv2D::forward(const vector<double>& inputs)
 {
     unsigned int width = sqrt(inputs.size());
     this->padded_input = add_padding(inputs, width, this->padding);
     for (unsigned int n = 0; n < this->filters_size; n++) {
-        std::vector<double> conv = convolution_product(
+        vector<double> conv = convolution_product(
           this->padded_input, this->weights[n], sqrt(this->padded_input.size()), 1);
         std::copy(conv.begin(), conv.end(), this->values.begin() + n * inputs.size());
         for (unsigned int i = 0; i < conv.size(); i++) {

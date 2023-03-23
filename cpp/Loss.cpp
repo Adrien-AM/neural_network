@@ -8,7 +8,7 @@
 
 // Mean Absolute Error evaluation
 double
-mae_f(std::vector<double> y_true, std::vector<double> y_pred)
+mae_f(vector<double> y_true, vector<double> y_pred)
 {
     unsigned int size = y_true.size();
     if (0 == size)
@@ -22,14 +22,14 @@ mae_f(std::vector<double> y_true, std::vector<double> y_pred)
 }
 
 // Mean Absolute Error derivative
-std::vector<double>
-mae_d(std::vector<double> y_true, std::vector<double> y_pred)
+vector<double>
+mae_d(vector<double> y_true, vector<double> y_pred)
 {
     unsigned int size = y_true.size();
     if (0 == size)
         return {};
 
-    std::vector<double> result(size);
+    vector<double> result(size);
 
     for (size_t i = 0; i < size; i++) {
         result[i] = y_pred[i] - y_true[i];
@@ -46,7 +46,7 @@ MeanAbsoluteError()
 
 // Mean Squared Error evaluation
 double
-mse_f(std::vector<double> y_true, std::vector<double> y_pred)
+mse_f(vector<double> y_true, vector<double> y_pred)
 {
     unsigned int size = y_true.size();
     if (0 == size)
@@ -61,14 +61,14 @@ mse_f(std::vector<double> y_true, std::vector<double> y_pred)
 }
 
 // Mean Squared Error derivative
-std::vector<double>
-mse_d(std::vector<double> y_true, std::vector<double> y_pred)
+vector<double>
+mse_d(vector<double> y_true, vector<double> y_pred)
 {
     unsigned int size = y_true.size();
     if (0 == size)
         return {};
 
-    std::vector<double> result = std::vector<double>(size);
+    vector<double> result = vector<double>(size);
     for (size_t i = 0; i < size; i++) {
         result[i] = y_pred[i] - y_true[i];
     }
@@ -84,7 +84,7 @@ MeanSquaredError()
 
 // Cross Entropy evaluation
 double
-ce_f(std::vector<double> y_true, std::vector<double> y_pred)
+ce_f(vector<double> y_true, vector<double> y_pred)
 {
     double loss = 0;
     unsigned int size = y_true.size();
@@ -97,11 +97,11 @@ ce_f(std::vector<double> y_true, std::vector<double> y_pred)
 }
 
 // Cross Entropy derivative
-std::vector<double>
-ce_d(std::vector<double> y_true, std::vector<double> y_pred)
+vector<double>
+ce_d(vector<double> y_true, vector<double> y_pred)
 {
     unsigned int size = y_true.size();
-    std::vector<double> result = std::vector<double>(size);
+    vector<double> result = vector<double>(size);
 
 #ifdef DEBUG
     printf("Derivatives predictions :\n");

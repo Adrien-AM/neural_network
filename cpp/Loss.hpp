@@ -3,14 +3,16 @@
 
 #include <vector>
 
+using namespace std;
+
 class Loss
 {
   public:
-    double (*evaluate)(std::vector<double> real, std::vector<double> predicted);
-    std::vector<double> (*derivate)(std::vector<double> real, std::vector<double> predicted);
+    double (*evaluate)(vector<double> real, vector<double> predicted);
+    vector<double> (*derivate)(vector<double> real, vector<double> predicted);
 
-    Loss(double (*evaluate)(std::vector<double>, std::vector<double>),
-         std::vector<double> (*derivate)(std::vector<double>, std::vector<double>))
+    Loss(double (*evaluate)(vector<double>, vector<double>),
+         vector<double> (*derivate)(vector<double>, vector<double>))
       : evaluate(evaluate)
       , derivate(derivate){};
 };
