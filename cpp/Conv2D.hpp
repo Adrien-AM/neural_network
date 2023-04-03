@@ -3,37 +3,36 @@
 
 #include "Layer.hpp"
 #include <random>
-#include <vector>
+
 
 using namespace std;
 
 class Conv2D : public Layer
 {
   private:
-    unsigned int filters_size;
-    unsigned int kernel_size;
-    unsigned int input_width;
-    unsigned int depth;
-    unsigned int padding;
+    size_t filters_size;
+    size_t kernel_size;
+    size_t depth;
+    size_t padding;
     const Activation& activation;
-    vector<vector<double>> weights;
-    vector<vector<double>> updates;
-    vector<double> biases;
-    vector<double> values;
-    vector<double> padded_input;
+    Tensor<double> weights;
+    Tensor<double> updates;
+    Tensor<double> biases;
+    Tensor<double> values;
+    Tensor<double> padded_input;
 
   public:
-    Conv2D(unsigned int filters,
-           unsigned int kernel_size,
-           unsigned int padding,
+    Conv2D(size_t filters,
+           size_t kernel_size,
+           size_t padding,
            const Activation& act,
            bool use_bias = true);
-    void init(unsigned int);
-    void forward(const vector<double>&);
+    void init(vector<size_t>);
+    void forward(const Tensor<double>&);
     void backprop(Layer*, double, double);
 
     void summarize() const;
-    unsigned int size() const;
+    size_t size() const;
     void reset_values();
     void reset_errors();
     void print_layer() const;

@@ -1,23 +1,23 @@
 #include "NeuralNetwork.hpp"
 
-NeuralNetwork::NeuralNetwork(unsigned int input_size, vector<Layer*> layers, Loss loss)
-  : input_size(input_size)
+NeuralNetwork::NeuralNetwork(vector<size_t> input_shape, vector<Layer*> layers, Loss loss)
+  : input_shape(input_shape)
   , layers(layers)
   , loss(loss)
 {
     if (this->layers.size() == 0)
         return;
 
-    this->layers[0]->init(input_size);
-    for (unsigned int i = 1; i < this->layers.size(); i++) {
-        this->layers[i]->init(this->layers[i - 1]->size());
+    this->layers[0]->init(input_shape);
+    for (size_t i = 1; i < this->layers.size(); i++) {
+        this->layers[i]->init(this->layers[i - 1]->output_values.shape());
     }
 }
 
-vector<double>
-NeuralNetwork::predict(const vector<double>& inputs)
+Tensor<double>
+NeuralNetwork::predict(const Tensor<double>& inputs)
 {
-    vector<double> moving_inputs = inputs;
+    Tensor<double> moving_inputs = inputs;
     for (Layer*& layer : this->layers) {
         layer->forward(moving_inputs);
         moving_inputs = layer->output_values;
@@ -28,9 +28,9 @@ NeuralNetwork::predict(const vector<double>& inputs)
 }
 
 void
-NeuralNetwork::backpropagation(const vector<double>& real, const vector<double>& inputs)
+NeuralNetwork::backpropagation(const Tensor<double>& real, const Tensor<double>& inputs)
 {
-    vector<double> partial_errors =
+    Tensor<double> partial_errors =
       this->loss.derivate(real, this->layers.back()->output_values);
     this->layers.back()->errors = partial_errors;
 #ifdef DEBUG
@@ -38,7 +38,7 @@ NeuralNetwork::backpropagation(const vector<double>& real, const vector<double>&
     print_vector(partial_errors);
 #endif
 
-    for (unsigned int i = this->layers.size() - 1; i > 0; i--) {
+    for (size_t i = this->layers.size() - 1; i > 0; i--) {
         this->layers[i]->backprop(this->layers[i - 1], this->alpha, this->gamma);
     }
 
@@ -65,12 +65,12 @@ NeuralNetwork::reset_errors()
 }
 
 void
-NeuralNetwork::fit(const vector<vector<double>>& inputs,
-                   const vector<vector<double>>& outputs,
+NeuralNetwork::fit(const Tensor<double>& inputs,
+                   const Tensor<double>& outputs,
                    double learning_rate,
                    double momentum,
                    size_t batch_size,
-                   unsigned int epochs)
+                   size_t epochs)
 {
     if (inputs.size() != outputs.size()) {
         fprintf(stderr,
@@ -80,8 +80,8 @@ NeuralNetwork::fit(const vector<vector<double>>& inputs,
     }
     this->alpha = learning_rate;
     this->gamma = momentum;
-    for (unsigned int epoch = 0; epoch < epochs; epoch++) {
-        printf("- Epoch %u -- ", epoch + 1);
+    for (size_t epoch = 0; epoch < epochs; epoch++) {
+        printf("- Epoch %zu -- ", epoch + 1);
         fflush(stdout);
         double loss = 0;
         vector<size_t> data_idx(inputs.size());
@@ -93,11 +93,11 @@ NeuralNetwork::fit(const vector<vector<double>>& inputs,
                     batch_size,
                     std::mt19937(std::random_device()()));
 
-        for (unsigned int row = 0; row < batch_size; row++) {
-            const vector<double>& input = inputs[sample_idx[row]];
-            const vector<double> output = outputs[sample_idx[row]];
+        for (size_t row = 0; row < batch_size; row++) {
+            const Tensor<double>& input = inputs.at(sample_idx[row]);
+            const Tensor<double> output = outputs.at(sample_idx[row]);
             reset_values();
-            vector<double> predicted = this->predict(input);
+            Tensor<double> predicted = this->predict(input);
             double curr_loss = this->loss.evaluate(output, predicted);
             loss += (curr_loss - loss) / (row + 1); // Moving average
             if (loss != loss) {
@@ -116,8 +116,8 @@ NeuralNetwork::fit(const vector<vector<double>>& inputs,
 }
 
 double
-NeuralNetwork::evaluate(const vector<vector<double>>& inputs,
-                        const vector<vector<double>>& outputs,
+NeuralNetwork::evaluate(const Tensor<double>& inputs,
+                        const Tensor<double>& outputs,
                         Loss loss,
                         Metric* metric)
 {
@@ -128,10 +128,10 @@ NeuralNetwork::evaluate(const vector<vector<double>>& inputs,
                 outputs.size());
     }
     double total_loss = 0;
-    for (unsigned int i = 0; i < inputs.size(); i++) {
-        vector<double> prediction = this->predict(inputs[i]);
-        metric->add_entry(outputs[i], prediction);
-        double current_loss = loss.evaluate(outputs[i], prediction);
+    for (size_t i = 0; i < inputs.size(); i++) {
+        Tensor<double> prediction = this->predict(inputs.at(i));
+        metric->add_entry(outputs.at(i), prediction);
+        double current_loss = loss.evaluate(outputs.at(i), prediction);
         total_loss += (current_loss - total_loss) / (i + 1); // moving average
     }
 
@@ -142,8 +142,8 @@ void
 NeuralNetwork::summarize()
 {
     printf("\nNeural Net :\n");
-    for (unsigned int i = 0; i < this->layers.size(); i++) {
-        printf("--Layer %u--\n\t", i);
+    for (size_t i = 0; i < this->layers.size(); i++) {
+        printf("--Layer %zu--\n\t", i);
         this->layers[i]->summarize();
         printf("------------\n");
     }

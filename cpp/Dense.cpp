@@ -1,46 +1,43 @@
 #include "Dense.hpp"
 
-Dense::Dense(unsigned int layer_size, const Activation& act, bool use_bias)
+Dense::Dense(size_t layer_size, const Activation& act, bool use_bias)
   : activation(act)
 {
-    this->values = vector<double>(layer_size);
-    this->errors = vector<double>(layer_size);
-    this->delta_errors = vector<double>(layer_size);
-    this->output_values = vector<double>(layer_size);
+    this->values = Tensor<double>(layer_size);
+    this->errors = Tensor<double>(layer_size);
+    this->delta_errors = Tensor<double>(layer_size);
+    this->output_values = Tensor<double>(layer_size);
 
-    this->updates = vector<vector<double>>(layer_size);
-    this->weights = vector<vector<double>>(layer_size);
     if (use_bias)
-        this->biases = vector<double>(layer_size);
+        this->biases = Tensor<double>(layer_size);
     else
-        this->biases = vector<double>(0);
+        this->biases = Tensor<double>();
 };
 
 void
 Dense::print_layer() const
 {
     std::cout << "--Layer--\n";
-    for (auto& row : this->weights) {
-        print_vector(row);
-    }
+    this->weights.print();
     std::cout << "--------\n" << std::endl;
 }
 
 void
-Dense::forward(const vector<double>& inputs)
+Dense::forward(const Tensor<double>& inputs)
 {
-    unsigned int size = this->size();
-    unsigned int input_size = inputs.size();
+    size_t size = this->size();
+    size_t input_size = inputs.size();
 
     #ifdef PARALLEL
     #pragma omp parallel for
     #endif
-    for (unsigned int n = 0; n < size; n++) {
+    for (size_t n = 0; n < size; n++) {
         if (!this->biases.empty())
             this->values[n] = this->biases[n];
-        for (unsigned int i = 0; i < input_size; i++) {
+        Tensor<double> weight_n = this->weights.at(n);
+        for (size_t i = 0; i < input_size; i++) {
             // Sum of weighted outputs from previous layer
-            this->values[n] += inputs[i] * this->weights[n][i];
+            this->values[n] += inputs[i] * weight_n[i];
         }
     }
 
@@ -48,7 +45,7 @@ Dense::forward(const vector<double>& inputs)
     this->output_values = this->activation.compute(this->values);
 }
 
-unsigned int
+size_t
 Dense::size() const
 {
     return this->values.size();
@@ -57,7 +54,7 @@ Dense::size() const
 void
 Dense::reset_values()
 {
-    for (unsigned int i = 0; i < this->values.size(); i++) {
+    for (size_t i = 0; i < this->values.size(); i++) {
         this->values[i] = 0;
         this->output_values[i] = 0;
     }
@@ -66,7 +63,7 @@ Dense::reset_values()
 void
 Dense::reset_errors()
 {
-    for (unsigned int i = 0; i < this->values.size(); i++) {
+    for (size_t i = 0; i < this->values.size(); i++) {
         this->errors[i] = 0;
         this->delta_errors[i] = 0;
     }
@@ -75,35 +72,39 @@ Dense::reset_errors()
 void
 Dense::backprop(Layer* input_layer, double learning_rate, double momentum)
 {
-    unsigned int size = this->size();
-    unsigned int input_size = input_layer->size();
+    size_t size = this->size();
+    vector<size_t> input_shape = input_layer->output_values.shape();
 
-    vector<vector<double>> jacobian =
+    Tensor<double> jacobian =
       this->activation.derivative(this->output_values); // dav/dv
 
-    for (unsigned int j = 0; j < size; j++) {
+    for (size_t j = 0; j < size; j++) {
         double& ej = this->errors[j];
         if (ej != 0) {
             #ifdef PARALLEL
             #pragma omp parallel for
             #endif
-            for (unsigned int i = 0; i < size; i++) {
-                this->delta_errors[i] += ej * jacobian[i][j]; // de/dav
+            for (size_t i = 0; i < size; i++) {
+                this->delta_errors[i] += ej * jacobian.at(i)[j]; // de/dav
             }
         }
     }
 
-    for (unsigned int i = 0; i < size; i++) {
+    for (size_t i = 0; i < size; i++) {
         // update = alpha x input x error, for each weight
         double update = this->delta_errors[i] * learning_rate;
         #ifdef PARALLEL
         #pragma omp parallel for
         #endif
-        for (unsigned int j = 0; j < input_size; j++) {
-            input_layer->errors[j] += this->delta_errors[i] * this->weights[i][j];
-            this->updates[i][j] = (momentum * this->updates[i][j]) +
-                                  (1 - momentum) * update * input_layer->output_values[j];
-            this->weights[i][j] -= this->updates[i][j];
+        Tensor<double> update_i = this->updates.at(i);
+        Tensor<double> weight_i = this->weights.at(i);
+        double* input_errors = input_layer->errors.data();
+        double* input_outputs = input_layer->output_values.data();
+        for (size_t j = 0; j < input_layer->errors.total_size(); j++) {
+            input_errors[j] += this->delta_errors[i] * weight_i[j];
+            update_i[j] = (momentum * update_i[j]) +
+                                  (1 - momentum) * update * input_outputs[j];
+            weight_i[j] -= update_i[j];
         }
         if (!this->biases.empty()) {
             this->biases[i] -= this->delta_errors[i] * learning_rate;
@@ -113,19 +114,21 @@ Dense::backprop(Layer* input_layer, double learning_rate, double momentum)
 }
 
 void
-Dense::init(unsigned int input_size)
+Dense::init(vector<size_t> input_shape)
 {
     bool use_bias = !this->biases.empty();
+
+    this->weights = vector<size_t>{ this->size(), input_shape[0] };
+    this->updates = vector<size_t>{ this->size(), input_shape[0] };
 
     std::random_device rd;
     std::mt19937 gen(rd()); // Mersenne Twister engine
     std::normal_distribution<double> normal(0, 0.3);
-    unsigned int size = this->weights.size();
-    for (unsigned int n = 0; n < size; n++) {
-        this->weights[n] = vector<double>(input_size);
-        this->updates[n] = vector<double>(input_size);
-        for (unsigned int p = 0; p < input_size; p++) {
-            this->weights[n][p] = normal(gen);
+    size_t size = this->size();
+    for (size_t n = 0; n < size; n++) {
+        Tensor<double> weight_n = this->weights.at(n);
+        for (size_t p = 0; p < input_shape[0]; p++) {
+            weight_n[p] = normal(gen);
         }
         if (use_bias) {
             this->biases[n] = normal(gen);
@@ -136,7 +139,7 @@ Dense::init(unsigned int input_size)
 void
 Dense::summarize() const
 {
-    printf("Dense | Size : %u. Input size : %zu.\n", this->size(), this->weights[0].size());
+    printf("Dense | Size : %zu. Input size : %zu.\n", this->size(), this->weights.shape()[0]);
 }
 
 Dense::~Dense() {}

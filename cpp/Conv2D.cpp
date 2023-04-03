@@ -1,8 +1,8 @@
 #include "Conv2D.hpp"
 
-Conv2D::Conv2D(unsigned int filters,
-               unsigned int kernel_size,
-               unsigned int padding,
+Conv2D::Conv2D(size_t filters,
+               size_t kernel_size,
+               size_t padding,
                const Activation& act,
                bool use_bias)
   : filters_size(filters)
@@ -10,36 +10,29 @@ Conv2D::Conv2D(unsigned int filters,
   , padding(padding)
   , activation(act)
 {
-    
+    this->weights = vector<size_t>({ filters_size, kernel_size, kernel_size });
+    this->updates = vector<size_t>({ filters_size, kernel_size, kernel_size });
+    if (use_bias)
+        this->biases = Tensor<double>(filters_size);
+    else
+        this->biases = Tensor<double>();
 }
 
 void
-Conv2D::init(unsigned int input_size)
+Conv2D::init(vector<size_t> input_shape)
 {
     bool use_bias = !this->biases.empty();
-    this->input_width = sqrt(input_size);
-    this->output_values = vector<double>(filters_size * input_width * input_width);
-    this->values = vector<double>(filters_size * input_width * input_width);
-    this->errors = vector<double>(filters_size * input_width * input_width);
-
-    this->weights = vector<vector<double>>(filters_size);
-    this->updates = vector<vector<double>>(filters_size);
-    for (unsigned int i = 0; i < filters_size; i++) {
-        this->weights[i] = vector<double>(kernel_size * kernel_size);
-        this->updates[i] = vector<double>(kernel_size * kernel_size);
-    }
-    if (use_bias)
-        this->biases = vector<double>(filters_size);
-    else
-        this->biases = vector<double>();
+    this->output_values = vector<size_t>({ filters_size, input_shape[0], input_shape[1] });
+    this->values = vector<size_t>({ filters_size, input_shape[0], input_shape[1] });
+    this->errors = vector<size_t>({ filters_size, input_shape[0], input_shape[1] });
 
     std::random_device rd;
     std::mt19937 gen(rd()); // Mersenne Twister engine
     std::normal_distribution<double> normal(0, 10);
-    for (unsigned int n = 0; n < this->weights.size(); n++) {
-        for (unsigned int p = 0; p < this->weights[n].size(); p++) {
-            this->weights[n][p] = normal(gen);
-        }
+    for (size_t n = 0; n < this->weights.size(); n++) {
+        for (size_t i = 0; i < kernel_size; i++)
+            for (size_t j = 0; j < kernel_size; j++)
+                this->weights.at(n).at(i)[j] = normal(gen);
         if (use_bias) {
             this->biases[n] = normal(gen);
         }
@@ -47,67 +40,61 @@ Conv2D::init(unsigned int input_size)
 }
 
 void
-Conv2D::forward(const vector<double>& inputs)
+Conv2D::forward(const Tensor<double>& inputs)
 {
-    unsigned int width = sqrt(inputs.size());
-    this->padded_input = add_padding(inputs, width, this->padding);
-    for (unsigned int n = 0; n < this->filters_size; n++) {
-        vector<double> conv = convolution_product(
-          this->padded_input, this->weights[n], sqrt(this->padded_input.size()), 1);
-        std::copy(conv.begin(), conv.end(), this->values.begin() + n * inputs.size());
-        for (unsigned int i = 0; i < conv.size(); i++) {
-            conv[i] += this->biases[n];
-        }
+    this->padded_input = add_padding(inputs, this->padding);
+    for (size_t n = 0; n < this->filters_size; n++) {
+        this->values.at(n) = convolution_product(this->padded_input, this->weights.at(n), 1);
+        // memcpy(this->values.data(), conv.data(), n * inputs.size() * sizeof(double));
+        if (!this->biases.empty())
+            for (size_t i = 0; i < kernel_size; i++)
+                for (size_t j = 0; j < kernel_size; j++)
+                    this->values.at(n).at(i)[j] += this->biases[n];
+        for (size_t i = 0; i < this->values.shape()[1]; i++)
+            // Activation only works for vector for now
+            this->output_values.at(n).at(i) = this->activation.compute(this->values.at(n).at(i));
     }
-    this->output_values = this->activation.compute(this->values);
 }
 
 void
 Conv2D::backprop(Layer* input_layer, double learning_rate, double momentum)
 {
-    for (unsigned int f = 0; f < this->filters_size; f++) {
-        for (unsigned int kw = 0; kw < this->kernel_size; kw++) {
-            for (unsigned int kh = 0; kh < this->kernel_size; kh++) {
+    vector<size_t> input_shape = input_layer->output_values.shape();
+    for (size_t f = 0; f < this->filters_size; f++) {
+        Tensor<double> error_f = this->errors.at(f);
+        for (size_t kw = 0; kw < this->kernel_size; kw++) {
+            for (size_t kh = 0; kh < this->kernel_size; kh++) {
                 double gradient = 0;
-                for (unsigned int x = 0; x < this->input_width; x++) {
-                    for (unsigned int y = 0; y < this->input_width; y++) {
-                        unsigned int output_index = x * this->input_width + y;
-                        unsigned int input_index = (x + kh) * this->input_width + (y + kw);
-                        gradient += this->errors[output_index + this->filters_size * f] *
-                                    this->padded_input[input_index];
-                        this->biases[f] -=
-                          learning_rate * errors[output_index + this->filters_size * f];
+                for (size_t x = 0; x < input_shape[0]; x++) {
+                    Tensor<double> error_f_x = error_f.at(x);
+                    for (size_t y = 0; y < input_shape[1]; y++) {
+                        double error = error_f_x[y];
+                        gradient += error * this->padded_input.at(x + kh)[y + kw];
+                        this->biases[f] -= learning_rate * error;
                     }
                 }
-                this->errors[f * this->input_width * this->input_width + kh * this->input_width +
-                             kw] = gradient;
-                double update = (momentum * this->updates[f][kh * kernel_size + kw]) +
+                error_f.at(kh)[kw] = gradient;
+                double update = (momentum * this->updates.at(f).at(kh)[kw]) +
                                 (1 - momentum) * learning_rate * gradient;
-                this->weights[f][kh * kernel_size + kw] -= update;
-                this->updates[f][kh * kernel_size + kw] = update;
-                // printf("Weight : %f, error %f, update %f, gradient %f\n",
-                //        this->updates[f][kh * kernel_size + kw],
-                //        this->errors[f * this->input_width * this->input_width +
-                //                     kh * this->input_width + kw],
-                //        update, gradient);
+                this->weights.at(f).at(kh)[kw] -= update;
+                this->updates.at(f).at(kh)[kw] = update;
             }
         }
     }
 
-    for (unsigned int x = 0; x < this->input_width; x++) {
-        for (unsigned int y = 0; y < this->input_width; y++) {
-            for (unsigned int i = 0; i < this->kernel_size; i++) {
-                for (unsigned int j = 0; j < this->kernel_size; j++) {
-                    unsigned int input_index = x * this->input_width + y;
-                    unsigned int out_x = x - i;
-                    unsigned int out_y = y - j;
-                    if (x >= i && out_x < this->input_width && y >= j &&
-                        out_y < this->input_width) {
-                        for (unsigned int f = 0; f < this->filters_size; f++) {
-                            input_layer->errors[input_index] +=
-                              this->errors[input_layer->size() * f + input_index] *
-                              (this->weights[f][j * this->kernel_size + i] +
-                               this->updates[f][j * this->kernel_size + i]);
+    for (size_t x = 0; x < input_shape[0]; x++) {
+        Tensor<double> input_error_x = input_layer->errors.at(x);
+        for (size_t y = 0; y < input_shape[1]; y++) {
+            for (size_t i = 0; i < this->kernel_size; i++) {
+                for (size_t j = 0; j < this->kernel_size; j++) {
+                    // size_t input_index = x * input_width + y;
+                    size_t out_x = x - i;
+                    size_t out_y = y - j;
+                    if (x >= i && out_x < input_shape[0] && y >= j && out_y < input_shape[1]) {
+                        for (size_t f = 0; f < this->filters_size; f++) {
+                            input_error_x[y] +=
+                              this->errors.at(f).at(x)[y] *
+                              (this->weights.at(f).at(j)[i] + this->updates.at(f).at(j)[i]);
                         }
                     }
                 }
@@ -119,10 +106,10 @@ Conv2D::backprop(Layer* input_layer, double learning_rate, double momentum)
 void
 Conv2D::summarize() const
 {
-    printf("Conv2D | Size : %u. Kernel size : %u.\n", this->size(), this->kernel_size);
+    printf("Conv2D | Size : %zu. Kernel size : %zu.\n", this->size(), this->kernel_size);
 }
 
-unsigned int
+size_t
 Conv2D::size() const
 {
     return this->output_values.size();

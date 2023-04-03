@@ -3,12 +3,17 @@
 #include "Utils.hpp"
 
 void
-Accuracy::add_entry(vector<double> truth, vector<double> output)
+Accuracy::add_entry(Tensor<double> truth, Tensor<double> output)
 {
-    unsigned int predicted_class =
-      std::distance(output.begin(), std::max_element(output.begin(), output.end())) - 1;
-    unsigned int real_class =
-      std::distance(truth.begin(), std::max_element(truth.begin(), truth.end())) - 1;
+    size_t predicted_class = 0;
+    for (size_t i = 0; i < output.size(); i++) 
+      if (output[i] > output[predicted_class])
+          predicted_class = i;
+
+    size_t real_class = 0;
+    for (size_t i = 0; i < truth.size(); i++)
+      if (truth[i] > truth[real_class])
+          real_class = i;
     if (predicted_class == real_class)
         this->positive += 1;
     this->total += 1;

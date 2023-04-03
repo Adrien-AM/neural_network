@@ -6,32 +6,34 @@
 #include <arpa/inet.h>
 #include <fstream>
 #include <stdexcept>
-#include <vector>
+
 #include <numeric>
 #include <random>
 
+#include "Tensor.hpp"
+
 using namespace std;
 
-vector<vector<uint8_t>>
+Tensor<uint8_t>
 read_idx_images_file(const std::string& filename, int max_images);
 
 vector<uint8_t>
 read_idx_labels_file(const std::string& filename, int max_labels);
 
-vector<vector<double>>
-uint_to_double_images(const vector<vector<uint8_t>>& images);
+Tensor<double>
+uint_to_double_images(const Tensor<uint8_t>& images);
 
-vector<vector<double>>
-uint_to_one_hot_labels(const vector<uint8_t>& labels, unsigned int nb_classes);
-
-void
-display_image(const vector<double>& image, unsigned int time, int upscale);
+Tensor<double>
+uint_to_one_hot_labels(const vector<uint8_t>& labels, size_t nb_classes);
 
 void
-shuffle_images_labels(vector<vector<double>>& images,
-                      vector<vector<double>>& labels);
+display_image(const Tensor<double>& image, size_t time, int upscale);
 
 void
-normalize_pixels(vector<vector<double>>& images);
+shuffle_images_labels(Tensor<double>& images,
+                      Tensor<double>& labels);
+
+void
+normalize_pixels(Tensor<double>& images);
 
 #endif // __SDLMNIST_HPP__

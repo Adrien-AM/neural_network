@@ -3,31 +3,36 @@
 
 #include <iostream>
 #include <random>
-#include <vector>
+
 
 #include "Activation.hpp"
 #include "Layer.hpp"
+#include "Tensor.hpp"
 
 using namespace std;
 
+
+/**
+ * Careful : Dense should only be used if input is 1D ! (for now)
+*/
 class Dense : public Layer
 {
-    vector<double> values;
-    vector<double> delta_errors;
-    vector<double> biases;
-    vector<vector<double>> weights;
-    vector<vector<double>> updates;
+    Tensor<double> values;
+    Tensor<double> delta_errors;
+    Tensor<double> biases;
+    Tensor<double> weights;
+    Tensor<double> updates;
 
     const Activation& activation;
 
   public:
-    Dense(unsigned int layer_size, const Activation& act, bool use_bias = true);
-    void init(unsigned int);
-    void forward(const vector<double>&);
+    Dense(size_t layer_size, const Activation& act, bool use_bias = true);
+    void init(vector<size_t>);
+    void forward(const Tensor<double>&);
     void backprop(Layer* l, double, double);
     void summarize() const;
     
-    unsigned int size() const;
+    size_t size() const;
     void reset_values();
     void reset_errors();
 

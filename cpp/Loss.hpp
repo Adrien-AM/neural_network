@@ -1,18 +1,18 @@
 #ifndef __LOSS_HPP__
 #define __LOSS_HPP__
 
-#include <vector>
+#include "Tensor.hpp"
 
 using namespace std;
 
 class Loss
 {
   public:
-    double (*evaluate)(vector<double> real, vector<double> predicted);
-    vector<double> (*derivate)(vector<double> real, vector<double> predicted);
+    double (*evaluate)(Tensor<double> real, Tensor<double> predicted);
+    Tensor<double> (*derivate)(Tensor<double> real, Tensor<double> predicted);
 
-    Loss(double (*evaluate)(vector<double>, vector<double>),
-         vector<double> (*derivate)(vector<double>, vector<double>))
+    Loss(double (*evaluate)(Tensor<double>, Tensor<double>),
+         Tensor<double> (*derivate)(Tensor<double>, Tensor<double>))
       : evaluate(evaluate)
       , derivate(derivate){};
 };

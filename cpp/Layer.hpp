@@ -4,25 +4,23 @@
 #include "Activation.hpp"
 #include "Utils.hpp"
 #include <iostream>
-#include <vector>
+
 
 using namespace std;
 
 class Layer
 {
-  protected:
-
   public:
-    vector<double> output_values;
-    vector<double> errors;
+    Tensor<double> output_values;
+    Tensor<double> errors;
 
     // abstraction
-    virtual void init(unsigned int) = 0;
-    virtual void forward(const vector<double>&) = 0;
+    virtual void init(vector<size_t>) = 0;
+    virtual void forward(const Tensor<double>&) = 0;
     virtual void backprop(Layer*, double, double) = 0;
     virtual void summarize() const = 0;
     // getters and setters
-    virtual unsigned int size() const = 0;
+    virtual size_t size() const = 0;
     virtual void reset_values() = 0;
     virtual void reset_errors() = 0;
     // debug
