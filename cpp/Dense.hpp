@@ -29,7 +29,7 @@ class Dense : public Layer
     Dense(size_t layer_size, const Activation& act, bool use_bias = true);
     void init(vector<size_t>);
     void forward(const Tensor<double>&);
-    void backprop(Layer* l, double, double);
+    void backprop(Layer*, double, double);
     void summarize() const;
     
     size_t size() const;

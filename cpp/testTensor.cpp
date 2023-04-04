@@ -22,25 +22,11 @@ main(void)
     }
     Tensor<double> out = vector<double>(size);
 
-    vector<Tensor<double>> curr(x.shape().size() - 1);
-    for (size_t dim = 0; dim < curr.size(); dim++) {
-        curr[dim] = (dim == 0 ? x : curr[dim - 1]).at(0);
-    }
-
-    vector<size_t> indices(x.shape().size());
-    for (size_t i = 0; i < size; i++) {
-        size_t dim = indices.size() - 1;
-        while (dim != 0 && indices[dim] == x.shape()[dim]) {
-            indices[dim] = 0;
-            dim--;
-            indices[dim]++;
-        }
-        for (size_t d = dim; d < curr.size(); d++) {
-            curr[d] = (d == 0 ? x : curr[d - 1]).at(indices[d]);
-        }
-        out[i] = curr.back()[indices.back()];
-        indices.back()++;
-    }
-
+    memcpy(out.data(), x.data(), size * sizeof(double));
     out.print();
+
+    Tensor<double> y = vector<size_t>({ 2, 3, 2 });
+
+    memcpy(y.data(), x.data(), size * sizeof(double));
+    y.print();
 }

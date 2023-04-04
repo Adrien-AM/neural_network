@@ -175,6 +175,8 @@ class Tensor
 
     size_t total_size() const { return this->size_; }
 
+    void copy_data(Tensor& other) const { memcpy(other.data(), data_, size_ * sizeof(T)); }
+
   private:
     vector<size_t> shape_;
     size_t size_;

@@ -8,6 +8,7 @@ house
 mnist
 mnist_generator
 conv-mnist
+test-*
 vgcore.*
 *.nn # nn dumps
 

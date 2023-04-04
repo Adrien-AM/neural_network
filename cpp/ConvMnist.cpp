@@ -9,8 +9,8 @@
 #include "Utils.hpp"
 
 #define IMAGE_SIZE 28
-#define DATA_SIZE 1000
-#define TEST_SIZE 100
+#define DATA_SIZE 60000
+#define TEST_SIZE 10000
 #define NB_CLASSES 10
 
 int
@@ -35,7 +35,7 @@ main()
     Tensor<double> test_labels = uint_to_one_hot_labels(mnist_test_labels, NB_CLASSES);
 
     shuffle_images_labels(train_images, train_labels);
-    shuffle_images_labels(test_images, test_labels);
+    // shuffle_images_labels(test_images, test_labels);
     train_images.resize(DATA_SIZE);
     train_labels.resize(DATA_SIZE);
     test_images.resize(TEST_SIZE);
@@ -44,16 +44,16 @@ main()
     normalize_pixels(train_images);
     normalize_pixels(test_images);
 
-    Sigmoid activation;
+    ReLU activation;
     Softmax softmax;
     Loss cce = CategoricalCrossEntropy();
-    double learning_rate = 5e-4;
+    double learning_rate = 5e-3;
     double momentum = 0.5;
-    size_t batch_size = 16;
-    size_t epochs = 5;
+    size_t batch_size = 128;
+    size_t epochs = 10;
 
     NeuralNetwork nn({ IMAGE_SIZE, IMAGE_SIZE },
-                     { new Conv2D(16, 3, 1, activation), new Flatten(), new Dense(NB_CLASSES, softmax, true) },
+                     { new Conv2D(16, 3, 1, activation), new Flatten(), new Dense(NB_CLASSES, softmax) },
                      cce);
 
     nn.fit(train_images, train_labels, learning_rate, momentum, batch_size, epochs);

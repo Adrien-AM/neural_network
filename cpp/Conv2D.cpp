@@ -44,15 +44,20 @@ Conv2D::forward(const Tensor<double>& inputs)
 {
     this->padded_input = add_padding(inputs, this->padding);
     for (size_t n = 0; n < this->filters_size; n++) {
-        this->values.at(n) = convolution_product(this->padded_input, this->weights.at(n), 1);
+        Tensor<double> value_n = this->values.at(n);
+        Tensor<double> output_n = this->output_values.at(n);
+        value_n = convolution_product(this->padded_input, this->weights.at(n), 1);
         // memcpy(this->values.data(), conv.data(), n * inputs.size() * sizeof(double));
-        if (!this->biases.empty())
-            for (size_t i = 0; i < kernel_size; i++)
+        if (!this->biases.empty()) {
+            for (size_t i = 0; i < kernel_size; i++) {
+                Tensor<double> row_i = value_n.at(i);
                 for (size_t j = 0; j < kernel_size; j++)
-                    this->values.at(n).at(i)[j] += this->biases[n];
+                    row_i[j] += this->biases[n];
+            }
+        }
         for (size_t i = 0; i < this->values.shape()[1]; i++)
             // Activation only works for vector for now
-            this->output_values.at(n).at(i) = this->activation.compute(this->values.at(n).at(i));
+            output_n.at(i) = this->activation.compute(value_n.at(i));
     }
 }
 
@@ -60,10 +65,17 @@ void
 Conv2D::backprop(Layer* input_layer, double learning_rate, double momentum)
 {
     vector<size_t> input_shape = input_layer->output_values.shape();
+    // NEED TO USE DELTA_ERRORS INSTEAD OF ERRORS :))))
+    
     for (size_t f = 0; f < this->filters_size; f++) {
         Tensor<double> error_f = this->errors.at(f);
-        for (size_t kw = 0; kw < this->kernel_size; kw++) {
-            for (size_t kh = 0; kh < this->kernel_size; kh++) {
+        Tensor<double> weight_f = this->weights.at(f);
+        Tensor<double> update_f = this->updates.at(f);
+        for (size_t kh = 0; kh < this->kernel_size; kh++) {
+            Tensor<double> error_kh = error_f.at(kh);
+            Tensor<double> weight_kh = weight_f.at(kh);
+            Tensor<double> update_kh = update_f.at(kh);
+            for (size_t kw = 0; kw < this->kernel_size; kw++) {
                 double gradient = 0;
                 for (size_t x = 0; x < input_shape[0]; x++) {
                     Tensor<double> error_f_x = error_f.at(x);
@@ -73,28 +85,32 @@ Conv2D::backprop(Layer* input_layer, double learning_rate, double momentum)
                         this->biases[f] -= learning_rate * error;
                     }
                 }
-                error_f.at(kh)[kw] = gradient;
-                double update = (momentum * this->updates.at(f).at(kh)[kw]) +
-                                (1 - momentum) * learning_rate * gradient;
-                this->weights.at(f).at(kh)[kw] -= update;
-                this->updates.at(f).at(kh)[kw] = update;
+                error_kh[kw] = gradient;
+                double update =
+                  (momentum * update_kh[kw]) + (1 - momentum) * learning_rate * gradient;
+                weight_kh[kw] -= update;
+                update_kh[kw] = update;
             }
         }
     }
 
-    for (size_t x = 0; x < input_shape[0]; x++) {
-        Tensor<double> input_error_x = input_layer->errors.at(x);
-        for (size_t y = 0; y < input_shape[1]; y++) {
-            for (size_t i = 0; i < this->kernel_size; i++) {
+    for (size_t f = 0; f < this->filters_size; f++) {
+        Tensor<double> error_f = this->errors.at(f);
+        Tensor<double> weight_f = this->weights.at(f);
+        Tensor<double> update_f = this->updates.at(f);
+        for (size_t x = 0; x < input_shape[0]; x++) {
+            Tensor<double> input_error_x = input_layer->errors.at(x);
+            Tensor<double> error_x = error_f.at(x);
+            for (size_t y = 0; y < input_shape[1]; y++) {
                 for (size_t j = 0; j < this->kernel_size; j++) {
-                    // size_t input_index = x * input_width + y;
-                    size_t out_x = x - i;
-                    size_t out_y = y - j;
-                    if (x >= i && out_x < input_shape[0] && y >= j && out_y < input_shape[1]) {
-                        for (size_t f = 0; f < this->filters_size; f++) {
-                            input_error_x[y] +=
-                              this->errors.at(f).at(x)[y] *
-                              (this->weights.at(f).at(j)[i] + this->updates.at(f).at(j)[i]);
+                    Tensor<double> weight_j = weight_f.at(j);
+                    Tensor<double> update_j = update_f.at(j);
+                    for (size_t i = 0; i < this->kernel_size; i++) {
+                        // size_t input_index = x * input_width + y;
+                        size_t out_x = x - i;
+                        size_t out_y = y - j;
+                        if (x >= i && out_x < input_shape[0] && y >= j && out_y < input_shape[1]) {
+                            input_error_x[y] += error_x[y] * (weight_j[i] + update_j[i]);
                         }
                     }
                 }
