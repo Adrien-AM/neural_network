@@ -12,7 +12,7 @@ class Conv2D : public Layer
   private:
     size_t filters_size;
     size_t kernel_size;
-    size_t depth;
+    size_t channels;
     size_t padding;
     const Activation& activation;
     Tensor<double> weights;

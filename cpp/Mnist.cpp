@@ -2,13 +2,16 @@
 #include <time.h>
 
 #include "Dense.hpp"
+#include "Flatten.hpp"
 #include "Metric.hpp"
 #include "MnistUtils.hpp"
 #include "NeuralNetwork.hpp"
 #include "Utils.hpp"
-#include "Flatten.hpp"
 
-#define IMAGE_SHAPE { 28, 28 }
+#define IMAGE_SHAPE                                                                                \
+    {                                                                                              \
+        1, 28, 28                                                                                  \
+    }
 #define DATA_SIZE 60000
 #define TEST_SIZE 10000
 #define NB_CLASSES 10
@@ -45,29 +48,26 @@ main()
     normalize_pixels(train_images);
     normalize_pixels(test_images);
 
-    Sigmoid activation;
+    ReLU activation;
     Softmax softmax;
     Loss cce = CategoricalCrossEntropy();
-    double learning_rate = 5e-3;
-    double momentum = 0.9;
-    size_t epochs = 30;
-    size_t batch_size = 1024;
+    double learning_rate = 1e-3;
+    double momentum = 0.1;
+    size_t epochs = 100;
+    size_t batch_size = 256;
 
-    NeuralNetwork nn(
-      IMAGE_SHAPE, { new Flatten(), new Dense(32, activation), new Dense(NB_CLASSES, softmax) }, cce);
+    NeuralNetwork nn(IMAGE_SHAPE,
+                     { new Flatten(),
+                       new Dense(128, activation),
+                       new Dense(64, activation),
+                       new Dense(NB_CLASSES, softmax) },
+                     cce);
 
     nn.fit(train_images, train_labels, learning_rate, momentum, batch_size, epochs);
 
     Accuracy accuracy;
     printf("Loss on test set : %f\n", nn.evaluate(test_images, test_labels, cce, &accuracy));
-    // size_t random_image = 9000;
     printf("Accuracy on test set : %f\n", accuracy.get_result());
-    // display_image(test_images[random_image], 2, 10);
-    // printf("Label : %u\n", mnist_test_labels[random_image]);
-
-    // Tensor<double> prediction = nn.predict(test_images[0]);
-    // print_softmax_output(prediction);
-    // printf("Loss : %f\n--\n", cce.evaluate(test_labels[random_image], prediction));
 
     return 0;
 }

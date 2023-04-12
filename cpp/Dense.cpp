@@ -17,9 +17,9 @@ Dense::Dense(size_t layer_size, const Activation& act, bool use_bias)
 void
 Dense::print_layer() const
 {
-    std::cout << "--Layer--\n";
+    cout << "--Layer--\n";
     this->weights.print();
-    std::cout << "--------\n" << std::endl;
+    cout << "--------\n" << endl;
 }
 
 void
@@ -54,19 +54,15 @@ Dense::size() const
 void
 Dense::reset_values()
 {
-    for (size_t i = 0; i < this->values.size(); i++) {
-        this->values[i] = 0;
-        this->output_values[i] = 0;
-    }
+    values.reset_data();
+    output_values.reset_data();
 }
 
 void
 Dense::reset_errors()
 {
-    for (size_t i = 0; i < this->values.size(); i++) {
-        this->errors[i] = 0;
-        this->delta_errors[i] = 0;
-    }
+    errors.reset_data();
+    delta_errors.reset_data();
 }
 
 void
@@ -116,22 +112,19 @@ Dense::backprop(Layer* input_layer, double learning_rate, double momentum)
 void
 Dense::init(vector<size_t> input_shape)
 {
-    bool use_bias = !this->biases.empty();
-
     this->weights = vector<size_t>{ this->size(), input_shape[0] };
     this->updates = vector<size_t>{ this->size(), input_shape[0] };
 
-    std::random_device rd;
-    std::mt19937 gen(rd()); // Mersenne Twister engine
-    std::normal_distribution<double> normal(0, 0.3);
+    random_device rd;
+    mt19937 gen(rd()); // Mersenne Twister engine
+    // normal_distribution<double> initializer(0, 0.3);
+    double var = sqrt(6/(double)(input_shape.size() + this->size()));
+    uniform_real_distribution<double> initializer(-var, var);
     size_t size = this->size();
     for (size_t n = 0; n < size; n++) {
         Tensor<double> weight_n = this->weights.at(n);
         for (size_t p = 0; p < input_shape[0]; p++) {
-            weight_n[p] = normal(gen);
-        }
-        if (use_bias) {
-            this->biases[n] = normal(gen);
+            weight_n[p] = initializer(gen);
         }
     }
 }

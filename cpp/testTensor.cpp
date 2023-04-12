@@ -4,6 +4,10 @@
 
 using namespace std;
 
+Tensor<double> test() {
+    return Tensor<double>(vector<double>{ 1, 2 });
+}
+
 int
 main(void)
 {
@@ -29,4 +33,12 @@ main(void)
 
     memcpy(y.data(), x.data(), size * sizeof(double));
     y.print();
+
+    y.add_dimension();
+    y.print();
+    y.print_shape();
+
+    Tensor<double> tmp = test();
+    x.at(0) = tmp;
+    x.at(0).print();
 }

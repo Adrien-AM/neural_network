@@ -54,17 +54,28 @@ class Tensor
 
     void operator=(const Tensor<T>& other)
     {
-        if (owner_)
+        if (&other == this)
+            return;
+        if (owner_) {
             delete[] data_;
-        data_ = new T[other.size_];
-        memcpy(this->data_, other.data_, other.size_ * sizeof(T));
+            data_ = new T[other.size_];
+            memcpy(this->data_, other.data_, other.size_ * sizeof(T));
+        } else {
+            if(other.size_ != size_) {
+                throw length_error("Cannot modify shape of subarray.");
+            }
+            memcpy(this->data_, other.data_, other.size_ * sizeof(T));
+        }
         this->shape_ = other.shape_;
         this->size_ = other.size_;
-        this->owner_ = true;
     }
 
     Tensor(const Tensor<T>& other)
     {
+        if (&other == this)
+            return;
+        // if(owner_)
+        //     delete[] data_;
         data_ = new T[other.size_];
         memcpy(this->data_, other.data_, other.size_ * sizeof(T));
         this->shape_ = other.shape_;
@@ -176,6 +187,24 @@ class Tensor
     size_t total_size() const { return this->size_; }
 
     void copy_data(Tensor& other) const { memcpy(other.data(), data_, size_ * sizeof(T)); }
+
+    T sum() const
+    {
+        T x;
+        for (size_t i = 0; i < size_; i++)
+            x += data_[i];
+        return x;
+    }
+
+    void add_dimension()
+    {
+        vector<size_t> new_shape = vector<size_t>(shape_.size() + 1);
+        new_shape[0] = 1;
+        copy(shape_.begin(), shape_.end(), new_shape.begin() + 1);
+        shape_ = new_shape;
+    }
+
+    void reset_data() { memset(data_, 0, size_ * sizeof(T)); }
 
   private:
     vector<size_t> shape_;

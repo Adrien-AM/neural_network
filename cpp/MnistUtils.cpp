@@ -38,9 +38,9 @@ read_idx_images_file(const std::string& filename, int max_images)
     }
 
     // Read the data
-    Tensor<uint8_t> data(vector<size_t>({ (size_t)num_images, (size_t)side, (size_t)side }));
+    Tensor<uint8_t> data(vector<size_t>({ (size_t)num_images, 1, (size_t)side, (size_t)side }));
     for (int32_t i = 0; i < num_images; i++) {
-        file.read(reinterpret_cast<char*>(data.at(i).data()), sizeof(uint8_t) * side * side);
+        file.read(reinterpret_cast<char*>(data.at(i).at(0).data()), sizeof(uint8_t) * side * side);
     }
 
     // Close the file
@@ -95,12 +95,16 @@ uint_to_double_images(const Tensor<uint8_t>& images)
 
     for (size_t i = 0; i < images.size(); i++) {
         Tensor<uint8_t> old_img = images.at(i);
-        Tensor<double> new_img = new_images.at(i);
-        for (size_t x = 0; x < old_img.shape()[0]; x++) {
-            Tensor<uint8_t> old_row = old_img.at(x);
-            Tensor<double> new_row = new_img.at(x);
-            for (size_t y = 0; y < old_img.shape()[1]; y++) {
-                new_row[y] = (double)(old_row[y]);
+        Tensor<double> new_img = new_images.at(i); // channel 0
+        for (size_t c = 0; c < old_img.size(); c++) {
+            Tensor<uint8_t> old_img_c = old_img.at(c);
+            Tensor<double> new_img_c = new_img.at(c);
+            for (size_t x = 0; x < old_img_c.size(); x++) {
+                Tensor<uint8_t> old_row = old_img_c.at(x);
+                Tensor<double> new_row = new_img_c.at(x);
+                for (size_t y = 0; y < old_row.size(); y++) {
+                    new_row[y] = (double)(old_row[y]);
+                }
             }
         }
     }
@@ -122,8 +126,9 @@ uint_to_one_hot_labels(const vector<uint8_t>& labels, size_t nb_classes)
 void
 display_image(const Tensor<double>& image, size_t time, int upscale)
 {
-    size_t width = image.shape()[0];
-    size_t height = image.shape()[1];
+    Tensor<double> image_2d = image.at(0);
+    size_t width = image_2d.shape()[1];
+    size_t height = image_2d.shape()[0];
 
     SDL_Init(SDL_INIT_VIDEO);
     SDL_Window* window = SDL_CreateWindow("MNIST Image",
@@ -137,7 +142,7 @@ display_image(const Tensor<double>& image, size_t time, int upscale)
     for (size_t y = 0; y < height; y++) {
         for (size_t x = 0; x < width; x++) {
             // put pixel back in [0, 255] from [0, 1]
-            uint8_t pixel = (uint8_t)(image.at(y)[x] * 255);
+            uint8_t pixel = (uint8_t)(image_2d.at(y)[x] * 255);
             SDL_SetRenderDrawColor(renderer, pixel, pixel, pixel, 255);
             for (int i = 0; i < upscale; i++) {
                 for (int j = 0; j < upscale; j++) {
@@ -182,11 +187,14 @@ normalize_pixels(Tensor<double>& images)
 {
     size_t nb_images = images.size();
     for (size_t i = 0; i < nb_images; i++) {
-        Tensor<double> im = images.at(i);
-        for (size_t x = 0; x < images.at(i).size(); x++) {
-            Tensor<double> row = im.at(x);
-            for (size_t y = 0; y < images.at(i).at(x).size(); y++)
-                row[y] /= 255;
+        Tensor<double> im = images.at(i); // channel 0
+        for (size_t c = 0; c < im.size(); c++) {
+            Tensor<double> im_c = im.at(c);
+            for (size_t x = 0; x < im_c.size(); x++) {
+                Tensor<double> row = im_c.at(x);
+                for (size_t y = 0; y < row.size(); y++)
+                    row[y] /= 255;
+            }
         }
     }
 }

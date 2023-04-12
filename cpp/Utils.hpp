@@ -17,11 +17,12 @@ void
 print_softmax_output(Tensor<double> vec);
 
 Tensor<double>
-add_padding(const Tensor<double>& image, size_t pad_size);
+add_padding_2d(const Tensor<double>& image, size_t pad_size);
 
 Tensor<double>
-convolution_product(const Tensor<double>& input,
-                    const Tensor<double>& filter,
-                    size_t stride);
+convolution_2d(const Tensor<double>& input, const Tensor<double>& kernel, size_t stride);
+
+Tensor<double>
+convolution_product(const Tensor<double>& input, const Tensor<double>& filter, size_t stride);
 
 #endif // __UTILS_HPP__
