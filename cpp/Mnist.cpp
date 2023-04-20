@@ -50,7 +50,7 @@ main()
 
     ReLU activation;
     Softmax softmax;
-    Loss cce = CategoricalCrossEntropy();
+    CategoricalCrossEntropy cce;
     double learning_rate = 1e-3;
     double momentum = 0.1;
     size_t epochs = 100;

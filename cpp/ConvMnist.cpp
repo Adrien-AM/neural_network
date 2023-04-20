@@ -35,7 +35,7 @@ main()
     ReLU activation;
     Sigmoid sigm;
     Softmax softmax;
-    Loss cce = CategoricalCrossEntropy();
+    CategoricalCrossEntropy cce = CategoricalCrossEntropy();
     double learning_rate = 1e-3;
     double momentum = 0.1;
     size_t batch_size = 64;

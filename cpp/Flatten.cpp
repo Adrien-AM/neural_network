@@ -33,6 +33,7 @@ Flatten::summarize() const
 {
     printf("Flatten layer : output of size %zu.\n", this->output_values.size());
 }
+
 size_t
 Flatten::size() const
 {

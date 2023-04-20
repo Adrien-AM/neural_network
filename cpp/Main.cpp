@@ -21,7 +21,7 @@ main()
 {
     Linear act;
     vector<Layer*> layers = { new Dense(1, act, false), new Dense(1, act, true) };
-    Loss mse = MeanSquaredError();
+    MeanSquaredError mse;
     NeuralNetwork nn({ 1 }, layers, mse);
 
     std::random_device rd;
@@ -37,7 +37,7 @@ main()
     for (size_t i = 0; i < inputs.size(); i++) {
         outputs.at(i) = { f(inputs.at(i)[0]) };
     }
-    nn.fit(inputs, outputs, 1e-3, 0, inputs.size(), 10);
+    nn.fit(inputs, outputs, 1e-4, 0, inputs.size(), 100);
     double newrand = dis(gen);
     vector<double> input = { newrand };
     printf("f(%f) -> %f (should be %f)\n", newrand, nn.predict(input)[0], f(newrand));

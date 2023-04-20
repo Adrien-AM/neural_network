@@ -18,7 +18,7 @@ class NeuralNetwork
   private:
     vector<size_t> input_shape;
     vector<Layer*> layers;
-    Loss loss;
+    Loss& loss;
     double alpha;
     double gamma;
 
@@ -34,7 +34,7 @@ class NeuralNetwork
      * @param layers
      * @param loss : loss function used as evaluation and in GD
      */
-    NeuralNetwork(vector<size_t> input_shape, vector<Layer*> layers, Loss loss);
+    NeuralNetwork(vector<size_t> input_shape, vector<Layer*> layers, Loss& loss);
     /*
     * Train a Neural Network on data
     * @param inputs : data
@@ -65,7 +65,7 @@ class NeuralNetwork
     */
     double evaluate(const Tensor<double>& inputs,
                     const Tensor<double>& outputs,
-                    Loss loss, Metric *metric);
+                    Loss& loss, Metric *metric);
 
     /*
     * Show a brief description of Neural Network's architecture

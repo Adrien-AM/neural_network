@@ -1,29 +1,58 @@
 #ifndef __LOSS_HPP__
 #define __LOSS_HPP__
 
+#include "CompGraph/Add.hpp"
+#include "CompGraph/CompGraph.hpp"
+#include "CompGraph/Log.hpp"
+#include "CompGraph/Mul.hpp"
+#include "CompGraph/Pow.hpp"
+#include "CompGraph/Sub.hpp"
+#include "CompGraph/Variable.hpp"
+#include "CompGraph/Div.hpp"
 #include "Tensor.hpp"
 
 using namespace std;
 
 class Loss
 {
-  public:
-    double (*evaluate)(Tensor<double> real, Tensor<double> predicted);
-    Tensor<double> (*derivate)(Tensor<double> real, Tensor<double> predicted);
+  protected:
+    CompGraph<double>* graph;
+    Tensor<Variable<double>*> inputs;
 
-    Loss(double (*evaluate)(Tensor<double>, Tensor<double>),
-         Tensor<double> (*derivate)(Tensor<double>, Tensor<double>))
-      : evaluate(evaluate)
-      , derivate(derivate){};
+    void create_variables(const Tensor<double>& predicted);
+
+  public:
+    Loss() : graph(nullptr) {}
+    virtual double evaluate(const Tensor<double>& real, const Tensor<double>& predicted) = 0;
+    virtual Tensor<double> derivate(const Tensor<double>& real, const Tensor<double>& predicted);
+    virtual ~Loss();
 };
 
-Loss
-MeanAbsoluteError();
+class MeanAbsoluteError : public Loss
+{
+  public:
+    double evaluate(const Tensor<double>& real, const Tensor<double>& predicted);
+    Tensor<double> derivate(const Tensor<double>& real, const Tensor<double>& predicted);
+};
 
-Loss
-MeanSquaredError();
+class MeanSquaredError : public Loss
+{
+  public:
+    double evaluate(const Tensor<double>& real, const Tensor<double>& predicted);
+    Tensor<double> derivate(const Tensor<double>& real, const Tensor<double>& predicted);
+};
 
-Loss
-CategoricalCrossEntropy();
+class CategoricalCrossEntropy : public Loss
+{
+  public:
+    double evaluate(const Tensor<double>& real, const Tensor<double>& predicted);
+    Tensor<double> derivate(const Tensor<double>& real, const Tensor<double>& predicted);
+};
+
+class SSIM : public Loss
+{
+  public:
+    double evaluate(const Tensor<double>& real, const Tensor<double>& predicted);
+};
 
 #endif // __LOSS_HPP__

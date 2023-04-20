@@ -1,6 +1,6 @@
 #include "NeuralNetwork.hpp"
 
-NeuralNetwork::NeuralNetwork(vector<size_t> input_shape, vector<Layer*> layers, Loss loss)
+NeuralNetwork::NeuralNetwork(vector<size_t> input_shape, vector<Layer*> layers, Loss& loss)
   : input_shape(input_shape)
   , layers(layers)
   , loss(loss)
@@ -30,8 +30,7 @@ NeuralNetwork::predict(const Tensor<double>& inputs)
 void
 NeuralNetwork::backpropagation(const Tensor<double>& real, const Tensor<double>& inputs)
 {
-    Tensor<double> partial_errors =
-      this->loss.derivate(real, this->layers.back()->output_values);
+    Tensor<double> partial_errors = this->loss.derivate(real, this->layers.back()->output_values);
     this->layers.back()->errors = partial_errors;
 #ifdef DEBUG
     printf("Partial errors (loss derivatives) : ");
@@ -100,13 +99,13 @@ NeuralNetwork::fit(const Tensor<double>& inputs,
             Tensor<double> predicted = this->predict(input);
             double curr_loss = this->loss.evaluate(output, predicted);
             loss += (curr_loss - loss) / (row + 1); // Moving average
+            // print_vector(predicted);
+            // print_vector(outputs.at(row));
+            // printf("Curr loss : %f - New loss : %f\n--\n", curr_loss, loss);
             if (loss != loss) {
                 printf("Networked diverged during training.\n");
                 exit(0);
             }
-            // print_vector(predicted);
-            // print_vector(outputs[row]);
-            // printf("Curr loss : %f - New loss : %f\n--\n", curr_loss, loss);
             this->reset_errors();
             this->backpropagation(output, input);
         }
@@ -118,7 +117,7 @@ NeuralNetwork::fit(const Tensor<double>& inputs,
 double
 NeuralNetwork::evaluate(const Tensor<double>& inputs,
                         const Tensor<double>& outputs,
-                        Loss loss,
+                        Loss& loss,
                         Metric* metric)
 {
     if (inputs.size() != outputs.size()) {
