@@ -61,7 +61,7 @@ class Tensor
             data_ = new T[other.size_];
             memcpy(this->data_, other.data_, other.size_ * sizeof(T));
         } else {
-            if(other.size_ != size_) {
+            if (other.size_ != size_) {
                 throw length_error("Cannot modify shape of subarray.");
             }
             memcpy(this->data_, other.data_, other.size_ * sizeof(T));
@@ -205,6 +205,13 @@ class Tensor
     }
 
     void reset_data() { memset(data_, 0, size_ * sizeof(T)); }
+
+    Tensor<double> flatten()
+    {
+        Tensor<double> flat(this->size_);
+        this->copy_data(flat);
+        return flat;
+    }
 
   private:
     vector<size_t> shape_;
