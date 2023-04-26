@@ -34,7 +34,7 @@ class Tensor
       : shape_(shape)
       , owner_(true)
     {
-        size_t size = 1;
+        size_t size = shape.size() == 0 ? 0 : 1;
         for (auto dim : shape) {
             size *= dim;
         }
@@ -61,7 +61,7 @@ class Tensor
             data_ = new T[other.size_];
             memcpy(this->data_, other.data_, other.size_ * sizeof(T));
         } else {
-            if(other.size_ != size_) {
+            if (other.size_ != size_) {
                 throw length_error("Cannot modify shape of subarray.");
             }
             memcpy(this->data_, other.data_, other.size_ * sizeof(T));
@@ -74,8 +74,6 @@ class Tensor
     {
         if (&other == this)
             return;
-        // if(owner_)
-        //     delete[] data_;
         data_ = new T[other.size_];
         memcpy(this->data_, other.data_, other.size_ * sizeof(T));
         this->shape_ = other.shape_;

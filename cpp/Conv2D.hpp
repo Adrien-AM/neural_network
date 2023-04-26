@@ -15,7 +15,6 @@ class Conv2D : public Layer
     size_t channels;
     size_t padding;
     const Activation& activation;
-    Tensor<double> weights;
     Tensor<double> updates;
     Tensor<double> biases;
     Tensor<double> values;
@@ -29,7 +28,7 @@ class Conv2D : public Layer
            bool use_bias = true);
     void init(vector<size_t>);
     void forward(const Tensor<double>&);
-    void backprop(Layer*, double, double);
+    Tensor<double> backprop(Layer*);
 
     void summarize() const;
     size_t size() const;

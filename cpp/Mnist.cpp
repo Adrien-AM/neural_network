@@ -1,6 +1,7 @@
 #include <iostream>
 #include <time.h>
 
+#include "Optimizer.hpp"
 #include "Dense.hpp"
 #include "Flatten.hpp"
 #include "Metric.hpp"
@@ -48,22 +49,22 @@ main()
     normalize_pixels(train_images);
     normalize_pixels(test_images);
 
-    ReLU activation;
+    Sigmoid activation;
     Softmax softmax;
     Loss cce = CategoricalCrossEntropy();
-    double learning_rate = 1e-3;
-    double momentum = 0.1;
-    size_t epochs = 100;
-    size_t batch_size = 256;
+    size_t epochs = 70;
+    size_t batch_size = 64;
 
+    Adam optimizer;
     NeuralNetwork nn(IMAGE_SHAPE,
                      { new Flatten(),
-                       new Dense(128, activation),
-                       new Dense(64, activation),
+                       new Dense(512, activation),
+                       new Dense(256, activation),
                        new Dense(NB_CLASSES, softmax) },
-                     cce);
+                     cce,
+                     optimizer);
 
-    nn.fit(train_images, train_labels, learning_rate, momentum, batch_size, epochs);
+    nn.fit(train_images, train_labels, batch_size, epochs);
 
     Accuracy accuracy;
     printf("Loss on test set : %f\n", nn.evaluate(test_images, test_labels, cce, &accuracy));

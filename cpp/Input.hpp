@@ -12,7 +12,7 @@ class Input : public Layer
     Input(Tensor<double>);
     void init(vector<size_t>);
     void forward(const Tensor<double>&);
-    void backprop(Layer*, double, double);
+    Tensor<double> backprop(Layer*);
     void summarize() const;
     size_t size() const;
     void reset_values();

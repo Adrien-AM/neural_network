@@ -20,8 +20,6 @@ class Dense : public Layer
     Tensor<double> values;
     Tensor<double> delta_errors;
     Tensor<double> biases;
-    Tensor<double> weights;
-    Tensor<double> updates;
 
     const Activation& activation;
 
@@ -29,7 +27,7 @@ class Dense : public Layer
     Dense(size_t layer_size, const Activation& act, bool use_bias = true);
     void init(vector<size_t>);
     void forward(const Tensor<double>&);
-    void backprop(Layer*, double, double);
+    Tensor<double> backprop(Layer*);
     void summarize() const;
     
     size_t size() const;

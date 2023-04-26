@@ -17,9 +17,10 @@ Input::forward(const Tensor<double>& inputs)
     this->output_values = inputs;
 }
 
-void
-Input::backprop(Layer*, double, double)
+Tensor<double>
+Input::backprop(Layer*)
 {
+    return Tensor<double>();
 }
 
 void

@@ -70,8 +70,8 @@ Conv2D::forward(const Tensor<double>& inputs)
 }
 
 /* Careful : only works when partial derivatives don't depend on other values ! (simple activation)*/
-void
-Conv2D::backprop(Layer* input_layer, double learning_rate, double momentum)
+Tensor<double>
+Conv2D::backprop(Layer* input_layer)
 {
     vector<size_t> input_shape = input_layer->output_values.shape();
 

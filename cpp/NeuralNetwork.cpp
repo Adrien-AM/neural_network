@@ -1,9 +1,13 @@
 #include "NeuralNetwork.hpp"
 
-NeuralNetwork::NeuralNetwork(vector<size_t> input_shape, vector<Layer*> layers, Loss loss)
+NeuralNetwork::NeuralNetwork(vector<size_t> input_shape,
+                             vector<Layer*> layers,
+                             Loss loss,
+                             Optimizer& opti)
   : input_shape(input_shape)
   , layers(layers)
   , loss(loss)
+  , optimizer(opti)
 {
     if (this->layers.size() == 0)
         return;
@@ -12,6 +16,7 @@ NeuralNetwork::NeuralNetwork(vector<size_t> input_shape, vector<Layer*> layers, 
     for (size_t i = 1; i < this->layers.size(); i++) {
         this->layers[i]->init(this->layers[i - 1]->output_values.shape());
     }
+    optimizer.attach_layers(this->layers);
 }
 
 Tensor<double>
@@ -27,25 +32,21 @@ NeuralNetwork::predict(const Tensor<double>& inputs)
     return moving_inputs;
 }
 
-void
+vector<Tensor<double>>
 NeuralNetwork::backpropagation(const Tensor<double>& real, const Tensor<double>& inputs)
 {
-    Tensor<double> partial_errors =
-      this->loss.derivate(real, this->layers.back()->output_values);
+    Tensor<double> partial_errors = this->loss.derivate(real, this->layers.back()->output_values);
     this->layers.back()->errors = partial_errors;
-#ifdef DEBUG
-    printf("Partial errors (loss derivatives) : ");
-    print_vector(partial_errors);
-#endif
+
+    vector<Tensor<double>> gradients(layers.size());
 
     for (size_t i = this->layers.size() - 1; i > 0; i--) {
-        this->layers[i]->backprop(this->layers[i - 1], this->alpha, this->gamma);
+        gradients[i] = this->layers[i]->backprop(this->layers[i - 1]);
     }
 
     Input fake_input(inputs);
-    this->layers[0]->backprop(&fake_input, this->alpha, this->gamma);
-
-    return;
+    gradients[0] = this->layers[0]->backprop(&fake_input);
+    return gradients;
 }
 
 void
@@ -67,8 +68,6 @@ NeuralNetwork::reset_errors()
 void
 NeuralNetwork::fit(const Tensor<double>& inputs,
                    const Tensor<double>& outputs,
-                   double learning_rate,
-                   double momentum,
                    size_t batch_size,
                    size_t epochs)
 {
@@ -78,12 +77,16 @@ NeuralNetwork::fit(const Tensor<double>& inputs,
                 inputs.size(),
                 outputs.size());
     }
-    this->alpha = learning_rate;
-    this->gamma = momentum;
     for (size_t epoch = 0; epoch < epochs; epoch++) {
         printf("- Epoch %zu -- ", epoch + 1);
         fflush(stdout);
         double loss = 0;
+        vector<Tensor<double>> gradients(layers.size());
+        for (size_t i = 0; i < layers.size(); i++) {
+            gradients[i] = Tensor<double>(layers[i]->weights.shape());
+        }
+
+        // Sample batch
         vector<size_t> data_idx(inputs.size());
         std::iota(data_idx.begin(), data_idx.end(), 0);
         vector<size_t> sample_idx(batch_size);
@@ -93,9 +96,10 @@ NeuralNetwork::fit(const Tensor<double>& inputs,
                     batch_size,
                     std::mt19937(std::random_device()()));
 
+
         for (size_t row = 0; row < batch_size; row++) {
             const Tensor<double>& input = inputs.at(sample_idx[row]);
-            const Tensor<double> output = outputs.at(sample_idx[row]);
+            const Tensor<double>& output = outputs.at(sample_idx[row]);
             reset_values();
             Tensor<double> predicted = this->predict(input);
             double curr_loss = this->loss.evaluate(output, predicted);
@@ -104,13 +108,19 @@ NeuralNetwork::fit(const Tensor<double>& inputs,
                 printf("Networked diverged during training.\n");
                 exit(0);
             }
-            // print_vector(predicted);
-            // print_vector(outputs[row]);
-            // printf("Curr loss : %f - New loss : %f\n--\n", curr_loss, loss);
             this->reset_errors();
-            this->backpropagation(output, input);
+            vector<Tensor<double>> local_grads = this->backpropagation(output, input);
+            for (size_t i = 0; i < gradients.size(); i++) {
+                double* gradients_data = gradients[i].data();
+                double* local_grads_data = local_grads[i].data();
+                for (size_t j = 0; j < gradients[i].total_size(); j++) {
+                    // Moving average again
+                    gradients_data[j] += (local_grads_data[j] - gradients_data[j]) / (row + 1);
+                }
+            }
         }
-        // this->alpha *= 0.9;
+
+        optimizer.update(gradients);
         printf("Mean loss : %f\n", loss);
     }
 }
