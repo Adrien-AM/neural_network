@@ -14,10 +14,10 @@ exe=main mnist conv-mnist test-conv test-tensor
 
 all: ${exe}
 
-main: Main.cpp Dense.o Layer.o NeuralNetwork.o Loss.o Activation.o Utils.o Input.o
+main: Main.cpp Dense.o Layer.o NeuralNetwork.o Loss.o Activation.o Utils.o Input.o Optimizer.o
 	${CXX} ${CXXFLAGS} $^ -o $@
 
-mnist: Mnist.cpp MnistUtils.o Dense.o Layer.o NeuralNetwork.o Loss.o Activation.o Utils.o Input.o Metric.o Flatten.o
+mnist: Mnist.cpp MnistUtils.o Dense.o Layer.o NeuralNetwork.o Loss.o Activation.o Utils.o Input.o Metric.o Flatten.o Optimizer.o
 	${CXX} ${CXXFLAGS} $^ -o $@ -lSDL2
 
 mnist_generator: MnistGenerator.cpp MnistUtils.o Dense.o Layer.o NeuralNetwork.o Loss.o Activation.o Utils.o Input.o Metric.o Reshape.o Flatten.o

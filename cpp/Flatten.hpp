@@ -16,7 +16,7 @@ class Flatten : public Layer
     public:
       void init(vector<size_t>);
       void forward(const Tensor<double>&);
-      void backprop(Layer*, double, double);
+      Tensor<double> backprop(Layer*);
       void summarize() const;
       // getters and setters
       size_t size() const;

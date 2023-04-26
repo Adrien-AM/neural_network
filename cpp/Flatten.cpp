@@ -20,12 +20,11 @@ Flatten::forward(const Tensor<double>& input)
     input.copy_data(this->output_values);
 }
 
-void
-Flatten::backprop(Layer* input_layer, double alpha, double beta)
+Tensor<double>
+Flatten::backprop(Layer* input_layer)
 {
-    (void)alpha;
-    (void)beta;
     this->errors.copy_data(input_layer->errors);
+    return Tensor<double>();
 }
 
 void

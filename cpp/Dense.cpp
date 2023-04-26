@@ -28,9 +28,9 @@ Dense::forward(const Tensor<double>& inputs)
     size_t size = this->size();
     size_t input_size = inputs.size();
 
-    #ifdef PARALLEL
-    #pragma omp parallel for
-    #endif
+#ifdef PARALLEL
+#pragma omp parallel for
+#endif
     for (size_t n = 0; n < size; n++) {
         if (!this->biases.empty())
             this->values[n] = this->biases[n];
@@ -65,60 +65,51 @@ Dense::reset_errors()
     delta_errors.reset_data();
 }
 
-void
-Dense::backprop(Layer* input_layer, double learning_rate, double momentum)
+Tensor<double>
+Dense::backprop(Layer* input_layer)
 {
     size_t size = this->size();
     vector<size_t> input_shape = input_layer->output_values.shape();
 
-    Tensor<double> jacobian =
-      this->activation.derivative(this->output_values); // dav/dv
+    Tensor<double> jacobian = this->activation.derivative(this->output_values); // dav/dv
 
     for (size_t j = 0; j < size; j++) {
         double& ej = this->errors[j];
         if (ej != 0) {
-            #ifdef PARALLEL
-            #pragma omp parallel for
-            #endif
             for (size_t i = 0; i < size; i++) {
                 this->delta_errors[i] += ej * jacobian.at(i)[j]; // de/dav
             }
         }
     }
 
+    double* input_errors = input_layer->errors.data();
+    double* input_outputs = input_layer->output_values.data();
+    Tensor<double> gradients(weights.shape());
     for (size_t i = 0; i < size; i++) {
-        // update = alpha x input x error, for each weight
-        double update = this->delta_errors[i] * learning_rate;
-        #ifdef PARALLEL
-        #pragma omp parallel for
-        #endif
-        Tensor<double> update_i = this->updates.at(i);
+        double derror = this->delta_errors[i];
         Tensor<double> weight_i = this->weights.at(i);
-        double* input_errors = input_layer->errors.data();
-        double* input_outputs = input_layer->output_values.data();
+        Tensor<double> gradients_i = gradients.at(i);
         for (size_t j = 0; j < input_layer->errors.total_size(); j++) {
-            input_errors[j] += this->delta_errors[i] * weight_i[j];
-            update_i[j] = (momentum * update_i[j]) +
-                                  (1 - momentum) * update * input_outputs[j];
-            weight_i[j] -= update_i[j];
+            input_errors[j] += derror * weight_i[j];
+            gradients_i[j] = derror * input_outputs[j];
         }
         if (!this->biases.empty()) {
-            this->biases[i] -= this->delta_errors[i] * learning_rate;
+            this->biases[i] -= derror * 1e-3; // temporary
         }
     }
-    return;
+
+    return gradients;
 }
 
 void
 Dense::init(vector<size_t> input_shape)
 {
     this->weights = vector<size_t>{ this->size(), input_shape[0] };
-    this->updates = vector<size_t>{ this->size(), input_shape[0] };
 
     random_device rd;
     mt19937 gen(rd()); // Mersenne Twister engine
     // normal_distribution<double> initializer(0, 0.3);
-    double var = sqrt(6/(double)(input_shape.size() + this->size()));
+    double var = sqrt(6 / (double)(input_shape.size() + this->size()));
     uniform_real_distribution<double> initializer(-var, var);
     size_t size = this->size();
     for (size_t n = 0; n < size; n++) {

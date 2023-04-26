@@ -5,7 +5,7 @@
 #include "Layer.hpp"
 #include "Loss.hpp"
 #include "Metric.hpp"
-
+#include "Optimizer.hpp"
 
 #include <algorithm>
 #include <numeric>
@@ -19,13 +19,12 @@ class NeuralNetwork
     vector<size_t> input_shape;
     vector<Layer*> layers;
     Loss& loss;
-    double alpha;
-    double gamma;
+    Optimizer& optimizer;
 
     void reset_values();
     void reset_errors();
     Tensor<double> feed_forward(const Tensor<double>& inputs);
-    void backpropagation(const Tensor<double>&, const Tensor<double>&);
+    vector<Tensor<double>> backpropagation(const Tensor<double>&, const Tensor<double>&);
 
   public:
     /*
@@ -33,8 +32,9 @@ class NeuralNetwork
      * @param input_size : size of each data sample fed as input (only 1D)
      * @param layers
      * @param loss : loss function used as evaluation and in GD
+     * @param opti : optimizer to compute updates of weights
      */
-    NeuralNetwork(vector<size_t> input_shape, vector<Layer*> layers, Loss& loss);
+    NeuralNetwork(vector<size_t> input_shape, vector<Layer*> layers, Loss& loss, Optimizer& opti);
     /*
     * Train a Neural Network on data
     * @param inputs : data
@@ -46,8 +46,6 @@ class NeuralNetwork
     */
     void fit(const Tensor<double>& inputs,
              const Tensor<double>& outputs,
-             double learning_rate,
-             double momentum,
              size_t batch_size,
              size_t epochs);
 

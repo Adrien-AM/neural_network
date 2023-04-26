@@ -13,6 +13,7 @@ class Layer
   public:
     Tensor<double> output_values;
     Tensor<double> errors;
+    Tensor<double> weights;
 
     // abstraction
     /**
@@ -35,8 +36,10 @@ class Layer
      * @param input_layer
      * @param learning_rate : hyperparameter
      * @param momentum : hyperparameter
+     * 
+     * @return gradients
     */
-    virtual void backprop(Layer*, double, double) = 0;
+    virtual Tensor<double> backprop(Layer*) = 0;
 
     /**
      * Displays useful informations on stdout.
