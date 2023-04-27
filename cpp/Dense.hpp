@@ -19,7 +19,6 @@ class Dense : public Layer
 {
     Tensor<double> values;
     Tensor<double> delta_errors;
-    Tensor<double> biases;
 
     const Activation& activation;
 

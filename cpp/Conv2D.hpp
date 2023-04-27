@@ -16,7 +16,6 @@ class Conv2D : public Layer
     size_t padding;
     const Activation& activation;
     Tensor<double> updates;
-    Tensor<double> biases;
     Tensor<double> values;
     Tensor<double> padded_input;
 
