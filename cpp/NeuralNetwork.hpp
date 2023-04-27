@@ -21,12 +21,11 @@ class NeuralNetwork
     Loss& loss;
     Optimizer& optimizer;
 
-    void reset_values();
-    void reset_errors();
-    Tensor<double> feed_forward(const Tensor<double>& inputs);
     vector<Tensor<double>> backpropagation(const Tensor<double>&, const Tensor<double>&);
 
   public:
+    void reset_values();
+    void reset_errors();
     /*
      * Create a Neural Network
      * @param input_size : size of each data sample fed as input (only 1D)

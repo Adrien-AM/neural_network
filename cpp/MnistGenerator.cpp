@@ -8,6 +8,7 @@
 #include "Loss.hpp"
 #include "MnistUtils.hpp"
 #include "NeuralNetwork.hpp"
+#include "Optimizer.hpp"
 #include "Reshape.hpp"
 
 #define SHAPE                                                                                      \
@@ -16,7 +17,7 @@
     }
 #define DATA_SIZE 60000
 #define TEST_SIZE 10000
-#define LATENT_SPACE 32
+#define LATENT_SPACE 64
 
 using namespace std;
 
@@ -32,23 +33,22 @@ main(void)
         train_images.at(i) = train_images_2d.at(i).flatten();
     }
 
-    Sigmoid activation;
+    ReLU activation;
     Sigmoid output_activation;
-    MeanSquaredError loss;
-    vector<Layer*> layers = { new Dense(64, activation),
-                              new Dense(LATENT_SPACE, activation),
-                              new Dense(64, activation),
-                              new Dense(28 * 28, output_activation) };
+    MeanAbsoluteError loss;
+    Adam optimizer;
+    vector<Layer*> layers = { new Dense(256, activation), new Dense(128, activation),
+                              new Dense(128, activation), new Dense(LATENT_SPACE, output_activation),
+                              new Dense(128, activation), new Dense(128, activation),
+                              new Dense(256, activation), new Dense(28 * 28, output_activation) };
 
     // TODO : SHUFFLE ON TENSOR
-    NeuralNetwork nn = NeuralNetwork({ 28 * 28 }, layers, loss);
+    NeuralNetwork nn = NeuralNetwork({ 28 * 28 }, layers, loss, optimizer);
 
-    double lr = 1e-2;
-    double momentum = 0.9;
-    size_t epochs = 30;
-    size_t batch_size = 128;
+    size_t epochs = 80;
+    size_t batch_size = 32;
 
-    nn.fit(train_images, train_images, lr, momentum, batch_size, epochs);
+    nn.fit(train_images, train_images, batch_size, epochs);
 
     Tensor<uint8_t> mnist_test_images =
       read_idx_images_file("../data/mnist/test-images", TEST_SIZE);
@@ -59,7 +59,7 @@ main(void)
         test_images.at(i) = test_images_2d.at(i).flatten();
     }
 
-    size_t idx_test = 0;
+    size_t idx_test = 23;
     display_image(test_images_2d.at(idx_test), 1, 10);
     Tensor<double> restored = nn.predict(test_images.at(idx_test));
     Tensor<double> image = vector<size_t>({ 1, 28, 28 });
@@ -67,28 +67,30 @@ main(void)
     display_image(image, 2, 10);
 
     printf("Loss : %f\n", loss.evaluate(test_images.at(idx_test), restored));
+
     exit(0);
-    /*
-        // Create a normal distribution with mean 0 and standard deviation 1
-        std::normal_distribution<double> dist(0.0, 1.0);
+    // Create a normal distribution with mean 0 and standard deviation 1
+    std::normal_distribution<double> dist(0.0, 1.0);
 
-        // Create a random number engine
-        std::default_random_engine generator;
+    // Create a random number engine
+    std::default_random_engine generator;
 
-        // Generate 10 random values from the normal distribution and store them in a vector
-        Tensor<double> noise(LATENT_SPACE);
-        for (int i = 0; i < LATENT_SPACE; ++i) {
-            noise[i] = dist(generator);
-        }
+    // Generate 10 random values from the normal distribution and store them in a vector
+    Tensor<double> noise(LATENT_SPACE);
+    for (int i = 0; i < LATENT_SPACE; ++i) {
+        noise[i] = dist(generator);
+    }
 
-        nn.reset_values();
-        layers[1]->actv_values = noise;
-        for (size_t i = 2; i < layers.size(); i++) {
-            layers[i]->forward(layers[i - 1]->actv_values);
-        }
+    nn.reset_values();
+    layers[3]->output_values = noise;
+    for (size_t i = 4; i < layers.size(); i++) {
+        layers[i]->forward(layers[i - 1]->output_values);
+    }
 
-        Tensor<double> result = layers.back()->actv_values;
-        display_image(result, 10, 10);
+    Tensor<double> result = layers.back()->output_values;
+    Tensor<double> result_2d = vector<size_t>(SHAPE);
+    result_2d.at(0) = result;
+    display_image(result_2d, 10, 10);
 
-        return 0;*/
+    return 0;
 }
