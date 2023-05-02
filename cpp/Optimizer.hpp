@@ -8,9 +8,10 @@ class Optimizer
   protected:
     vector<Layer*> layers;
     double alpha;
+    double clip;
 
   public:
-    Optimizer(double lr = 1e-3) : alpha(lr) {}
+    Optimizer(double lr = 1e-3, double clip = 0) : alpha(lr), clip(clip) {}
     virtual void attach_layers(vector<Layer*> l) { layers = l; }
     virtual void update(vector<Tensor<double>> gradients) = 0;
 };
@@ -21,8 +22,8 @@ class SGD : public Optimizer
     double decay;
 
   public:
-    SGD(double alpha = 1e-3, double decay = 1)
-      : Optimizer(alpha)
+    SGD(double alpha = 1e-3, double decay = 1, double clip = 0)
+      : Optimizer(alpha, clip)
       , decay(decay)
     {
     }
@@ -38,7 +39,7 @@ class Adam : public Optimizer
       double t;
 
     public:
-      Adam(double lr = 1e-3, double beta1 = 0.9, double beta2 = 0.999);
+      Adam(double lr = 1e-3, double beta1 = 0.9, double beta2 = 0.999, double clip = 0);
       void attach_layers(vector<Layer*> l);
       void update(vector<Tensor<double>> gradients);
 };

@@ -24,7 +24,6 @@ Conv2D::init(vector<size_t> input_shape)
     size_t output_height = input_shape[2] - kernel_size + 1 + 2 * padding;
 
     this->weights = vector<size_t>({ filters_size, channels, kernel_size, kernel_size });
-    this->updates = vector<size_t>({ filters_size, channels, kernel_size, kernel_size });
 
     this->values = vector<size_t>({ filters_size, output_height, output_width });
     this->output_values = vector<size_t>({ filters_size, output_height, output_width });
@@ -69,7 +68,8 @@ Conv2D::forward(const Tensor<double>& inputs)
     }
 }
 
-/* Careful : only works when partial derivatives don't depend on other values ! (simple activation)*/
+/* Careful : only works when partial derivatives don't depend on other values ! (simple
+ * activation)*/
 Tensor<double>
 Conv2D::backprop(Layer* input_layer)
 {
@@ -88,18 +88,19 @@ Conv2D::backprop(Layer* input_layer)
         }
     }
 
+    Tensor<double> gradients(weights.shape());
     // Compute updates
     for (size_t f = 0; f < this->filters_size; f++) {
         Tensor<double> error_f = this->errors.at(f);
         Tensor<double> weight_f = this->weights.at(f);
-        Tensor<double> update_f = this->updates.at(f);
+        Tensor<double> grads_f = this->weights.at(f);
         for (size_t c = 0; c < channels; c++) {
             Tensor<double> weights_c = weight_f.at(c);
-            Tensor<double> updates_c = update_f.at(c);
+            Tensor<double> grads_c = grads_f.at(c);
             Tensor<double> padded_input_c = padded_input.at(c);
             for (size_t kh = 0; kh < this->kernel_size; kh++) {
                 Tensor<double> weight_kh = weights_c.at(kh);
-                Tensor<double> update_kh = updates_c.at(kh);
+                Tensor<double> grads_kh = grads_c.at(kh);
                 for (size_t kw = 0; kw < this->kernel_size; kw++) {
                     double gradient = 0;
                     for (size_t x = 0; x < padded_input.shape()[1] - kernel_size; x++) {
@@ -108,14 +109,13 @@ Conv2D::backprop(Layer* input_layer)
                         for (size_t y = 0; y < padded_input.shape()[2] - kernel_size; y++) {
                             double error = error_f_x[y];
                             gradient += error * padded_input_kh[y + kw];
-                            if(kw == 0 && kh == 0) // Do it once per kernel
-                                biases[f] -= learning_rate * error;
+                            if (kw == 0 && kh == 0)        // Do it once per kernel
+                                biases[f] -= 1e-3 * error; // temporary
                         }
                     }
-                    double update =
-                      (momentum * update_kh[kw]) + (1 - momentum) * learning_rate * gradient;
-                    weight_kh[kw] -= update;
-                    update_kh[kw] = update;
+                    // double update =
+                    //   (momentum * update_kh[kw]) + (1 - momentum) * learning_rate * gradient;
+                    grads_kh[kw] = gradient;
                 }
             }
         }
@@ -124,7 +124,7 @@ Conv2D::backprop(Layer* input_layer)
     // Backpropagate to inputs
     // Convolution between errors and flipped kernel
     for (size_t f = 0; f < filters_size; f++) {
-        Tensor<double> error_f = add_padding_2d(errors.at(f), kernel_size - 1);
+        Tensor<double> error_f = add_padding_2d(errors.at(f), (kernel_size - 1) / 2);
 
         // Flip kernel
         Tensor<double> flipped_kernel = weights.at(f);
@@ -135,11 +135,14 @@ Conv2D::backprop(Layer* input_layer)
             data[m] = data[total_size - m - 1];
             data[total_size - m - 1] = tmp;
         }
+
         // Apply convolution
         for (size_t e = 0; e < channels; e++) {
             input_layer->errors.at(e) = convolution_2d(error_f, flipped_kernel.at(e), 1);
         }
     }
+
+    return gradients;
 }
 
 void

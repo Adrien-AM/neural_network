@@ -1,12 +1,14 @@
 #include <iostream>
 #include <time.h>
 
-#include "Optimizer.hpp"
+#include "Conv2D.hpp"
 #include "Dense.hpp"
 #include "Flatten.hpp"
 #include "Metric.hpp"
 #include "MnistUtils.hpp"
 #include "NeuralNetwork.hpp"
+#include "Optimizer.hpp"
+#include "Dropout.hpp"
 #include "Utils.hpp"
 
 #define IMAGE_SHAPE                                                                                \
@@ -49,10 +51,10 @@ main()
     normalize_pixels(train_images);
     normalize_pixels(test_images);
 
-    Sigmoid activation;
+    ReLU activation;
     Softmax softmax;
     CategoricalCrossEntropy cce;
-    size_t epochs = 70;
+    size_t epochs = 50;
     size_t batch_size = 64;
 
     Adam optimizer;
@@ -60,6 +62,7 @@ main()
                      { new Flatten(),
                        new Dense(512, activation),
                        new Dense(256, activation),
+                       new Dense(64, activation),
                        new Dense(NB_CLASSES, softmax) },
                      cce,
                      optimizer);

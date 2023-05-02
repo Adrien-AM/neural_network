@@ -17,7 +17,7 @@ all: ${exe}
 main: Main.cpp Dense.o Layer.o NeuralNetwork.o Loss.o Activation.o Utils.o Input.o Optimizer.o
 	${CXX} ${CXXFLAGS} $^ -o $@
 
-mnist: Mnist.cpp MnistUtils.o Dense.o Layer.o NeuralNetwork.o Loss.o Activation.o Utils.o Input.o Metric.o Flatten.o Optimizer.o
+mnist: Mnist.cpp MnistUtils.o Dense.o Layer.o NeuralNetwork.o Loss.o Activation.o Utils.o Input.o Metric.o Flatten.o Optimizer.o Conv2D.o Dropout.o
 	${CXX} ${CXXFLAGS} $^ -o $@ -lSDL2
 
 mnist_generator: MnistGenerator.cpp MnistUtils.o Dense.o Layer.o NeuralNetwork.o Loss.o Activation.o Utils.o Input.o Metric.o Reshape.o Flatten.o Optimizer.o
