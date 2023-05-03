@@ -1,14 +1,18 @@
-#include <vector>
+
 #include <iostream>
 #include <random>
 
-#include "Layer.hpp"
+#include "Activation.hpp"
 #include "Dense.hpp"
+#include "Layer.hpp"
 #include "Loss.hpp"
 #include "NeuralNetwork.hpp"
-#include "Activation.hpp"
+#include "Optimizer.hpp"
 
-double f(double x)
+using namespace std;
+
+double
+f(double x)
 {
     return 0.4 * x - 13;
 }
@@ -17,26 +21,28 @@ int
 main()
 {
     Linear act;
-    std::vector<Layer*> layers = { new Dense(1, act, false),  new Dense(1, act, true) };
+    vector<Layer*> layers = { new Dense(1, act, true) };
     Loss mse = MeanSquaredError();
-    NeuralNetwork nn(1, layers, mse);
+    SGD optimizer(1e-2);
+    NeuralNetwork nn({ 1 }, layers, mse, optimizer);
 
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> dis(-10, 10);
-    std::vector<std::vector<double>> inputs(500);
+    Tensor<double> inputs(vector<size_t>{ 100, 1 });
 
-    for (unsigned int i = 0; i < inputs.size(); ++i) {
-        inputs[i] = { dis(gen) };
+    for (size_t i = 0; i < inputs.size(); ++i) {
+        inputs.at(i) = { dis(gen) };
     }
 
-    std::vector<std::vector<double>> outputs(inputs.size());
-    for (unsigned int i = 0; i < inputs.size(); i++) {
-        outputs[i] = {f(inputs[i][0])};
+    Tensor<double> outputs(vector<size_t>({ 100, 1 }));
+    for (size_t i = 0; i < inputs.size(); i++) {
+        outputs.at(i) = { f(inputs.at(i)[0]) };
     }
-    nn.fit(inputs, outputs, 1e-3, 0, 10);
+    nn.fit(inputs, outputs, inputs.size(), 200);
     double newrand = dis(gen);
-    printf("f(%f) -> %f (should be %f)\n", newrand, nn.predict({ newrand })[0], f(newrand));
+    vector<double> input = { newrand };
+    printf("f(%f) -> %f (should be %f)\n", newrand, nn.predict(input)[0], f(newrand));
 
     return 0;
 }

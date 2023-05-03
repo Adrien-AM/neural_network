@@ -48,6 +48,9 @@ create_model(struct loss loss,
              ...);
 
 void
+reset_values(struct neural_network* nn);
+
+void
 free_neural_network(struct neural_network* nn);
 
 /*
@@ -90,6 +93,7 @@ back_propagate(struct neural_network* nn,
  * @param inputs matrix of train inputs
  * @param outputs matrix of train outputs
  * @param epochs number of iterations
+ * @param batch_size
  * @param learning_rate step size of gradient
  * @param gamma momentum constant. If gamma = 0, doesn't have impact on computation. Lower gamma =
  * lower momentum.

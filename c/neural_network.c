@@ -3,7 +3,12 @@
 #include "layer.h"
 
 struct neural_network*
-create_model(struct loss loss, int use_bias, double gradient_clip, size_t input_size, size_t number_of_layers, ...)
+create_model(struct loss loss,
+             int use_bias,
+             double gradient_clip,
+             size_t input_size,
+             size_t number_of_layers,
+             ...)
 {
     struct neural_network* nn = (struct neural_network*)malloc(sizeof(struct neural_network));
     nn->number_of_layers = number_of_layers;
@@ -16,8 +21,7 @@ create_model(struct loss loss, int use_bias, double gradient_clip, size_t input_
 
     for (size_t l = 0; l < number_of_layers; l++) {
         nn->layers[l] = va_arg(args, struct layer*);
-        nn->layers[l]->input_size = l == 0 ? input_size : nn->layers[l - 1]->size;
-        instanciate_neurons(nn->layers[l]);
+        nn->layers[l]->instanciate(nn->layers[l], l == 0 ? input_size : nn->layers[l - 1]->size);
     }
 
     va_end(args);
@@ -183,7 +187,7 @@ back_propagate(struct neural_network* nn,
                 }
 
                 // Clipping
-                if(nn->gradient_clip != 0 && fabs(update) > nn->gradient_clip) {
+                if (nn->gradient_clip != 0 && fabs(update) > nn->gradient_clip) {
                     update = copysign(nn->gradient_clip, update);
                 }
 
@@ -218,12 +222,12 @@ fit(struct neural_network* nn,
             double* inp = inputs[i];
 
             double* result = feed_forward(nn, inp);
-            loss += nn->loss.evaluate(expected, result, nn->layers[nn->number_of_layers - 1]->size);
+            loss += (nn->loss.evaluate(expected, result, nn->layers[nn->number_of_layers - 1]->size) - loss) / (i + 1); // avoid overflow
             back_propagate(nn, expected, inp, learning_rate, gamma);
 
             free(result);
         }
-        printf("Mean loss : %f\n", loss / (data_size));
+        printf("Mean loss : %f\n", loss);
     }
 }
 
@@ -253,9 +257,8 @@ evaluate(struct neural_network* nn,
         free(prediction);
         if (verbose >= 2)
             printf("\nLoss n°%zu : %f\n", i, loss_value);
-        total += loss_value;
+        total += (loss_value - total) / (i + 1); // avoid overflow
     }
-    total /= data_size;
     if (verbose >= 1)
         printf("Loss on test set : %f\n", total);
     return total;

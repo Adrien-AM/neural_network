@@ -69,4 +69,7 @@ convert_labels_uc_to_f(double** labels, unsigned char* originals, size_t nb);
 void
 convert_labels_to_softmax(double** labels, size_t nb_classes, size_t nb_labels);
 
+double 
+convert_softmax_to_label(double* labels, size_t nb_classes);
+
 #endif // __DATA_UTILS_H__

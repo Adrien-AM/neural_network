@@ -2,11 +2,11 @@
 
 // Function to read IDX file format and return a vector of elements
 // (mainly) DONE BY CHATGPT
-std::vector<std::vector<uint8_t>>
-read_idx_images_file(const std::string& filename)
+Tensor<uint8_t>
+read_idx_images_file(const std::string& filename, int max_images)
 {
     // Open the IDX file
-    std::ifstream file(filename, std::ios::binary);
+    ifstream file(filename, std::ios::binary);
     if (!file) {
         throw std::runtime_error("Failed to open file: " + filename);
     }
@@ -23,6 +23,7 @@ read_idx_images_file(const std::string& filename)
     int32_t num_images;
     file.read(reinterpret_cast<char*>(&num_images), sizeof(num_images));
     num_images = ntohl(num_images);
+    num_images = num_images > max_images ? max_images : num_images;
 
     int32_t side;
     file.read(reinterpret_cast<char*>(&side), sizeof(side));
@@ -37,10 +38,9 @@ read_idx_images_file(const std::string& filename)
     }
 
     // Read the data
-    std::vector<std::vector<uint8_t>> data(num_images);
+    Tensor<uint8_t> data(vector<size_t>({ (size_t)num_images, 1, (size_t)side, (size_t)side }));
     for (int32_t i = 0; i < num_images; i++) {
-        data[i] = std::vector<uint8_t>(side * side);
-        file.read(reinterpret_cast<char*>(data[i].data()), sizeof(uint8_t) * side * side);
+        file.read(reinterpret_cast<char*>(data.at(i).at(0).data()), sizeof(uint8_t) * side * side);
     }
 
     // Close the file
@@ -49,8 +49,8 @@ read_idx_images_file(const std::string& filename)
     return data;
 }
 
-std::vector<uint8_t>
-read_idx_labels_file(const std::string& filename)
+vector<uint8_t>
+read_idx_labels_file(const std::string& filename, int max_labels)
 {
     // Open the IDX file
     std::ifstream file(filename, std::ios::binary);
@@ -70,14 +70,15 @@ read_idx_labels_file(const std::string& filename)
     int32_t num_labels;
     file.read(reinterpret_cast<char*>(&num_labels), sizeof(num_labels));
     num_labels = ntohl(num_labels);
+    max_labels = num_labels > max_labels ? max_labels : num_labels;
 
-    std::vector<uint8_t> data;
+    vector<uint8_t> data;
     uint8_t byte;
     while (file.read(reinterpret_cast<char*>(&byte), sizeof(uint8_t))) {
         data.push_back(byte);
     }
 
-    if(data.size() != (unsigned int)num_labels) {
+    if (data.size() != (size_t)num_labels) {
         throw std::runtime_error("Data read is not the expected size.\n");
     }
 
@@ -87,53 +88,61 @@ read_idx_labels_file(const std::string& filename)
     return data;
 }
 
-std::vector<std::vector<double>>
-uint_to_double_images(const std::vector<std::vector<uint8_t>>& images)
+Tensor<double>
+uint_to_double_images(const Tensor<uint8_t>& images)
 {
-    std::vector<std::vector<double>> new_images(images.size());
-    for (unsigned int i = 0; i < images.size(); i++) {
-        new_images[i] = std::vector<double>(images[i].size());
+    Tensor<double> new_images(vector<size_t>(images.shape()));
 
-        // Avoid calling []
-        std::vector<double>& new_img = new_images[i];
-        const std::vector<uint8_t>& old_img = images[i];
-        for (unsigned int pixel = 0; pixel < images[i].size(); pixel++) {
-            new_img[pixel] = (double)(old_img[pixel]);
+    for (size_t i = 0; i < images.size(); i++) {
+        Tensor<uint8_t> old_img = images.at(i);
+        Tensor<double> new_img = new_images.at(i); // channel 0
+        for (size_t c = 0; c < old_img.size(); c++) {
+            Tensor<uint8_t> old_img_c = old_img.at(c);
+            Tensor<double> new_img_c = new_img.at(c);
+            for (size_t x = 0; x < old_img_c.size(); x++) {
+                Tensor<uint8_t> old_row = old_img_c.at(x);
+                Tensor<double> new_row = new_img_c.at(x);
+                for (size_t y = 0; y < old_row.size(); y++) {
+                    new_row[y] = (double)(old_row[y]);
+                }
+            }
         }
     }
 
     return new_images;
 }
 
-std::vector<std::vector<double>>
-uint_to_one_hot_labels(const std::vector<uint8_t>& labels, unsigned int nb_classes)
+Tensor<double>
+uint_to_one_hot_labels(const vector<uint8_t>& labels, size_t nb_classes)
 {
-    std::vector<std::vector<double>> result(labels.size());
-    for (unsigned int i = 0; i < labels.size(); i++) {
-        result[i] = std::vector<double>(nb_classes);
-        result[i][labels[i]] = 1;
+    Tensor<double> result(vector<size_t>({ labels.size(), nb_classes }));
+    for (size_t i = 0; i < labels.size(); i++) {
+        result.at(i)[labels[i]] = 1;
     }
 
     return result;
 }
 
 void
-display_image(const std::vector<double>& image, unsigned int time, int upscale)
+display_image(const Tensor<double>& image, size_t time, int upscale)
 {
+    Tensor<double> image_2d = image.at(0);
+    size_t width = image_2d.shape()[1];
+    size_t height = image_2d.shape()[0];
 
     SDL_Init(SDL_INIT_VIDEO);
     SDL_Window* window = SDL_CreateWindow("MNIST Image",
                                           SDL_WINDOWPOS_UNDEFINED,
                                           SDL_WINDOWPOS_UNDEFINED,
-                                          28 * upscale,
-                                          28 * upscale,
+                                          width * upscale,
+                                          height * upscale,
                                           0);
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, 0);
 
-    for (int y = 0; y < 28; y++) {
-        for (int x = 0; x < 28; x++) {
+    for (size_t y = 0; y < height; y++) {
+        for (size_t x = 0; x < width; x++) {
             // put pixel back in [0, 255] from [0, 1]
-            uint8_t pixel = (uint8_t)(image[y * 28 + x] * 255);
+            uint8_t pixel = (uint8_t)(image_2d.at(y)[x] * 255);
             SDL_SetRenderDrawColor(renderer, pixel, pixel, pixel, 255);
             for (int i = 0; i < upscale; i++) {
                 for (int j = 0; j < upscale; j++) {
@@ -151,11 +160,10 @@ display_image(const std::vector<double>& image, unsigned int time, int upscale)
 }
 
 void
-shuffle_images_labels(std::vector<std::vector<double>>& images,
-                      std::vector<std::vector<double>>& labels)
+shuffle_images_labels(Tensor<double>& images, Tensor<double>& labels)
 {
     // Create a vector of indices for train_images and train_labels
-    std::vector<int> indices(images.size());
+    vector<int> indices(images.size());
     std::iota(indices.begin(), indices.end(), 0);
 
     // Shuffle the indices vector using a random number generator
@@ -165,17 +173,28 @@ shuffle_images_labels(std::vector<std::vector<double>>& images,
 
     // Shuffle train_images and train_labels in place using the shuffled indices
     for (size_t i = 0; i < indices.size(); ++i) {
-        std::swap(images[i], images[indices[i]]);
-        std::swap(labels[i], labels[indices[i]]);
+        Tensor<double> tmpImg = images.at(i);
+        Tensor<double> tmpLabel = labels.at(i);
+        images.at(i) = images.at(indices[i]);
+        labels.at(i) = labels.at(indices[i]);
+        images.at(indices[i]) = tmpImg;
+        labels.at(indices[i]) = tmpLabel;
     }
 }
 
 void
-normalize_pixels(std::vector<std::vector<double>>& images)
+normalize_pixels(Tensor<double>& images)
 {
-    for(auto& row : images) {
-        for(double& pixel : row) {
-            pixel /= 255;
+    size_t nb_images = images.size();
+    for (size_t i = 0; i < nb_images; i++) {
+        Tensor<double> im = images.at(i); // channel 0
+        for (size_t c = 0; c < im.size(); c++) {
+            Tensor<double> im_c = im.at(c);
+            for (size_t x = 0; x < im_c.size(); x++) {
+                Tensor<double> row = im_c.at(x);
+                for (size_t y = 0; y < row.size(); y++)
+                    row[y] /= 255;
+            }
         }
     }
 }

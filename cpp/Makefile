@@ -10,16 +10,27 @@ else
 endif
 CXX=g++
 
-src=Layer Dense NeuralNetwork Neuron
-exe=main mnist
+exe=main mnist conv-mnist test-conv test-tensor
 
 all: ${exe}
 
-main: Main.cpp Dense.o Layer.o NeuralNetwork.o Loss.o Activation.o Utils.o Input.o
+main: Main.cpp Dense.o Layer.o NeuralNetwork.o Loss.o Activation.o Utils.o Input.o Optimizer.o
 	${CXX} ${CXXFLAGS} $^ -o $@
 
-mnist: Mnist.cpp MnistUtils.o Dense.o Layer.o NeuralNetwork.o Loss.o Activation.o Utils.o Input.o
+mnist: Mnist.cpp MnistUtils.o Dense.o Layer.o NeuralNetwork.o Loss.o Activation.o Utils.o Input.o Metric.o Flatten.o Optimizer.o Conv2D.o Dropout.o
 	${CXX} ${CXXFLAGS} $^ -o $@ -lSDL2
+
+mnist_generator: MnistGenerator.cpp MnistUtils.o Dense.o Layer.o NeuralNetwork.o Loss.o Activation.o Utils.o Input.o Metric.o Reshape.o Flatten.o Optimizer.o
+	${CXX} ${CXXFLAGS} $^ -o $@ -lSDL2
+
+conv-mnist: ConvMnist.cpp MnistUtils.o Dense.o Layer.o NeuralNetwork.o Loss.o Activation.o Utils.o Input.o Conv2D.o Metric.o Flatten.o
+	${CXX} ${CXXFLAGS} $^ -o $@ -lSDL2
+
+test-conv: testConv.cpp Utils.o Tensor.hpp
+	${CXX} ${CXXFLAGS} $^ -o $@
+
+test-tensor: testTensor.cpp Tensor.hpp
+	${CXX} ${CXXFLAGS} $^ -o $@
 
 clean:
 	rm *.o ${exe} vgcore.* gmon.out

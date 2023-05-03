@@ -1,40 +1,62 @@
 #ifndef __LAYER_HPP__
 #define __LAYER_HPP__
 
-#include <iostream>
-#include <vector>
 #include "Activation.hpp"
 #include "Utils.hpp"
+#include <iostream>
+
+using namespace std;
 
 class Layer
 {
-  protected:
-    const Activation& activation;
-
   public:
-    std::vector<double> values;
-    std::vector<double> actv_values;
-    std::vector<double> errors;
-    std::vector<double> delta_errors;
-    std::vector<double> biases;
-    std::vector<std::vector<double>> weights;
-    std::vector<std::vector<double>> updates;
-
-    Layer(unsigned int layer_size, const Activation& act, bool use_bias);
+    Tensor<double> output_values;
+    Tensor<double> errors;
+    Tensor<double> weights;
+    Tensor<double> biases;
 
     // abstraction
-    virtual void forward(const std::vector<double>&) = 0;
-    virtual void backprop(Layer *, double, double) = 0;
-    virtual void init(unsigned int) = 0;
-    virtual void summarize() = 0;
+    /**
+     * Initialize the layer. Called when the full neural network architecture is known.
+     *
+     * @param input_shape : vector<size_t>
+     */
+    virtual void init(vector<size_t>) = 0;
+
+    /**
+     * Forward pass through the layer. Result is computed and stored in `output_values`.
+     *
+     * @param input : input data (most of the time, output of previous layer). input should be the
+     * same shape as specified in init().
+     */
+    virtual void forward(const Tensor<double>&) = 0;
+
+    /**
+     * Backward pass through the layer. Downstream gradients are written on previous layer's
+     * `errors`.
+     *
+     * @param input_layer
+     * @param learning_rate : hyperparameter
+     * @param momentum : hyperparameter
+     *
+     * @return gradients
+     */
+    virtual Tensor<double> backprop(Layer*) = 0;
+
+    /**
+     * Displays useful informations on stdout.
+     */
+    virtual void summarize() const = 0;
 
     // getters and setters
-    unsigned int size();
+    virtual size_t size() const = 0;
+    virtual void reset_values() = 0;
+    virtual void reset_errors() = 0;
 
     // debug
-    void print_layer() const;
+    virtual void print_layer() const = 0;
 
-    virtual ~Layer();
+    virtual ~Layer() = 0;
 };
 
 #endif // __LAYER_HPP__

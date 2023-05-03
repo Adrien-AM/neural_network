@@ -6,30 +6,34 @@
 #include <arpa/inet.h>
 #include <fstream>
 #include <stdexcept>
-#include <vector>
+
 #include <numeric>
 #include <random>
 
-std::vector<std::vector<uint8_t>>
-read_idx_images_file(const std::string& filename);
+#include "Tensor.hpp"
 
-std::vector<uint8_t>
-read_idx_labels_file(const std::string& filename);
+using namespace std;
 
-std::vector<std::vector<double>>
-uint_to_double_images(const std::vector<std::vector<uint8_t>>& images);
+Tensor<uint8_t>
+read_idx_images_file(const std::string& filename, int max_images);
 
-std::vector<std::vector<double>>
-uint_to_one_hot_labels(const std::vector<uint8_t>& labels, unsigned int nb_classes);
+vector<uint8_t>
+read_idx_labels_file(const std::string& filename, int max_labels);
 
-void
-display_image(const std::vector<double>& image, unsigned int time, int upscale);
+Tensor<double>
+uint_to_double_images(const Tensor<uint8_t>& images);
 
-void
-shuffle_images_labels(std::vector<std::vector<double>>& images,
-                      std::vector<std::vector<double>>& labels);
+Tensor<double>
+uint_to_one_hot_labels(const vector<uint8_t>& labels, size_t nb_classes);
 
 void
-normalize_pixels(std::vector<std::vector<double>>& images);
+display_image(const Tensor<double>& image, size_t time, int upscale);
+
+void
+shuffle_images_labels(Tensor<double>& images,
+                      Tensor<double>& labels);
+
+void
+normalize_pixels(Tensor<double>& images);
 
 #endif // __SDLMNIST_HPP__

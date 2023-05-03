@@ -10,6 +10,9 @@
 void
 print_vector(double* v, size_t size);
 
+void
+print_softmax(double* result, size_t nb_classes, double until);
+
 // Activation functions : takes neuron output z=wx+b, returns final neuron output
 // if second parameter is set to true, it will return the function's derivative
 double
@@ -25,11 +28,12 @@ hypertan(double, int);
 double
 rand_normal(double, double);
 
-
 /*
-* @var evaluate : (y_true, y_pred, size) : takes the real output and prediction, returns a single value of loss
-* @var derivative : (y_true, y_pred, size) : takes the real output and prediction, returns a vector of loss derivated with respect to the output. don't forget to free !
-*/
+ * @var evaluate : (y_true, y_pred, size) : takes the real output and prediction, returns a single
+ * value of loss
+ * @var derivative : (y_true, y_pred, size) : takes the real output and prediction, returns a vector
+ * of loss derivated with respect to the output. don't forget to free !
+ */
 struct loss
 {
     double (*evaluate)(double*, double*, size_t);
@@ -40,5 +44,7 @@ struct loss
 extern const struct loss mean_squared_error;
 extern const struct loss mean_absolute_error;
 extern const struct loss cross_entropy;
+extern const struct loss psnr;
+extern const struct loss ssim;
 
 #endif

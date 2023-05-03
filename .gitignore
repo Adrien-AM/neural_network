@@ -6,7 +6,11 @@ main
 test
 house
 mnist
+mnist_generator
+conv-mnist
+test-*
 vgcore.*
+*.nn # nn dumps
 
 # data files
 *.csv

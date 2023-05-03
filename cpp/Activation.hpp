@@ -1,43 +1,47 @@
 #ifndef __ACTIVATION_H__
 #define __ACTIVATION_H__
 
-#include <vector>
+
 #include <cmath>
 #include <iostream>
+
+#include "Tensor.hpp"
+
+using namespace std;
 
 class Activation
 {
   public:
-    virtual std::vector<double> compute(std::vector<double>) const = 0;
-    virtual std::vector<std::vector<double>> derivative(std::vector<double>) const = 0;
+    virtual Tensor<double> compute(Tensor<double>) const = 0;
+    virtual Tensor<double> derivative(Tensor<double>) const = 0;
 };
 
 class Linear : public Activation
 {
   public:
-    std::vector<double> compute(std::vector<double>) const;
-    std::vector<std::vector<double>> derivative(std::vector<double>) const;
+    Tensor<double> compute(Tensor<double>) const;
+    Tensor<double> derivative(Tensor<double>) const;
 };
 
 class ReLU : public Activation
 {
   public:
-    std::vector<double> compute(std::vector<double>) const;
-    std::vector<std::vector<double>> derivative(std::vector<double>) const;
+    Tensor<double> compute(Tensor<double>) const;
+    Tensor<double> derivative(Tensor<double>) const;
 };
 
 class Sigmoid : public Activation
 {
   public:
-    std::vector<double> compute(std::vector<double>) const;
-    std::vector<std::vector<double>> derivative(std::vector<double>) const;
+    Tensor<double> compute(Tensor<double>) const;
+    Tensor<double> derivative(Tensor<double>) const;
 };
 
 class Softmax : public Activation
 {
   public:
-    std::vector<double> compute(std::vector<double>) const;
-    std::vector<std::vector<double>> derivative(std::vector<double>) const;
+    Tensor<double> compute(Tensor<double>) const;
+    Tensor<double> derivative(Tensor<double>) const;
 };
 
 #endif // __ACTIVATION_H__
