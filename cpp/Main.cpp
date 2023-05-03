@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <random>
 
@@ -22,9 +21,9 @@ main()
 {
     Linear act;
     vector<Layer*> layers = { new Dense(1, act, true) };
-    Loss mse = MeanSquaredError();
+    MeanSquaredError loss;
     SGD optimizer(1e-2);
-    NeuralNetwork nn({ 1 }, layers, mse, optimizer);
+    NeuralNetwork nn({ 1 }, layers, loss, optimizer);
 
     std::random_device rd;
     std::mt19937 gen(rd());

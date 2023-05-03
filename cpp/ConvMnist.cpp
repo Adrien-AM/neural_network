@@ -7,6 +7,7 @@
 #include "NeuralNetwork.hpp"
 #include "Tensor.hpp"
 #include "Utils.hpp"
+#include "Optimizer.hpp"
 
 #define IMAGE_SIZE 28
 #define DATA_SIZE 60000
@@ -35,9 +36,10 @@ main()
     ReLU activation;
     Sigmoid sigm;
     Softmax softmax;
-    CategoricalCrossEntropy cce = CategoricalCrossEntropy();
+    CategoricalCrossEntropy cce;
     double learning_rate = 1e-3;
-    double momentum = 0.1;
+    // double momentum = 0.1;
+    SGD optimizer(learning_rate);
     size_t batch_size = 64;
     size_t epochs = 25;
 
@@ -47,9 +49,9 @@ main()
                        new Flatten(),
                        new Dense(16, sigm),
                        new Dense(NB_CLASSES, softmax) },
-                     cce);
+                     cce, optimizer);
 
-    nn.fit(train_images, train_labels, learning_rate, momentum, batch_size, epochs);
+    nn.fit(train_images, train_labels, batch_size, epochs);
     exit(0);
 
     Tensor<uint8_t> mnist_test_images =

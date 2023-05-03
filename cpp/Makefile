@@ -10,20 +10,20 @@ else
 endif
 CXX=g++
 
-exe=main mnist conv-mnist test-conv test-tensor
+exe=main mnist mnist_generator conv-mnist test-conv test-tensor
 
 all: ${exe}
 
 main: Main.cpp Dense.o Layer.o NeuralNetwork.o Loss.o Activation.o Utils.o Input.o Optimizer.o
 	${CXX} ${CXXFLAGS} $^ -o $@
 
-mnist: Mnist.cpp MnistUtils.o Dense.o Layer.o NeuralNetwork.o Loss.o Activation.o Utils.o Input.o Metric.o Flatten.o Optimizer.o Conv2D.o Dropout.o
+mnist: Mnist.cpp MnistUtils.o Dense.o Layer.o NeuralNetwork.o Loss.o Activation.o Utils.o Input.o Metric.o Flatten.o Optimizer.o Dropout.o
 	${CXX} ${CXXFLAGS} $^ -o $@ -lSDL2
 
 mnist_generator: MnistGenerator.cpp MnistUtils.o Dense.o Layer.o NeuralNetwork.o Loss.o Activation.o Utils.o Input.o Metric.o Reshape.o Flatten.o Optimizer.o
 	${CXX} ${CXXFLAGS} $^ -o $@ -lSDL2
 
-conv-mnist: ConvMnist.cpp MnistUtils.o Dense.o Layer.o NeuralNetwork.o Loss.o Activation.o Utils.o Input.o Conv2D.o Metric.o Flatten.o
+conv-mnist: ConvMnist.cpp MnistUtils.o Dense.o Layer.o NeuralNetwork.o Loss.o Activation.o Utils.o Input.o Conv2D.o Metric.o Flatten.o Optimizer.o
 	${CXX} ${CXXFLAGS} $^ -o $@ -lSDL2
 
 test-conv: testConv.cpp Utils.o Tensor.hpp
