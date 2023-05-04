@@ -15,6 +15,8 @@ class Tensor
   public:
     Tensor()
       : shape_(0)
+      , nb_dims_(0)
+      , nb_elems_(0)
       , size_(0)
       , data_(nullptr)
       , owner_(true)
@@ -23,6 +25,8 @@ class Tensor
 
     Tensor(const size_t& size)
       : shape_({ size })
+      , nb_dims_(1)
+      , nb_elems_(size)
       , size_(size)
       , owner_(true)
     {
@@ -41,10 +45,14 @@ class Tensor
         data_ = new T[size];
         memset(data_, 0, sizeof(T) * size);
         size_ = size;
+        nb_dims_ = shape.size();
+        nb_elems_ = nb_dims_ == 0 ? 0 : shape[0];
     }
 
     Tensor(const vector<T>& data)
       : shape_({ data.size() })
+      , nb_dims_(1)
+      , nb_elems_(data.size())
       , size_(data.size())
       , owner_(true)
     {
@@ -68,6 +76,8 @@ class Tensor
         }
         this->shape_ = other.shape_;
         this->size_ = other.size_;
+        this->nb_dims_ = other.nb_dims_;
+        this->nb_elems_ = other.nb_elems_;
     }
 
     Tensor(const Tensor<T>& other)
@@ -78,6 +88,8 @@ class Tensor
         memcpy(this->data_, other.data_, other.size_ * sizeof(T));
         this->shape_ = other.shape_;
         this->size_ = other.size_;
+        this->nb_dims_ = other.nb_dims_;
+        this->nb_elems_ = other.nb_elems_;
         this->owner_ = true;
     }
 
@@ -90,7 +102,7 @@ class Tensor
     operator int() = delete;
     operator int() const = delete;
 
-    size_t size() const { return shape_[0]; }
+    size_t size() const { return nb_elems_; }
 
     const vector<size_t>& shape() const { return shape_; }
 
@@ -98,24 +110,26 @@ class Tensor
 
     Tensor<T> at(const size_t& index) const
     {
-        if (index >= this->shape_[0]) {
+        if (index >= nb_elems_) {
             throw out_of_range("Index out of range.");
         }
-        size_t new_size = this->size_ / this->shape_[0];
-        return Tensor(vector<size_t>(this->shape_.begin() + 1, this->shape_.end()),
+        size_t new_size = size_ / nb_elems_;
+        return Tensor(vector<size_t>(shape_.begin() + 1, shape_.end()),
                       new_size,
-                      this->data_ + (index * new_size));
+                      data_ + (index * new_size));
     }
 
     T& operator[](const size_t& index) const
     {
-        if (index >= this->shape_[0]) {
+        #ifdef DEBUG
+        if (index >= nb_elems_) {
             throw out_of_range("Index out of range.");
         }
-        if (this->shape_.size() > 1) {
+        if (nb_dims_ > 1) {
             throw length_error("Trying to access scalar value but array is multi-dimensional.");
         }
-        return this->data_[index];
+        #endif
+        return data_[index];
     }
 
     operator T() const { return this->data_[0]; }
@@ -123,7 +137,7 @@ class Tensor
 
     void operator=(vector<T> v)
     {
-        if (v.size() != this->shape_[0] || this->shape_.size() > 1) {
+        if (v.size() != nb_elems_ || this->nb_dims_ > 1) {
             throw out_of_range("Wrong size for initialization from vector.");
         }
         copy(v.begin(), v.end(), this->data_);
@@ -152,9 +166,9 @@ class Tensor
     void print_shape() const
     {
         cout << "[";
-        for (size_t i = 0; i < shape_.size(); ++i) {
+        for (size_t i = 0; i < nb_dims_; ++i) {
             cout << shape_[i];
-            if (i != shape_.size() - 1) {
+            if (i != nb_dims_ - 1) {
                 cout << ", ";
             }
         }
@@ -170,7 +184,7 @@ class Tensor
     {
         if (new_size > size_)
             throw length_error("Invalid resize : new size should be smaller than old size.");
-        size_t row_size = size_ / shape_[0];
+        size_t row_size = size_ / nb_elems_;
         T* old_data = data_;
         T* new_data = new T[new_size * row_size];
 
@@ -178,6 +192,7 @@ class Tensor
 
         this->size_ = new_size * row_size;
         this->shape_[0] = new_size;
+        this->nb_elems_ = new_size;
         this->data_ = new_data;
         delete[] old_data;
     }
@@ -196,8 +211,10 @@ class Tensor
 
     void add_dimension()
     {
-        vector<size_t> new_shape = vector<size_t>(shape_.size() + 1);
+        nb_dims_++;
+        vector<size_t> new_shape = vector<size_t>(nb_dims_);
         new_shape[0] = 1;
+        nb_elems_ = 1;
         copy(shape_.begin(), shape_.end(), new_shape.begin() + 1);
         shape_ = new_shape;
     }
@@ -213,12 +230,16 @@ class Tensor
 
   private:
     vector<size_t> shape_;
+    size_t nb_dims_;
+    size_t nb_elems_;
     size_t size_;
     T* data_;
     bool owner_;
 
     Tensor(const vector<size_t>& shape, const size_t& size, T* const data)
       : shape_(shape)
+      , nb_dims_(shape.size())
+      , nb_elems_(shape[0])
       , size_(size)
       , data_(data)
       , owner_(false)

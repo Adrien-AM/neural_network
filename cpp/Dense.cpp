@@ -32,12 +32,13 @@ Dense::forward(const Tensor<double>& inputs)
 #pragma omp parallel for
 #endif
     for (size_t n = 0; n < size; n++) {
+        double& value = this->values[n];
         if (!this->biases.empty())
-            this->values[n] = this->biases[n];
+            value = this->biases[n];
         Tensor<double> weight_n = this->weights.at(n);
         for (size_t i = 0; i < input_size; i++) {
             // Sum of weighted outputs from previous layer
-            this->values[n] += inputs[i] * weight_n[i];
+            value += inputs[i] * weight_n[i];
         }
     }
 
@@ -83,13 +84,14 @@ Dense::backprop(Layer* input_layer)
     }
 
     double* input_errors = input_layer->errors.data();
+    size_t input_errors_size = input_layer->errors.total_size();
     double* input_outputs = input_layer->output_values.data();
     Tensor<double> gradients(weights.shape());
     for (size_t i = 0; i < size; i++) {
         double derror = this->delta_errors[i];
         Tensor<double> weight_i = this->weights.at(i);
         Tensor<double> gradients_i = gradients.at(i);
-        for (size_t j = 0; j < input_layer->errors.total_size(); j++) {
+        for (size_t j = 0; j < input_errors_size; j++) {
             input_errors[j] += derror * weight_i[j];
             gradients_i[j] = derror * input_outputs[j];
         }

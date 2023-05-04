@@ -125,13 +125,6 @@ CategoricalCrossEntropy::derivate(const Tensor<double>& y_true, const Tensor<dou
     size_t size = y_true.size();
     Tensor<double> result = Tensor<double>(size);
 
-#ifdef DEBUG
-    printf("Derivatives predictions :\n");
-    print_vector(y_pred);
-#endif
-#ifdef PARALLEL
-#pragma omp parallel for
-#endif
     for (size_t i = 0; i < size; i++) {
         result[i] = -(y_true[i] / y_pred[i]);
     }

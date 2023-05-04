@@ -33,7 +33,8 @@ Adam::Adam(double lr, double beta1, double beta2, double clip)
 void
 Adam::update(vector<Tensor<double>> gradients)
 {
-    for (size_t i = 0; i < layers.size(); i++) {
+    size_t size = layers.size();
+    for (size_t i = 0; i < size; i++) {
         double* grads = gradients[i].data();
         double* up1 = updates1[i].data();
         double* up2 = updates2[i].data();
@@ -43,12 +44,15 @@ Adam::update(vector<Tensor<double>> gradients)
         double bias1 = 1 - pow(beta1, t);
         double bias2 = 1 - pow(beta2, t);
 
-        for (size_t j = 0; j < gradients[i].total_size(); j++) {
+        double grads_size = gradients[i].total_size();
+        for (size_t j = 0; j < grads_size; j++) {
             double g = clipper(grads[j], clip);
-            up1[j] = beta1 * up1[j] + (1 - beta1) * g;
-            up2[j] = beta2 * up2[j] + (1 - beta2) * g * g;
-            double corrected_up1 = up1[j] / bias1;
-            double corrected_up2 = up2[j] / bias2;
+            double& r1 = up1[j];
+            double& r2 = up2[j];
+            r1 = beta1 * r1 + (1 - beta1) * g;
+            r2 = beta2 * r2 + (1 - beta2) * g * g;
+            double corrected_up1 = r1 / bias1;
+            double corrected_up2 = r2 / bias2;
 
             weights[j] -= alpha * corrected_up1 / (sqrt(corrected_up2) + 1e-8);
         }

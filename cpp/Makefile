@@ -2,7 +2,7 @@ DEBUG ?= 0
 PARALLEL ?= 0
 CXXFLAGS=-Werror -Wall -Wextra -std=c++2a
 ifeq ($(DEBUG), 1)
-    CXXFLAGS += -DDEBUG -Og
+    CXXFLAGS += -DDEBUG -Og -g
 else ifeq ($(PARALLEL), 1)
     CXXFLAGS += -DPARALLEL -fopenmp
 else

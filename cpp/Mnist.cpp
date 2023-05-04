@@ -3,12 +3,12 @@
 
 #include "Conv2D.hpp"
 #include "Dense.hpp"
+#include "Dropout.hpp"
 #include "Flatten.hpp"
 #include "Metric.hpp"
 #include "MnistUtils.hpp"
 #include "NeuralNetwork.hpp"
 #include "Optimizer.hpp"
-#include "Dropout.hpp"
 #include "Utils.hpp"
 
 #define IMAGE_SHAPE                                                                                \
@@ -54,8 +54,8 @@ main()
     ReLU activation;
     Softmax softmax;
     CategoricalCrossEntropy cce;
-    size_t epochs = 50;
-    size_t batch_size = 64;
+    size_t epochs = 70;
+    size_t batch_size = 32;
 
     Adam optimizer;
     NeuralNetwork nn(IMAGE_SHAPE,
