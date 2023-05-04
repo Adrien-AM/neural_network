@@ -16,7 +16,7 @@
         1, 28, 28                                                                                  \
     }
 #define DATA_SIZE 60000
-#define TEST_SIZE 10000
+#define TEST_SIZE 1000
 #define NB_CLASSES 10
 
 using namespace std;
@@ -54,13 +54,12 @@ main()
     ReLU activation;
     Softmax softmax;
     CategoricalCrossEntropy cce;
-    size_t epochs = 70;
+    size_t epochs = 15;
     size_t batch_size = 32;
 
     Adam optimizer;
     NeuralNetwork nn(IMAGE_SHAPE,
                      { new Flatten(),
-                       new Dense(512, activation),
                        new Dense(256, activation),
                        new Dense(64, activation),
                        new Dense(NB_CLASSES, softmax) },

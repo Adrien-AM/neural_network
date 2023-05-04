@@ -28,9 +28,9 @@ Dense::forward(const Tensor<double>& inputs)
     size_t size = this->size();
     size_t input_size = inputs.size();
 
-#ifdef PARALLEL
-#pragma omp parallel for
-#endif
+    #ifdef PARALLEL
+    #pragma omp parallel for
+    #endif
     for (size_t n = 0; n < size; n++) {
         double& value = this->values[n];
         if (!this->biases.empty())
@@ -110,6 +110,7 @@ Dense::init(vector<size_t> input_shape)
 
     random_device rd;
     mt19937 gen(rd()); // Mersenne Twister engine
+    
     // normal_distribution<double> initializer(0, 0.3);
     double var = sqrt(6 / (double)(input_shape.size() + this->size()));
     uniform_real_distribution<double> initializer(-var, var);

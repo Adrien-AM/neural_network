@@ -30,7 +30,8 @@ ReLU::compute(Tensor<double> x) const
 {
     Tensor<double> result(x.shape());
     for (size_t i = 0; i < x.size(); i++) {
-        result[i] = x[i] > 0 ? x[i] : 0;
+        double xi = x[i];
+        result[i] = xi > 0 ? xi : 0;
     }
     return result;
 }
@@ -69,7 +70,8 @@ Sigmoid::derivative(Tensor<double> x) const
 #pragma omp parallel for
 #endif
     for (size_t i = 0; i < x.size(); i++) {
-        result.at(i)[i] = sigmas[i] * (1 - sigmas[i]);
+        double si = sigmas[i];
+        result.at(i)[i] = si * (1 - si);
     }
     return result;
 }
@@ -84,11 +86,13 @@ Softmax::compute(Tensor<double> x) const
     for (size_t i = 0; i < x.size(); i++) {
         double e = exp(x[i]);
         sum += e;
+#ifdef DEBUG
         if (sum != sum) {
             printf("Diverged : %f.\n", e);
             print_vector(x);
             exit(0);
         }
+#endif
         result[i] = e;
     }
 
@@ -105,20 +109,12 @@ Softmax::derivative(Tensor<double> x) const
     size_t size = x.size();
     Tensor<double> result(vector<size_t>({ size, size }));
 
-#ifdef DEBUG
-    printf("Actv values :\n");
-    print_vector(x);
-#endif
-
     for (size_t i = 0; i < size; i++) {
         for (size_t j = 0; j <= i; j++) {
+            double& rij = result.at(i)[j];
             // note : this is symetric !
-            result.at(i)[j] = x[i] * ((i == j) - x[j]);
-            result.at(j)[i] = result.at(i)[j];
-
-#ifdef DEBUG
-// printf("(%u,%u) x %f, j %f, result %f\n", i, j, x[i], x[j], result[i]);
-#endif
+            rij = x[i] * ((i == j) - x[j]);
+            result.at(j)[i] = rij;
         }
     }
 

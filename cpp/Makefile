@@ -6,7 +6,7 @@ ifeq ($(DEBUG), 1)
 else ifeq ($(PARALLEL), 1)
     CXXFLAGS += -DPARALLEL -fopenmp
 else
-	CXXFLAGS += -Ofast
+	CXXFLAGS += -pg
 endif
 CXX=g++
 

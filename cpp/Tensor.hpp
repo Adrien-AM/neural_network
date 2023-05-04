@@ -69,9 +69,11 @@ class Tensor
             data_ = new T[other.size_];
             memcpy(this->data_, other.data_, other.size_ * sizeof(T));
         } else {
+            #ifdef DEBUG
             if (other.size_ != size_) {
                 throw length_error("Cannot modify shape of subarray.");
             }
+            #endif
             memcpy(this->data_, other.data_, other.size_ * sizeof(T));
         }
         this->shape_ = other.shape_;
@@ -110,9 +112,11 @@ class Tensor
 
     Tensor<T> at(const size_t& index) const
     {
+        #ifdef DEBUG
         if (index >= nb_elems_) {
             throw out_of_range("Index out of range.");
         }
+        #endif
         size_t new_size = size_ / nb_elems_;
         return Tensor(vector<size_t>(shape_.begin() + 1, shape_.end()),
                       new_size,
@@ -137,17 +141,21 @@ class Tensor
 
     void operator=(vector<T> v)
     {
+        #ifdef DEBUG
         if (v.size() != nb_elems_ || this->nb_dims_ > 1) {
             throw out_of_range("Wrong size for initialization from vector.");
         }
+        #endif
         copy(v.begin(), v.end(), this->data_);
     }
 
     void operator=(T t)
     {
+        #ifdef DEBUG
         if (this->size_ != 1) {
             throw length_error("Trying to assign scalar value to multi-dimensional (>= 1) tensor.");
         }
+        #endif
         data_[0] = t;
     }
 
@@ -182,8 +190,10 @@ class Tensor
      */
     void resize(const size_t& new_size)
     {
+        #ifdef DEBUG
         if (new_size > size_)
             throw length_error("Invalid resize : new size should be smaller than old size.");
+        #endif
         size_t row_size = size_ / nb_elems_;
         T* old_data = data_;
         T* new_data = new T[new_size * row_size];
