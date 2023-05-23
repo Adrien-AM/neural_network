@@ -34,6 +34,7 @@ class Dense : public Layer
     void reset_errors();
 
     void print_layer() const;
+    Dense* clone() const;
 
     ~Dense();
 };

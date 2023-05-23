@@ -22,6 +22,7 @@ class Flatten : public Layer
       size_t size() const;
       void reset_values();
       void reset_errors();
+      Flatten* clone() const;
       // debug
       void print_layer() const;
 };

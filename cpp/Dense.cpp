@@ -29,7 +29,7 @@ Dense::forward(const Tensor<double>& inputs)
     size_t input_size = inputs.size();
 
 #ifdef PARALLEL
-#pragma omp parallel for
+#pragma omp for
 #endif
     for (size_t n = 0; n < size; n++) {
         if (!this->biases.empty())
@@ -124,6 +124,15 @@ void
 Dense::summarize() const
 {
     printf("Dense | Size : %zu. Input size : %zu.\n", this->size(), this->weights.shape()[0]);
+}
+
+Dense*
+Dense::clone() const
+{
+    Dense* copy = new Dense(values.size(), activation, !biases.empty());
+    copy->weights = this->weights;
+    copy->biases = this->biases;
+    return copy;
 }
 
 Dense::~Dense() {}

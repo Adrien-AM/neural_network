@@ -17,12 +17,13 @@ class Reshape : public Layer
     Reshape(vector<size_t> new_shape) : output_shape(new_shape) {}
     void init(vector<size_t>);
     void forward(const Tensor<double>&);
-    void backprop(Layer*, double, double);
+    Tensor<double> backprop(Layer*);
     void summarize() const;
     // getters and setters
     size_t size() const;
     void reset_values();
     void reset_errors();
+    Reshape* clone() const;
     // debug
     void print_layer() const;
 };

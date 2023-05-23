@@ -19,6 +19,17 @@ NeuralNetwork::NeuralNetwork(vector<size_t> input_shape,
     optimizer.attach_layers(this->layers);
 }
 
+NeuralNetwork::NeuralNetwork(const NeuralNetwork& other)
+  : input_shape(other.input_shape)
+  , loss(other.loss)
+  , optimizer(other.optimizer)
+{
+    this->layers = vector<Layer*>(other.layers.size());
+    for (size_t i = 0; i < this->layers.size(); i++) {
+        this->layers[i] = other.layers[i]->clone();
+    }
+}
+
 Tensor<double>
 NeuralNetwork::predict(const Tensor<double>& inputs)
 {
@@ -96,32 +107,59 @@ NeuralNetwork::fit(const Tensor<double>& inputs,
                     batch_size,
                     std::mt19937(std::random_device()()));
 
-
+#ifdef PARALLEL
+#pragma omp parallel for reduction(+ : loss) shared(gradients) num_threads(4)
+#endif
         for (size_t row = 0; row < batch_size; row++) {
+#ifdef PARALLEL
+            NeuralNetwork thread_nn(*this);
+            NeuralNetwork* network = &thread_nn;
+#else
+            NeuralNetwork* network = this;
+#endif
             const Tensor<double>& input = inputs.at(sample_idx[row]);
             const Tensor<double>& output = outputs.at(sample_idx[row]);
-            reset_values();
-            Tensor<double> predicted = this->predict(input);
-            double curr_loss = this->loss.evaluate(output, predicted);
-            loss += (curr_loss - loss) / (row + 1); // Moving average
-            // print_vector(predicted);
-            // print_vector(outputs.at(row));
-            // printf("Curr loss : %f - New loss : %f\n--\n", curr_loss, loss);
+#ifndef PARALLEL
+            network->reset_values();
+#endif
+            Tensor<double> predicted = network->predict(input);
+            double curr_loss = network->loss.evaluate(output, predicted);
+
+            // Atomic not needed because of reduction
+            loss += curr_loss;
+
+#ifdef DEBUG
+            print_vector(predicted);
+            print_vector(outputs.at(row));
+            printf("Curr loss : %f - New loss : %f\n--\n", curr_loss, loss);
+#endif
             if (loss != loss) {
                 printf("Networked diverged during training.\n");
                 exit(0);
             }
-            this->reset_errors();
-            vector<Tensor<double>> local_grads = this->backpropagation(output, input);
+#ifndef PARALLEL
+            network->reset_errors();
+#endif
+            vector<Tensor<double>> local_grads = network->backpropagation(output, input);
             for (size_t i = 0; i < gradients.size(); i++) {
                 double* gradients_data = gradients[i].data();
                 double* local_grads_data = local_grads[i].data();
                 for (size_t j = 0; j < gradients[i].total_size(); j++) {
-                    // Moving average again
-                    gradients_data[j] += (local_grads_data[j] - gradients_data[j]) / (row + 1);
+#ifdef PARALLEL
+#pragma omp atomic
+#endif
+                    gradients_data[j] += local_grads_data[j];
                 }
             }
         }
+
+        for (size_t i = 0; i < gradients.size(); i++) {
+            double* gradients_data = gradients[i].data();
+            for (size_t j = 0; j < gradients[i].total_size(); j++) {
+                gradients_data[j] /= batch_size;
+            }
+        }
+        loss /= batch_size;
 
         optimizer.update(gradients);
         printf("Mean loss : %f\n", loss);

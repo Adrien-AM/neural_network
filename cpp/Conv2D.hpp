@@ -33,6 +33,7 @@ class Conv2D : public Layer
     void reset_values();
     void reset_errors();
     void print_layer() const;
+    Conv2D* clone() const;
 
     ~Conv2D();
 };

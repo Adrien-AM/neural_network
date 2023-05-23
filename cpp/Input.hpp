@@ -18,6 +18,7 @@ class Input : public Layer
     void reset_values();
     void reset_errors();
     void print_layer() const;
+    Input* clone() const;
 };
 
 #endif // __INPUT_HPP__

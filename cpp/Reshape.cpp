@@ -27,12 +27,11 @@ Reshape::forward(const Tensor<double>& input)
     input.copy_data(this->output_values);
 }
 
-void
-Reshape::backprop(Layer* input_layer, double alpha, double beta)
+Tensor<double>
+Reshape::backprop(Layer* input_layer)
 {
-    (void)alpha;
-    (void)beta;
     this->errors.copy_data(input_layer->errors);
+    return this->errors;
 }
 
 void
@@ -63,6 +62,13 @@ void
 Reshape::reset_errors()
 {
     memset(this->errors.data(), 0, this->output_values.size() * sizeof(double));
+}
+
+Reshape* Reshape::clone() const
+{
+    Reshape* copy = new Reshape(output_shape);
+    copy->input_shape = input_shape;
+    return copy;
 }
 
 // debug

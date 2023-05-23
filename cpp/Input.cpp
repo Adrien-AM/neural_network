@@ -51,3 +51,9 @@ Input::print_layer() const
     printf("Input values :\n");
     print_vector(this->output_values);
 }
+
+Input*
+Input::clone() const
+{
+    return new Input(this->output_values);
+}

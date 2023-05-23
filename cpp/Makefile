@@ -4,7 +4,7 @@ CXXFLAGS=-Werror -Wall -Wextra -std=c++2a
 ifeq ($(DEBUG), 1)
     CXXFLAGS += -DDEBUG -Og
 else ifeq ($(PARALLEL), 1)
-    CXXFLAGS += -DPARALLEL -fopenmp
+    CXXFLAGS += -DPARALLEL -fopenmp -Ofast
 else
 	CXXFLAGS += -Ofast
 endif

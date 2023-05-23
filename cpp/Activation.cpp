@@ -1,5 +1,4 @@
 #include "Activation.hpp"
-
 #include "Utils.hpp"
 
 // -- Linear --
@@ -14,9 +13,6 @@ Tensor<double>
 Linear::derivative(Tensor<double> x) const
 {
     Tensor<double> result(vector<size_t>({ x.size(), x.size() }));
-#ifdef PARALLEL
-#pragma omp parallel for
-#endif
     for (size_t i = 0; i < x.size(); i++) {
         result.at(i)[i] = 1;
     }
@@ -39,6 +35,7 @@ Tensor<double>
 ReLU::derivative(Tensor<double> x) const
 {
     Tensor<double> result(vector<size_t>({ x.size(), x.size() }));
+
     for (size_t i = 0; i < x.size(); i++) {
         result.at(i)[i] = x[i] > 0 ? 1 : 0;
     }
@@ -51,9 +48,6 @@ Tensor<double>
 Sigmoid::compute(Tensor<double> x) const
 {
     Tensor<double> result(x.shape());
-#ifdef PARALLEL
-#pragma omp parallel for
-#endif
     for (size_t i = 0; i < x.size(); i++) {
         result[i] = 1 / (1 + exp(-x[i]));
     }
@@ -65,9 +59,6 @@ Sigmoid::derivative(Tensor<double> x) const
 {
     Tensor<double> result(vector<size_t>({ x.size(), x.size() }));
     Tensor<double> sigmas = this->compute(x);
-#ifdef PARALLEL
-#pragma omp parallel for
-#endif
     for (size_t i = 0; i < x.size(); i++) {
         result.at(i)[i] = sigmas[i] * (1 - sigmas[i]);
     }
@@ -81,6 +72,7 @@ Softmax::compute(Tensor<double> x) const
 {
     double sum = 0;
     Tensor<double> result(x.shape());
+
     for (size_t i = 0; i < x.size(); i++) {
         double e = exp(x[i]);
         sum += e;
@@ -104,21 +96,11 @@ Softmax::derivative(Tensor<double> x) const
 {
     size_t size = x.size();
     Tensor<double> result(vector<size_t>({ size, size }));
-
-#ifdef DEBUG
-    printf("Actv values :\n");
-    print_vector(x);
-#endif
-
     for (size_t i = 0; i < size; i++) {
         for (size_t j = 0; j <= i; j++) {
             // note : this is symetric !
             result.at(i)[j] = x[i] * ((i == j) - x[j]);
             result.at(j)[i] = result.at(i)[j];
-
-#ifdef DEBUG
-// printf("(%u,%u) x %f, j %f, result %f\n", i, j, x[i], x[j], result[i]);
-#endif
         }
     }
 

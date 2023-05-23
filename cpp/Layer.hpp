@@ -56,6 +56,8 @@ class Layer
     // debug
     virtual void print_layer() const = 0;
 
+    virtual Layer* clone() const = 0;
+
     virtual ~Layer() = 0;
 };
 

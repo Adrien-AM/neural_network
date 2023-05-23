@@ -176,4 +176,12 @@ Conv2D::print_layer() const
     // TODO
 }
 
+Conv2D* Conv2D::clone() const
+{
+    Conv2D* copy = new Conv2D(filters_size, kernel_size, padding, activation, !biases.empty());
+    copy->channels = channels;
+    copy->weights = weights;
+    return copy;
+}
+
 Conv2D::~Conv2D() {}

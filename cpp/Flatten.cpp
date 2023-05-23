@@ -51,6 +51,13 @@ Flatten::reset_errors()
     memset(this->errors.data(), 0, this->output_values.size() * sizeof(double));
 }
 
+Flatten* Flatten::clone() const
+{
+    Flatten* copy = new Flatten();
+    copy->init(this->input_shape);
+    return copy;
+}
+
 // debug
 // TODO
 void
