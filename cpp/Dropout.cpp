@@ -31,19 +31,6 @@ Dropout::forward(const Tensor<double>& input)
         }
     }
 }
-
-Tensor<double>
-Dropout::backprop(Layer* input_layer)
-{
-    double* my_errors = errors.data();
-    for (size_t i = 0; i < errors.total_size(); i++) {
-        if(!actives[i])
-            my_errors[i] = 0;
-    }
-    errors.copy_data(input_layer->errors);
-    return Tensor<double>();
-}
-
 void
 Dropout::summarize() const
 {

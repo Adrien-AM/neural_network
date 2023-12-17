@@ -13,7 +13,7 @@ using namespace std;
 double
 f(double x)
 {
-    return 0.4 * x - 13;
+    return 0.4 * x - 12;
 }
 
 int
@@ -27,21 +27,23 @@ main()
 
     std::random_device rd;
     std::mt19937 gen(rd());
+
     std::uniform_real_distribution<> dis(-10, 10);
-    Tensor<double> inputs(vector<size_t>{ 100, 1 });
+    Tensor<double> inputs(vector<size_t>{ 100, 1, 1 });
 
     for (size_t i = 0; i < inputs.size(); ++i) {
-        inputs.at(i) = { dis(gen) };
+        inputs({ i, 0, 0 }) = dis(gen);
     }
 
     Tensor<double> outputs(vector<size_t>({ 100, 1 }));
     for (size_t i = 0; i < inputs.size(); i++) {
-        outputs.at(i) = { f(inputs.at(i)[0]) };
+        outputs[i] = { f(inputs({ i, 0, 0 })) };
     }
-    nn.fit(inputs, outputs, inputs.size(), 200);
+    nn.fit(inputs, outputs, 50, 500);
     double newrand = dis(gen);
-    vector<double> input = { newrand };
-    printf("f(%f) -> %f (should be %f)\n", newrand, nn.predict(input)[0], f(newrand));
+    Tensor<double> input(vector<size_t>{ 1, 1 });
+    input({ 0, 0 }) = newrand;
+    printf("f(%f) -> %f (should be %f)\n", newrand, nn.predict(input)({ 0, 0 }), f(newrand));
 
     return 0;
 }

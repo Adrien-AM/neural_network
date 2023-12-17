@@ -11,7 +11,6 @@ class Layer
 {
   public:
     Tensor<double> output_values;
-    Tensor<double> errors;
     Tensor<double> weights;
     Tensor<double> biases;
 
@@ -32,18 +31,6 @@ class Layer
     virtual void forward(const Tensor<double>&) = 0;
 
     /**
-     * Backward pass through the layer. Downstream gradients are written on previous layer's
-     * `errors`.
-     *
-     * @param input_layer
-     * @param learning_rate : hyperparameter
-     * @param momentum : hyperparameter
-     *
-     * @return gradients
-     */
-    virtual Tensor<double> backprop(Layer*) = 0;
-
-    /**
      * Displays useful informations on stdout.
      */
     virtual void summarize() const = 0;
@@ -51,10 +38,11 @@ class Layer
     // getters and setters
     virtual size_t size() const = 0;
     virtual void reset_values() = 0;
-    virtual void reset_errors() = 0;
 
     // debug
     virtual void print_layer() const = 0;
+
+    virtual Layer* clone() const = 0;
 
     virtual ~Layer() = 0;
 };

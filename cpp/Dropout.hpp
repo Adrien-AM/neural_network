@@ -10,7 +10,6 @@ class Dropout : public Layer
 {
   private:
     double rate;
-    vector<bool> actives;
 
   public:
     Dropout(double rate);

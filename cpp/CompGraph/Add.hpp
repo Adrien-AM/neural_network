@@ -4,11 +4,11 @@
 #include "Operation.hpp"
 
 template<typename T>
-class Add : public Operation<T>
+class Add : public Operation<double>
 {
   public:
-    Add(Operation<T>* x, Operation<T>* y)
-      : Operation<T>(x, y)
+    Add(SmartPointer<Operation<T>> x, SmartPointer<Operation<T>> y)
+      : Operation<double>(x, y)
     {
     }
 

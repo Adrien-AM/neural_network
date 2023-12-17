@@ -4,11 +4,11 @@
 #include "Operation.hpp"
 
 template<typename T>
-class Max : public Operation<T>
+class Max : public Operation<double>
 {
   public:
-    Max(Operation<T>* x, Operation<T>* y)
-      : Operation<T>(x, y)
+    Max(SmartPointer<Operation<T>> x, SmartPointer<Operation<T>> y)
+      : Operation<double>(x, y)
     {
     }
 

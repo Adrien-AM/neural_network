@@ -4,11 +4,11 @@
 #include "Operation.hpp"
 
 template<typename T>
-class Div : public Operation<T>
+class Div : public Operation<double>
 {
   public:
-    Div(Operation<T>* x, Operation<T>* y)
-      : Operation<T>(x, y)
+    Div(SmartPointer<Operation<T>> x, SmartPointer<Operation<T>> y)
+      : Operation<double>(x, y)
     {
     }
 
@@ -18,7 +18,7 @@ class Div : public Operation<T>
     {
         this->inputs[0]->gradient += this->gradient * (1 / this->inputs[1]->value);
         this->inputs[1]->gradient += this->gradient * -this->inputs[0]->value /
-                                    (this->inputs[1]->value * this->inputs[1]->value);
+                                     (this->inputs[1]->value * this->inputs[1]->value);
     }
 };
 

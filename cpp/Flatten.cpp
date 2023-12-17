@@ -11,20 +11,12 @@ Flatten::init(vector<size_t> input_shape)
     }
 
     this->output_values = Tensor<double>(size);
-    this->errors = Tensor<double>(size);
 }
 
 void
 Flatten::forward(const Tensor<double>& input)
 {
     input.copy_data(this->output_values);
-}
-
-Tensor<double>
-Flatten::backprop(Layer* input_layer)
-{
-    this->errors.copy_data(input_layer->errors);
-    return Tensor<double>();
 }
 
 void
@@ -42,13 +34,14 @@ Flatten::size() const
 void
 Flatten::reset_values()
 {
-    memset(this->output_values.data(), 0, this->output_values.size() * sizeof(double));
+    this->output_values.reset_data();
 }
 
-void
-Flatten::reset_errors()
+Flatten* Flatten::clone() const
 {
-    memset(this->errors.data(), 0, this->output_values.size() * sizeof(double));
+    Flatten* copy = new Flatten();
+    copy->init(this->input_shape);
+    return copy;
 }
 
 // debug

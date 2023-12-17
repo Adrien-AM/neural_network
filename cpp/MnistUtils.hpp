@@ -33,7 +33,4 @@ void
 shuffle_images_labels(Tensor<double>& images,
                       Tensor<double>& labels);
 
-void
-normalize_pixels(Tensor<double>& images);
-
 #endif // __SDLMNIST_HPP__

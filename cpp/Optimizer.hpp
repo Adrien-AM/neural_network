@@ -13,21 +13,18 @@ class Optimizer
   public:
     Optimizer(double lr = 1e-3, double clip = 0) : alpha(lr), clip(clip) {}
     virtual void attach_layers(vector<Layer*> l) { layers = l; }
-    virtual void update(vector<Tensor<double>> gradients) = 0;
+    virtual void update(size_t batch_size) = 0;
+    void sample();
 };
 
 class SGD : public Optimizer
 {
-  private:
-    double decay;
-
   public:
-    SGD(double alpha = 1e-3, double decay = 1, double clip = 0)
+    SGD(double alpha = 1e-3, double clip = 0)
       : Optimizer(alpha, clip)
-      , decay(decay)
     {
     }
-    void update(vector<Tensor<double>> gradients);
+    void update(size_t batch_size);
 };
 
 class Adam : public Optimizer
@@ -41,8 +38,7 @@ class Adam : public Optimizer
     public:
       Adam(double lr = 1e-3, double beta1 = 0.9, double beta2 = 0.999, double clip = 0);
       void attach_layers(vector<Layer*> l);
-      void update(vector<Tensor<double>> gradients);
+      void update(size_t batch_size);
 };
-
 
 #endif // __OPTIMIZER_HPP__

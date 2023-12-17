@@ -5,24 +5,26 @@
 #include <math.h>
 
 template<typename T>
-class Abs : public Operation<T>
+class Abs : public Operation<double>
 {
   private:
+    T sign;
 
   public:
-    Abs(Operation<T>* x)
-      : Operation<T>(x)
+    Abs(SmartPointer<Operation<T>> x)
+      : Operation<double>(x)
     {
     }
 
     void forward()
     {
+        sign = this->inputs[0]->value >= 0 ? 1 : -1;
         this->value = abs(this->inputs[0]->value);
     }
 
     void backward()
     {
-        this->inputs[0]->gradient += this->gradient * (this->value >= 0);
+        this->inputs[0]->gradient += this->gradient * this->sign;
     }
 };
 

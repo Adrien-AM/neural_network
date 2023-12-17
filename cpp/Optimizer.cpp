@@ -9,17 +9,84 @@ clipper(double x, double clip)
 }
 
 void
-SGD::update(vector<Tensor<double>> gradients)
+Optimizer::sample()
 {
-    for (size_t i = 0; i < layers.size(); i++) {
-        double* grads = gradients[i].data();
-        double* weights = layers[i]->weights.data();
-
-        for (size_t j = 0; j < gradients[i].total_size(); j++) {
-            weights[j] -= clipper(grads[j], clip) * alpha;
+    for (Layer*& l : layers) {
+        l->weights.accumulate_gradients();
+        if (!l->biases.empty()) {
+            l->biases.accumulate_gradients();
         }
     }
-    alpha *= decay;
+}
+
+void
+iterate(Tensor<double>& t)
+{
+    vector<size_t> s = t.shape();
+    size_t nb_dims = s.size();
+    vector<size_t> indices(nb_dims);
+    while (true) {
+        // Code ...
+
+        indices[nb_dims - 1]++;
+        size_t i = nb_dims - 1;
+        while (indices[i] == s[i]) {
+            if (i == 0)
+                return;
+            indices[i] = 0;
+            indices[--i]++;
+        }
+    }
+}
+
+void
+SGD::update(size_t batch_size)
+{
+    for (size_t i = 0; i < layers.size(); i++) {
+        Layer* l = layers[i];
+        vector<size_t> shape = l->weights.shape();
+        if (shape.size() == 0)
+            continue;
+        bool use_bias = !l->biases.empty();
+
+        size_t nb_dims = shape.size();
+        vector<size_t> indices(nb_dims);
+        while (true) {
+            l->weights(indices) -= alpha * clipper(l->weights.acc(indices) / batch_size, clip);
+
+            size_t i = nb_dims - 1;
+            indices[i]++;
+            while (indices[i] == shape[i]) {
+                if (i == 0)
+                    goto bias;
+                indices[i] = 0;
+                indices[--i]++;
+            }
+        }
+    bias:
+        if (use_bias) {
+            shape = l->biases.shape();
+            size_t nb_dims = shape.size();
+            vector<size_t> indices(nb_dims);
+            while (true) {
+                l->biases(indices) -=
+                  alpha * clipper(l->biases.acc(indices) / batch_size, clip);
+
+                size_t i = nb_dims - 1;
+                indices[i]++;
+                while (indices[i] == shape[i]) {
+                    if (i == 0)
+                        goto end;
+                    indices[i] = 0;
+                    indices[--i]++;
+                }
+            }
+        }
+    end:
+        layers[i]->weights.reset_gradients();
+        if (use_bias)
+            layers[i]->biases.reset_gradients();
+    }
 }
 
 Adam::Adam(double lr, double beta1, double beta2, double clip)
@@ -31,30 +98,21 @@ Adam::Adam(double lr, double beta1, double beta2, double clip)
 }
 
 void
-Adam::update(vector<Tensor<double>> gradients)
+Adam::update(size_t batch_size)
 {
-    size_t size = layers.size();
-    for (size_t i = 0; i < size; i++) {
-        double* grads = gradients[i].data();
-        double* up1 = updates1[i].data();
-        double* up2 = updates2[i].data();
-        double* weights = layers[i]->weights.data();
-
+    for (size_t i = 0; i < layers.size(); i++) {
         t++;
         double bias1 = 1 - pow(beta1, t);
         double bias2 = 1 - pow(beta2, t);
 
-        double grads_size = gradients[i].total_size();
-        for (size_t j = 0; j < grads_size; j++) {
-            double g = clipper(grads[j], clip);
-            double& r1 = up1[j];
-            double& r2 = up2[j];
-            r1 = beta1 * r1 + (1 - beta1) * g;
-            r2 = beta2 * r2 + (1 - beta2) * g * g;
-            double corrected_up1 = r1 / bias1;
-            double corrected_up2 = r2 / bias2;
+        for (size_t j = 0; j < layers[i]->weights.total_size(); j++) {
+            double g = clipper(layers[i]->weights.acc(j) / batch_size, clip);
+            updates1[j] = updates1[j] * beta1 + (1 - beta1) * g;
+            updates2[j] = updates2[j] * beta2 + (1 - beta2) * g * g;
+            double corrected_up1 = updates1[j] / bias1;
+            double corrected_up2 = updates2[j] / bias2;
 
-            weights[j] -= alpha * corrected_up1 / (sqrt(corrected_up2) + 1e-8);
+            layers[i]->weights[j] -= alpha * corrected_up1 / (sqrt(corrected_up2) + 1e-8);
         }
     }
 }

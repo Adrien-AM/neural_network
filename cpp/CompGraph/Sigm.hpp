@@ -4,11 +4,11 @@
 #include "Operation.hpp"
 
 template<typename T>
-class Sigm : public Operation<T>
+class Sigm : public Operation<double>
 {
   public:
-    Sigm(Operation<T>* x)
-      : Operation<T>(x)
+    Sigm(SmartPointer<Operation<T>> x)
+      : Operation<double>(x)
     {
     }
 

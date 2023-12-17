@@ -2,8 +2,8 @@
 #define __COMP_GRAPH__
 
 #include "Operation.hpp"
+#include <queue>
 #include <vector>
-#include <set>
 
 using namespace std;
 
@@ -11,62 +11,43 @@ template<typename T>
 class CompGraph
 {
   private:
-    void create_nodes(Operation<T>* o)
-    {
-        for (const auto& input : o->inputs) {
-            create_nodes(input);
-        }
-        nodes.push_back(o);
-    }
+    vector<SmartPointer<Operation<double>>> nodes;
 
   public:
-    vector<Operation<T>*> nodes;
+    SmartPointer<Operation<double>> root;
 
-    CompGraph()
-      : nodes(0)
+    CompGraph(SmartPointer<Operation<double>> o)
+      : root(o)
     {
-    }
-
-    CompGraph(Operation<T>* o)
-    {
-        nodes = vector<Operation<T>*>(0);
-        create_nodes(o);
-    }
-
-    T forward()
-    {
-        for (const auto& o : nodes)
-            o->forward();
-        return nodes.back()->value;
+        queue<SmartPointer<Operation<double>>> q;
+        q.push(root);
+        while (!q.empty()) {
+            SmartPointer<Operation<double>> op = q.front();
+            nodes.push_back(op);
+            for (auto& input : op->inputs) {
+                q.push(input);
+            }
+            q.pop();
+        }
     }
 
     void backward()
     {
-        this->reset();
-        nodes.back()->gradient = 1;
-        set<Operation<T>*> uniques;
-        for (int i = nodes.size() - 1; i >= 0; i--) {
-            if(!uniques.count(nodes[i])) {
-                nodes[i]->backward();
-                uniques.insert(nodes[i]);
-            }
+        // this->reset();
+        root->gradient = 1;
+        for (auto& n : nodes) {
+            n->backward();
         }
     }
 
-    void reset()
-    {
-        for (const auto& o : nodes)
-            o->gradient = 0;
-    }
+    // void reset()
+    // {
+    //     for (auto& n : nodes) {
+    //         n->gradient = 0;
+    //     }
+    // }
 
-    ~CompGraph()
-    {
-        // Remove dupes
-        set<Operation<T>*> uniques(nodes.cbegin(), nodes.cend());
-        for (auto& o : uniques) {
-            delete o;
-        }
-    }
+    ~CompGraph() {}
 };
 
 #endif // __COMP_GRAPH__

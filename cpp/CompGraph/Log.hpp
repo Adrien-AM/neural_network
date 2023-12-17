@@ -5,14 +5,14 @@
 #include <math.h>
 
 template<typename T>
-class Log : public Operation<T>
+class Log : public Operation<double>
 {
   private:
     T x;
 
   public:
-    Log(Operation<T>* x)
-      : Operation<T>(x)
+    Log(SmartPointer<Operation<T>> x)
+      : Operation<double>(x)
     {
     }
 
@@ -22,10 +22,7 @@ class Log : public Operation<T>
         this->value = log(x);
     }
 
-    void backward()
-    {
-        this->inputs[0]->gradient += this->gradient * 1 / x;
-    }
+    void backward() { this->inputs[0]->gradient += this->gradient * 1 / x; }
 };
 
 #endif // __LOG_HPP__

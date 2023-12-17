@@ -15,7 +15,6 @@ class Conv2D : public Layer
     size_t channels;
     size_t padding;
     const Activation& activation;
-    Tensor<double> values;
     Tensor<double> padded_input;
 
   public:
@@ -26,13 +25,12 @@ class Conv2D : public Layer
            bool use_bias = true);
     void init(vector<size_t>);
     void forward(const Tensor<double>&);
-    Tensor<double> backprop(Layer*);
 
     void summarize() const;
     size_t size() const;
     void reset_values();
-    void reset_errors();
     void print_layer() const;
+    Conv2D* clone() const;
 
     ~Conv2D();
 };

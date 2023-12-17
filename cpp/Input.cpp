@@ -3,7 +3,6 @@
 Input::Input(Tensor<double> values)
 {
     this->output_values = values;
-    this->errors = Tensor<double>(values.shape()); // useless but needed
 }
 
 void
@@ -15,12 +14,6 @@ void
 Input::forward(const Tensor<double>& inputs)
 {
     this->output_values = inputs;
-}
-
-Tensor<double>
-Input::backprop(Layer*)
-{
-    return Tensor<double>();
 }
 
 void
@@ -41,13 +34,14 @@ Input::reset_values()
 }
 
 void
-Input::reset_errors()
-{
-}
-
-void
 Input::print_layer() const
 {
     printf("Input values :\n");
-    print_vector(this->output_values);
+    this->output_values.print();
+}
+
+Input*
+Input::clone() const
+{
+    return new Input(this->output_values);
 }
