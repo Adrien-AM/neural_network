@@ -28,7 +28,7 @@ class Number : public Operation<T>
     void backward()
     {
         this->nb++;
-        if (nb>1) printf("Multiple backward :(\n");
+        // if (nb>1) printf("Multiple backward :(\n");
         for (auto& i : this->inputs) {
             i->gradient += this->gradient;
         }

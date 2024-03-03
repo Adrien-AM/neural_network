@@ -24,6 +24,8 @@ class CompGraph
         q.push(root);
         while (!q.empty()) {
             SmartPointer<Operation<T>> op = q.front();
+            auto idx = find(nodes.begin(), nodes.end(), op);
+            if(idx != nodes.end()) {nodes.erase(idx);}
             nodes.push_back(op);
             for (auto& input : op->inputs) {
                 q.push(input);
@@ -32,19 +34,19 @@ class CompGraph
         }
 
         // Now keep only the last occurence of each node for it to be topologically sorted
-        unordered_map<SmartPointer<Operation<T>>*, int> nodeIndex;
-        nodeIndex.reserve(nodes.size());
-        for (int i = nodes.size() - 1; i >= 0; --i) {
-            if (nodeIndex.find(&nodes[i]) == nodeIndex.end()) {
-                nodeIndex[&nodes[i]] = i;
-            }
-        }
-        vector<SmartPointer<Operation<T>>> uniqueNodes;
-        uniqueNodes.reserve(nodeIndex.size());
-        for (const auto& pair : nodeIndex) {
-            uniqueNodes.push_back(*(pair.first));
-        }
-        nodes = move(uniqueNodes);
+        // unordered_map<SmartPointer<Operation<T>>*, int> nodeIndex;
+        // nodeIndex.reserve(nodes.size());
+        // for (int i = nodes.size() - 1; i >= 0; --i) {
+        //     if (nodeIndex.find(&nodes[i]) == nodeIndex.end()) {
+        //         nodeIndex[&nodes[i]] = i;
+        //     }
+        // }
+        // vector<SmartPointer<Operation<T>>> uniqueNodes;
+        // uniqueNodes.reserve(nodeIndex.size());
+        // for (const auto& pair : nodeIndex) {
+        //     uniqueNodes.push_back(*(pair.first));
+        // }
+        // nodes = move(uniqueNodes);
     }
 
     void backward()

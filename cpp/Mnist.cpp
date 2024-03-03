@@ -53,7 +53,7 @@ main()
     size_t epochs = 10;
     size_t batch_size = 1;
 
-    SGD optimizer(1e-4);
+    SGD optimizer(1e-2);
     NeuralNetwork nn(
       IMAGE_SHAPE,
       { new Flatten(), new Dense(4), new ReLU(), new Dense(NB_CLASSES), new Softmax() },
