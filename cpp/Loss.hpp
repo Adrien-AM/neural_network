@@ -9,9 +9,9 @@ using namespace std;
 class Loss
 {
   protected:
-    Tensor<double> result;
 
   public:
+    Tensor<double> result;
     Loss() : result() {}
     virtual double evaluate(const Tensor<double> &real, const Tensor<double> &predicted) = 0;
     virtual void backward();
@@ -31,12 +31,6 @@ class MeanSquaredError : public Loss
 };
 
 class CategoricalCrossEntropy : public Loss
-{
-  public:
-    double evaluate(const Tensor<double>& real, const Tensor<double>& predicted);
-};
-
-class SSIM : public Loss
 {
   public:
     double evaluate(const Tensor<double>& real, const Tensor<double>& predicted);

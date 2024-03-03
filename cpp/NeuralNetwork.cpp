@@ -14,7 +14,7 @@ NeuralNetwork::NeuralNetwork(vector<size_t> input_shape,
 
     this->layers[0]->init(input_shape);
     for (size_t i = 1; i < this->layers.size(); i++) {
-        this->layers[i]->init(this->layers[i - 1]->output_values.shape());
+        this->layers[i]->init(this->layers[i - 1]->output_shape());
     }
     optimizer.attach_layers(this->layers);
 }
@@ -33,55 +33,47 @@ NeuralNetwork::NeuralNetwork(const NeuralNetwork& other)
 Tensor<double>
 NeuralNetwork::predict(const Tensor<double>& inputs)
 {
-    Tensor<double> moving_inputs = inputs;
+    Tensor<double> y = inputs;
     for (Layer*& layer : this->layers) {
-        if (moving_inputs.shape().size() == 1)
-            moving_inputs.add_dimension();
-        layer->forward(moving_inputs);
-        moving_inputs = layer->output_values;
+        if (y.shape().size() == 1)
+            y.add_dimension();
+        y = layer->forward(y);
     }
 
-    // Last element actv values are the output
-    return moving_inputs;
+    return y;
 }
 
 void
-NeuralNetwork::reset_values()
-{
-    for (Layer*& layer : this->layers) {
-        layer->reset_values();
-    }
-}
-
-void
-NeuralNetwork::fit(const Dataset<double>& data, size_t batch_size, size_t epochs)
+NeuralNetwork::fit(Dataset<double>& data, size_t batch_size, size_t epochs)
 {
     for (size_t epoch = 0; epoch < epochs; epoch++) {
         printf("- Epoch %zu/%zu -- ", epoch + 1, epochs);
         fflush(stdout);
-        double loss = 0;
+        double epoch_loss = 0;
 
-        // Sample batch
-        for (size_t i = 0; i < data.size(); i++) {
+        size_t data_size = data.size();
+
+        for (size_t i = 0; i < data_size; i += batch_size)
+        {
             vector<Tensor<double>> batch = data.get_item(i, batch_size);
             Tensor<double>& input = batch[0];
             Tensor<double>& output = batch[1];
 
-            this->reset_values();
             Tensor<double> predicted = this->predict(input);
             double curr_loss = this->loss.evaluate(output, predicted);
-            loss += curr_loss;
-            if (loss != loss) {
+            printf("Current loss : %f\n", curr_loss);
+            epoch_loss += curr_loss;
+            #ifdef DEBUG
+            if (epoch_loss != epoch_loss) {
                 printf("Network diverged during training.\n");
                 exit(0);
             }
+            #endif
             this->loss.backward();
-            optimizer.sample();
+            optimizer.update();
         }
-
-        loss /= batch_size;
-        optimizer.update(batch_size);
-        printf("Mean loss : %f\n", loss);
+        epoch_loss /= (data_size / batch_size);
+        printf("Epoch %zu : loss = %f\n", epoch, epoch_loss);
     }
 }
 

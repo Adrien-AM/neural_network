@@ -10,34 +10,31 @@ Flatten::init(vector<size_t> input_shape)
         size *= input_shape[dim];
     }
 
-    this->output_values = Tensor<double>(size);
+    this->output_size = size;
 }
 
-void
-Flatten::forward(const Tensor<double>& input)
+Tensor<double>
+Flatten::forward(const Tensor<double>& input) const
 {
-    input.copy_data(this->output_values);
+    Tensor<double> result(this->output_size);
+    input.copy_data(result);
+    return result;
+}
+
+vector<size_t>
+Flatten::output_shape() const
+{
+    return { this->output_size };
 }
 
 void
 Flatten::summarize() const
 {
-    printf("Flatten layer : output of size %zu.\n", this->output_values.size());
+    printf("Flatten layer : output of size %zu.\n", this->output_size);
 }
 
-size_t
-Flatten::size() const
-{
-    return this->output_values.size();
-}
-
-void
-Flatten::reset_values()
-{
-    this->output_values.reset_data();
-}
-
-Flatten* Flatten::clone() const
+Flatten*
+Flatten::clone() const
 {
     Flatten* copy = new Flatten();
     copy->init(this->input_shape);

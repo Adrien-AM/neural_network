@@ -6,6 +6,7 @@
 #include <iostream>
 #include <list>
 #include <vector>
+#include <iterator>
 
 #include "CompGraph/Abs.hpp"
 #include "CompGraph/Add.hpp"
@@ -114,12 +115,25 @@ class Tensor
         }
     }
 
+    // Iteration
+    SmartPointer<Operation<double>>* begin() { return data_; }
+    SmartPointer<Operation<double>>* end() { return data_ + size_; }
+
     // operator int() = delete;
     // operator int() const = delete;
 
     inline size_t size() const { return shape_.size() == 0 ? 0 : shape_[0]; }
 
     inline const vector<size_t>& shape() const { return shape_; }
+
+    bool operator==(const vector<T>& other)
+    {
+        if (this->shape_.size() !=1 ) return false;
+        for (size_t i = 0; i < this->size_; i++) {
+            if (other[i] != this->data_[i]->value) return false;
+        }
+        return true;
+    }
 
     Tensor<T> operator[](const size_t& index) const
     {
@@ -132,6 +146,19 @@ class Tensor
         return Tensor(vector<size_t>(this->shape_.begin() + 1, this->shape_.end()),
                       new_size,
                       this->data_ + (index * new_size));
+    }
+
+    Tensor<T> operator[](const vector<size_t>& indices) const
+    {
+        size_t new_size = this->size_;
+        size_t offset = 0;
+        for (size_t i = 0; i < indices.size(); i++) {
+            new_size = new_size / this->shape_[i];
+            offset += indices[i] * new_size;
+        }
+        return Tensor(vector<size_t>(this->shape_.begin() + indices.size(), this->shape_.end()),
+                      new_size,
+                      this->data_ + offset);
     }
 
     // Access operator to get an element directly
@@ -603,6 +630,24 @@ class Tensor
         return result;
     }
 
+    Tensor<T> bmm(const Tensor<T>& other) const {
+        size_t b = other.shape_[0];
+        #ifdef DEBUG
+        if(b != this->shape_[0]) {
+            fprintf(stderr, "Error : unequal batch sizes in batched matrix multiply : got %zu and %zu.", this->shape_[0], b);
+            exit(0);
+        }
+        #endif
+        vector<size_t> shape = {this->shape_[1], other.shape_[2]};
+        shape.insert(shape.begin(), b);
+        Tensor<T> result(shape);
+        for(size_t i = 0; i < b; i++) {
+            result[i] = (*this)[i].mm(other[i]);
+        }
+
+        return result;
+    }
+
     CompGraph<T> get_graph()
     {
 #ifdef DEBUG
@@ -614,24 +659,24 @@ class Tensor
         return CompGraph<T>(this->data_[0]);
     }
 
-    void accumulate_gradients()
-    {
-        for (size_t i = 0; i < size_; i++) {
-            data_[i]->acc += data_[i]->gradient;
-            data_[i]->gradient = 0;
-        }
-    }
+    // void accumulate_gradients()
+    // {
+    //     for (size_t i = 0; i < size_; i++) {
+    //         data_[i]->acc += data_[i]->gradient;
+    //         data_[i]->gradient = 0;
+    //     }
+    // }
 
     T gradient(size_t index) { return data_[index]->gradient; }
-    T acc(size_t index) { return data_[index]->acc; }
+    // T acc(size_t index) { return data_[index]->acc; }
 
     T gradient(vector<size_t> indices) { return data_[idx_from_v(indices)]->gradient; }
-    T acc(vector<size_t> indices) { return data_[idx_from_v(indices)]->acc; }
+    // T acc(vector<size_t> indices) { return data_[idx_from_v(indices)]->acc; }
 
     void reset_gradients()
     {
         for (size_t i = 0; i < size_; i++) {
-            data_[i]->acc = 0;
+            // data_[i]->acc = 0;
             data_[i]->gradient = 0;
         }
     }

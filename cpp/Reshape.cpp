@@ -8,7 +8,7 @@ Reshape::init(vector<size_t> input_shape)
         input_size *= dim;
     }
     size_t output_size = 1;
-    for (auto& dim : output_shape) {
+    for (auto& dim : shape) {
         output_size *= dim;
     }
     if (output_size != input_size) {
@@ -16,22 +16,14 @@ Reshape::init(vector<size_t> input_shape)
     }
 
     this->input_shape = input_shape;
-
-    this->output_values = Tensor<double>(output_shape);
-    this->errors = Tensor<double>(output_shape);
-}
-
-void
-Reshape::forward(const Tensor<double>& input)
-{
-    input.copy_data(this->output_values);
 }
 
 Tensor<double>
-Reshape::backprop(Layer* input_layer)
+Reshape::forward(const Tensor<double>& input) const
 {
-    this->errors.copy_data(input_layer->errors);
-    return this->errors;
+    Tensor<double> result(shape);
+    input.copy_data(result);
+    return result;
 }
 
 void
@@ -41,34 +33,21 @@ Reshape::summarize() const
     for (auto& dim : input_shape)
         printf("%zu,", dim);
     printf(") into shape (");
-    for (auto& dim : output_shape)
+    for (auto& dim : shape)
         printf("%zu,", dim);
     printf(").\n");
 }
 
-size_t
-Reshape::size() const
-{
-    return this->output_values.size();
-}
-
-void
-Reshape::reset_values()
-{
-    memset(this->output_values.data(), 0, this->output_values.size() * sizeof(double));
-}
-
-void
-Reshape::reset_errors()
-{
-    memset(this->errors.data(), 0, this->output_values.size() * sizeof(double));
-}
-
 Reshape* Reshape::clone() const
 {
-    Reshape* copy = new Reshape(output_shape);
+    Reshape* copy = new Reshape(shape);
     copy->input_shape = input_shape;
     return copy;
+}
+
+vector<size_t> Reshape::output_shape() const
+{
+    return this->shape;
 }
 
 // debug

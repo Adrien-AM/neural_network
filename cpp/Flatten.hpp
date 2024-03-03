@@ -11,15 +11,13 @@ class Flatten : public Layer
 {
     private:
       vector<size_t> input_shape;
-      vector<size_t> sizes;
+      size_t output_size;
 
     public:
       void init(vector<size_t>);
-      void forward(const Tensor<double>&);
+      Tensor<double> forward(const Tensor<double>&) const;
+      vector<size_t> output_shape() const;
       void summarize() const;
-      // getters and setters
-      size_t size() const;
-      void reset_values();
       Flatten* clone() const;
       // debug
       void print_layer() const;

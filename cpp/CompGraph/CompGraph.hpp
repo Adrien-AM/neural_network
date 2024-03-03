@@ -4,6 +4,7 @@
 #include "Operation.hpp"
 #include <queue>
 #include <vector>
+#include <unordered_map>
 
 using namespace std;
 
@@ -11,24 +12,39 @@ template<typename T>
 class CompGraph
 {
   private:
-    vector<SmartPointer<Operation<double>>> nodes;
+    vector<SmartPointer<Operation<T>>> nodes;
 
   public:
-    SmartPointer<Operation<double>> root;
+    SmartPointer<Operation<T>> root;
 
-    CompGraph(SmartPointer<Operation<double>> o)
+    CompGraph(SmartPointer<Operation<T>> o)
       : root(o)
     {
-        queue<SmartPointer<Operation<double>>> q;
+        queue<SmartPointer<Operation<T>>> q;
         q.push(root);
         while (!q.empty()) {
-            SmartPointer<Operation<double>> op = q.front();
+            SmartPointer<Operation<T>> op = q.front();
             nodes.push_back(op);
             for (auto& input : op->inputs) {
                 q.push(input);
             }
             q.pop();
         }
+
+        // Now keep only the last occurence of each node for it to be topologically sorted
+        unordered_map<SmartPointer<Operation<T>>*, int> nodeIndex;
+        nodeIndex.reserve(nodes.size());
+        for (int i = nodes.size() - 1; i >= 0; --i) {
+            if (nodeIndex.find(&nodes[i]) == nodeIndex.end()) {
+                nodeIndex[&nodes[i]] = i;
+            }
+        }
+        vector<SmartPointer<Operation<T>>> uniqueNodes;
+        uniqueNodes.reserve(nodeIndex.size());
+        for (const auto& pair : nodeIndex) {
+            uniqueNodes.push_back(*(pair.first));
+        }
+        nodes = move(uniqueNodes);
     }
 
     void backward()

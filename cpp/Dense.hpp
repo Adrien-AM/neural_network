@@ -11,27 +11,23 @@
 
 using namespace std;
 
-
 /**
  * Careful : Dense should only be used if input is 1D ! (for now)
 */
 class Dense : public Layer
 {
-    Tensor<double> values;
-    Tensor<double> delta_errors;
-
-    const Activation& activation;
+  private:
+    size_t size;
+    vector<size_t> shape;
 
   public:
-    Dense(size_t layer_size, const Activation& act, bool use_bias = true);
-    void init(vector<size_t>);
-    void forward(const Tensor<double>&);
-    void summarize() const;
     
-    size_t size() const;
-    void reset_values();
-    void reset_errors();
-
+    Dense(size_t layer_size, bool use_bias = true);
+    void init(vector<size_t>);
+    Tensor<double> forward(const Tensor<double>&) const;
+    vector<size_t> output_shape() const;
+    void summarize() const;
+  
     void print_layer() const;
     Dense* clone() const;
 

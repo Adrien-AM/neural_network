@@ -26,23 +26,23 @@ f(double x)
 // {
 //     random_device rd;
 //     mt19937 gen(rd());
-//     uniform_real_distribution<double> dis(-5.0, 5.0);
-//     normal_distribution<double> dis_weights(0, 0.5);
-//     vector<double> inputs(1000);
-//     vector<double> outputs(1000);
+//     uniform_real_distribution<T> dis(-5.0, 5.0);
+//     normal_distribution<T> dis_weights(0, 0.5);
+//     vector<T> inputs(1000);
+//     vector<T> outputs(1000);
 
 //     for (size_t i = 0; i < inputs.size(); ++i) {
 //         inputs[i] = dis(gen);
 //         outputs[i] = f(inputs[i]);
 //     }
 
-//     Number<double>* a = new Number<double>(dis_weights(gen));
-//     Number<double>* b = new Number<double>(dis_weights(gen));
-//     Number<double>* input = new Number<double>(0.0);
-//     Number<double>* output = new Number<double>(0.0);
+//     Number<T>* a = new Number<T>(dis_weights(gen));
+//     Number<T>* b = new Number<T>(dis_weights(gen));
+//     Number<T>* input = new Number<T>(0.0);
+//     Number<T>* output = new Number<T>(0.0);
 
-//     Operation<double>* prediction = new Add(new Mul(a, input), b);
-//     CompGraph<double> model(new Pow(new Sub(output, prediction), new Number(2.0)));
+//     Operation<T>* prediction = new Add(new Mul(a, input), b);
+//     CompGraph<T> model(new Pow(new Sub(output, prediction), new Number(2.0)));
 
 //     double learning_rate = 0.01;
 //     for (size_t i = 0; i < inputs.size(); i++) {
@@ -63,73 +63,73 @@ f(double x)
 // void
 // test()
 // {
-//     Tensor<double> real = vector<size_t>({ 28, 28 });
-//     Tensor<double> predicted = vector<size_t>({ 28, 28 });
+//     Tensor<T> real = vector<size_t>({ 28, 28 });
+//     Tensor<T> predicted = vector<size_t>({ 28, 28 });
 
 //     size_t size = predicted.total_size();
 //     double* data = predicted.data();
-//     Tensor<Number<double>*> inputs = predicted.shape();
-//     Number<double>** variables = inputs.data();
+//     Tensor<Number<T>*> inputs = predicted.shape();
+//     Number<T>** variables = inputs.data();
 //     if (size == 0)
 //         return;
 //     for (size_t i = 0; i < size; i++) {
-//         variables[i] = new Number<double>(data[i]);
+//         variables[i] = new Number<T>(data[i]);
 //     }
 
-//     Number<double>* k1 = new Number<double>(0.01);
-//     Number<double>* k2 = new Number<double>(0.03);
+//     Number<T>* k1 = new Number<T>(0.01);
+//     Number<T>* k2 = new Number<T>(0.03);
 
 //     size_t height = real.shape()[0];
 //     size_t width = real.shape()[1];
 
 //     // Compute means and variances
-//     Operation<double>* mean1 = new Number<double>(0.0);
-//     Operation<double>* mean2 = new Number<double>(0.0);
+//     Operation<T>* mean1 = new Number<T>(0.0);
+//     Operation<T>* mean2 = new Number<T>(0.0);
 
-//     Operation<double>* var1 = new Number<double>(0.0);
-//     Operation<double>* var2 = new Number<double>(0.0);
-//     Operation<double>* cov = new Number<double>(0.0);
+//     Operation<T>* var1 = new Number<T>(0.0);
+//     Operation<T>* var2 = new Number<T>(0.0);
+//     Operation<T>* cov = new Number<T>(0.0);
 //     for (size_t i = 0; i < height; i++) {
 //         for (size_t j = 0; j < width; j++) {
-//             mean1 = new Add<double>(mean1, new Number<double>(real.at(i)[j]));
-//             mean2 = new Add<double>(mean2, inputs.at(i)[j]);
+//             mean1 = new Add<T>(mean1, new Number<T>(real.at(i)[j]));
+//             mean2 = new Add<T>(mean2, inputs.at(i)[j]);
 //         }
 //     }
-//     Number<double>* s = new Number<double>(height * width);
-//     mean1 = new Div<double>(mean1, s);
-//     mean2 = new Div<double>(mean2, s);
+//     Number<T>* s = new Number<T>(height * width);
+//     mean1 = new Div<T>(mean1, s);
+//     mean2 = new Div<T>(mean2, s);
 
 //     for (size_t j = 0; j < width; j++) {
 //         for (size_t i = 0; i < height; i++) {
-//             Operation<double>* diff1 = new Sub<double>(new Number<double>(real.at(i)[j]), mean1);
-//             Operation<double>* diff2 = new Sub<double>(inputs.at(i)[j], mean2);
-//             var1 = new Add<double>(var1, new Mul<double>(diff1, diff1));
-//             var2 = new Add<double>(var2, new Mul<double>(diff2, diff2));
-//             cov = new Add<double>(cov, new Mul<double>(diff1, diff2));
+//             Operation<T>* diff1 = new Sub<T>(new Number<T>(real.at(i)[j]), mean1);
+//             Operation<T>* diff2 = new Sub<T>(inputs.at(i)[j], mean2);
+//             var1 = new Add<T>(var1, new Mul<T>(diff1, diff1));
+//             var2 = new Add<T>(var2, new Mul<T>(diff2, diff2));
+//             cov = new Add<T>(cov, new Mul<T>(diff1, diff2));
 //         }
 
-//         Number<double>* n = new Number<double>(height * width - 1);
-//         var1 = new Div<double>(var1, n);
-//         var2 = new Div<double>(var2, n);
-//         cov = new Div<double>(cov, n);
+//         Number<T>* n = new Number<T>(height * width - 1);
+//         var1 = new Div<T>(var1, n);
+//         var2 = new Div<T>(var2, n);
+//         cov = new Div<T>(cov, n);
 //     }
 
 //     // Compute SSIM
-//     Operation<double>* ssim = new Number<double>(0.0);
-//     Operation<double>* numerator = new Mul<double>(
-//       new Add<double>(new Mul<double>(new Number<double>(2.0), new Mul<double>(mean1, mean2)),
+//     Operation<T>* ssim = new Number<T>(0.0);
+//     Operation<T>* numerator = new Mul<T>(
+//       new Add<T>(new Mul<T>(new Number<T>(2.0), new Mul<T>(mean1, mean2)),
 //                       k1),
-//       new Add<double>(new Mul<double>(new Number<double>(2.0), cov), k2));
+//       new Add<T>(new Mul<T>(new Number<T>(2.0), cov), k2));
 
-//     Operation<double>* denominator =
-//       new Mul<double>(new Add<double>(new Mul<double>(mean1, mean1),
-//                                       new Add<double>(new Mul<double>(mean2, mean2), k1)),
-//                       new Add<double>(new Add<double>(var1, var2), k2));
-//     ssim = new Div<double>(numerator, denominator);
+//     Operation<T>* denominator =
+//       new Mul<T>(new Add<T>(new Mul<T>(mean1, mean1),
+//                                       new Add<T>(new Mul<T>(mean2, mean2), k1)),
+//                       new Add<T>(new Add<T>(var1, var2), k2));
+//     ssim = new Div<T>(numerator, denominator);
 //     // - to make it a Cost function
-//     ssim = new Sub<double>(new Number<double>(0.0), ssim);
+//     ssim = new Sub<T>(new Number<T>(0.0), ssim);
 
-//     CompGraph<double>* graph = new CompGraph<double>(ssim);
+//     CompGraph<T>* graph = new CompGraph<T>(ssim);
 //     cout << graph->forward() << endl;
 //     graph->backward();
 //     delete graph;
@@ -138,20 +138,20 @@ f(double x)
 void
 ml()
 {
-    Number<double>* x1 = new Number<double>(-2.0);
-    Number<double>* x2 = new Number<double>(4.0);
-    Number<double>* y = new Number<double>(-1.0);
-    Number<double>* w1 = new Number<double>(3.0);
-    Number<double>* w2 = new Number<double>(2.0);
-    Number<double>* b = new Number<double>(3.0);
-    Number<double>* lambda = new Number<double>(1.0);
+    Number<T>* x1 = new Number<T>(-2.0);
+    Number<T>* x2 = new Number<T>(4.0);
+    Number<T>* y = new Number<T>(-1.0);
+    Number<T>* w1 = new Number<T>(3.0);
+    Number<T>* w2 = new Number<T>(2.0);
+    Number<T>* b = new Number<T>(3.0);
+    Number<T>* lambda = new Number<T>(1.0);
 
-    Operation<double>* dot = new Add<double>(new Mul<double>(w1, x1), new Mul<double>(w2, x2));
-    Operation<double>* loss = new Max<double>(new Number<double>(0), new Sub<double>(new Number<double>(1.0), new Mul<double>(y, new Add<double>(dot, b))));
-    Operation<double>* norm = new Mul<double>(
-      lambda, new Pow<double>(new Add<double>(new Abs<double>(w1), new Abs<double>(w2)), new Number<double>(2)));
+    Operation<T>* dot = new Add<T>(new Mul<T>(w1, x1), new Mul<T>(w2, x2));
+    Operation<T>* loss = new Max<T>(new Number<T>(0), new Sub<T>(new Number<T>(1.0), new Mul<T>(y, new Add<T>(dot, b))));
+    Operation<T>* norm = new Mul<T>(
+      lambda, new Pow<T>(new Add<T>(new Abs<T>(w1), new Abs<T>(w2)), new Number<T>(2)));
 
-    CompGraph<double> graph(new Add<double>(loss, norm));
+    CompGraph<T> graph(new Add<T>(loss, norm));
     cout << graph.forward() << endl;
     graph.backward();
 
@@ -165,12 +165,12 @@ main()
     // test();
     ml();
 
-    // Number<double>* x = new Number<double>(3.0);
-    // Number<double>* y = new Number<double>(2.0);
+    // Number<T>* x = new Number<T>(3.0);
+    // Number<T>* y = new Number<T>(2.0);
 
-    // Operation<double>* z = new Mul<double>(x, x);
-    // z = new Add<double>(z, y);
-    // CompGraph<double> graph(z);
+    // Operation<T>* z = new Mul<T>(x, x);
+    // z = new Add<T>(z, y);
+    // CompGraph<T> graph(z);
 
     // printf("Forward : %f\n", graph.forward());
     // graph.backward();

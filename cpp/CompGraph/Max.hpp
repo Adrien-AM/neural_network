@@ -4,11 +4,11 @@
 #include "Operation.hpp"
 
 template<typename T>
-class Max : public Operation<double>
+class Max : public Operation<T>
 {
   public:
     Max(SmartPointer<Operation<T>> x, SmartPointer<Operation<T>> y)
-      : Operation<double>(x, y)
+      : Operation<T>(x, y)
     {
     }
 
@@ -18,6 +18,14 @@ class Max : public Operation<double>
     {
         this->inputs[0]->gradient += this->inputs[0]->value == this->value ? this->gradient : 0;
         this->inputs[1]->gradient += this->inputs[1]->value == this->value ? this->gradient : 0;
+    }
+
+    Max<T>* copy()
+    {
+        Max<T>* n = new Max<T>(this->inputs[0], this->inputs[1]);
+        n->value = this->value;
+        n->gradient = this->gradient;
+        return n;
     }
 };
 

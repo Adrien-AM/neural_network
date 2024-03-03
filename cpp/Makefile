@@ -1,19 +1,17 @@
 DEBUG ?= 0
 PARALLEL ?= 0
-CXXFLAGS=-Wall -Wextra -std=c++2a
+CXXFLAGS=-Wall -Wextra -std=c++2a -Ofast
 ifeq ($(DEBUG), 1)
     CXXFLAGS += -DDEBUG -g -Og -Werror
 else ifeq ($(PARALLEL), 1)
     CXXFLAGS += -DPARALLEL -fopenmp -Ofast
 else ifeq ($(PROF), 1)
 	CXXFLAGS += -pg
-else
-	CXXFLAGS += -pg
 endif
 CXX=g++
 
 exe=main mnist mnist-generator conv-mnist test
-test=test-comp-graph test-tensor test-operations test-operations-tensor test-loss test-layers
+test=test-comp-graph test-tensor test-operations test-operations-tensor test-loss test-layers test-activations test-loss
 
 all: ${exe}
 test: ${test}
@@ -36,7 +34,6 @@ test-comp-graph: TestCompGraph.cpp
 test-operations: TestOperations.cpp
 	${CXX} ${CXXFLAGS} $^ -o $@
 
-
 test-tensor: TestTensor.cpp Tensor.hpp
 	${CXX} ${CXXFLAGS} $^ -o $@
 
@@ -47,6 +44,9 @@ test-loss: TestLoss.cpp Tensor.hpp Loss.o
 	${CXX} ${CXXFLAGS} $^ -o $@
 
 test-layers: TestLayers.cpp Tensor.hpp Layer.o Activation.o Dense.o Flatten.o
+	${CXX} ${CXXFLAGS} $^ -o $@
+
+test-activations: TestActivations.cpp Tensor.hpp Activation.o Layer.o
 	${CXX} ${CXXFLAGS} $^ -o $@
 	
 clean:

@@ -3,12 +3,10 @@
 Conv2D::Conv2D(size_t filters,
                size_t kernel_size,
                size_t padding,
-               const Activation& act,
                bool use_bias)
   : filters_size(filters)
   , kernel_size(kernel_size)
   , padding(padding)
-  , activation(act)
 {
     if (use_bias)
         this->biases = Tensor<double>(filters_size);
@@ -37,7 +35,7 @@ Conv2D::init(vector<size_t> input_shape)
     }
 }
 
-void
+Tensor<double>
 Conv2D::forward(const Tensor<double>& inputs)
 {
     // padded_input = vector<size_t>(
@@ -50,8 +48,8 @@ Conv2D::forward(const Tensor<double>& inputs)
     for (size_t f = 0; f < this->filters_size; f++) {
         double bias = biases.empty() ? 0 : biases(f);
         Tensor<double> conv = convolution_2d(inputs, this->weights[f], bias, 1);
-        output_values[f] = this->activation.compute(conv);
     }
+    return this->output_values;
 }
 
 void
@@ -67,12 +65,6 @@ Conv2D::size() const
 }
 
 void
-Conv2D::reset_values()
-{
-    output_values.reset_data();
-}
-
-void
 Conv2D::print_layer() const
 {
     // TODO
@@ -81,7 +73,7 @@ Conv2D::print_layer() const
 Conv2D*
 Conv2D::clone() const
 {
-    Conv2D* copy = new Conv2D(filters_size, kernel_size, padding, activation, !biases.empty());
+    Conv2D* copy = new Conv2D(filters_size, kernel_size, padding !biases.empty());
     copy->channels = channels;
     copy->weights = weights;
     return copy;

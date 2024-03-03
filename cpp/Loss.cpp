@@ -32,5 +32,5 @@ double
 CategoricalCrossEntropy::evaluate(const Tensor<double>& y_true, const Tensor<double>& y_pred)
 {
     result = -(y_true * y_pred.log()).sum();
-    return (double)result;
+    return result;
 }

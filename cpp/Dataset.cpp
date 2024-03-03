@@ -50,7 +50,7 @@ MnistData::size() const
 }
 
 vector<Tensor<double>>
-MnistData::get_item(size_t index, size_t nb) const
+MnistData::get_item(size_t index, size_t nb)
 {
     vector<Tensor<double>> result(2);
     // Open the IDX file

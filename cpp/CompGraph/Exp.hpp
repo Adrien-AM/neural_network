@@ -4,26 +4,29 @@
 #include "Operation.hpp"
 #include <math.h>
 
-template <typename T>
-class Exp : public Operation<double>
+template<typename T>
+class Exp : public Operation<T>
 {
-private:
+  public:
+    Exp(SmartPointer<Operation<T>> x)
+      : Operation<T>(x)
+    {
+    }
 
-public:
-  Exp(SmartPointer<Operation<T>> x)
-      : Operation<double>(x)
-  {
-  }
+    void forward() { this->value = exp(this->inputs[0]->value); }
 
-  void forward()
-  {
-    this->value = exp(this->inputs[0]->value);
-  }
+    void backward()
+    {
+        this->inputs[0]->gradient += this->gradient * this->value;
+    }
 
-  void backward()
-  {
-    this->inputs[0]->gradient += this->gradient * this->value;
-  }
+    Exp<T>* copy()
+    {
+        Exp<T>* n = new Exp<T>(this->inputs[0]);
+        n->value = this->value;
+        n->gradient = this->gradient;
+        return n;
+    }
 };
 
 #endif // __EXP_HPP__

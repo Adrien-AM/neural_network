@@ -12,7 +12,7 @@ class Dataset
 {
   public:
     Dataset() {}
-    virtual vector<Tensor<T>> get_item(size_t index, size_t nb) const = 0;
+    virtual vector<Tensor<T>> get_item(size_t index, size_t nb) = 0;
     virtual size_t size() const = 0;
 };
 
@@ -30,7 +30,7 @@ class MnistData : public Dataset<double>
 
   public:
     MnistData(string path, string path_labels, size_t nb);
-    vector<Tensor<double>> get_item(size_t index, size_t nb) const;
+    vector<Tensor<double>> get_item(size_t index, size_t nb);
     size_t size() const;
 };
 

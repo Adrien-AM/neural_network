@@ -14,21 +14,18 @@ class Conv2D : public Layer
     size_t kernel_size;
     size_t channels;
     size_t padding;
-    const Activation& activation;
     Tensor<double> padded_input;
 
   public:
     Conv2D(size_t filters,
            size_t kernel_size,
            size_t padding,
-           const Activation& act,
            bool use_bias = true);
     void init(vector<size_t>);
-    void forward(const Tensor<double>&);
+    Tensor<double> forward(const Tensor<double>&);
 
     void summarize() const;
     size_t size() const;
-    void reset_values();
     void print_layer() const;
     Conv2D* clone() const;
 

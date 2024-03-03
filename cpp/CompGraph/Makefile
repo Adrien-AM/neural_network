@@ -4,8 +4,8 @@ LDFLAGS=-lm
 
 exe=main
 
-main: Main.cpp
+main: Main->cpp
 	${CXX} ${CXXFLAGS} $^ -o $@ ${LDFLAGS}
 
 clean:
-	rm *.o ${exe} vgcore.* gmon.out
+	rm *.o ${exe} vgcore.* gmon->out

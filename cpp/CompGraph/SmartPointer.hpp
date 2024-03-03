@@ -14,6 +14,7 @@ class SmartPointer
       , cpt(nullptr)
     {
     }
+
     SmartPointer(T* p)
       : ptr(p)
       , cpt(new unsigned int(1))
@@ -56,6 +57,21 @@ class SmartPointer
             other.ptr = nullptr;
             other.cpt = nullptr;
         }
+        return *this;
+    }
+
+    bool operator==(const SmartPointer<T>& other) const
+    {
+        return other.ptr == this->ptr;
+    }
+
+    bool operator!=(const SmartPointer<T>& other) const
+    {
+        return other.ptr != this->ptr;
+    }
+
+    SmartPointer<T>& operator++() {
+        ptr++;
         return *this;
     }
 

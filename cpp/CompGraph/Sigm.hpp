@@ -4,11 +4,11 @@
 #include "Operation.hpp"
 
 template<typename T>
-class Sigm : public Operation<double>
+class Sigm : public Operation<T>
 {
   public:
     Sigm(SmartPointer<Operation<T>> x)
-      : Operation<double>(x)
+      : Operation<T>(x)
     {
     }
 
@@ -17,6 +17,14 @@ class Sigm : public Operation<double>
     void backward()
     {
         this->inputs[0]->gradient += this->gradient * this->value * (1 - this->value);
+    }
+
+    Sigm<T>* copy()
+    {
+        Sigm<T>* n = new Sigm<T>(this->inputs[0]);
+        n->value = this->value;
+        n->gradient = this->gradient;
+        return n;
     }
 };
 

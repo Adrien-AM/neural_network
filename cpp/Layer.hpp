@@ -1,7 +1,6 @@
 #ifndef __LAYER_HPP__
 #define __LAYER_HPP__
 
-#include "Activation.hpp"
 #include "Utils.hpp"
 #include <iostream>
 
@@ -10,11 +9,9 @@ using namespace std;
 class Layer
 {
   public:
-    Tensor<double> output_values;
     Tensor<double> weights;
     Tensor<double> biases;
-
-    // abstraction
+    
     /**
      * Initialize the layer. Called when the full neural network architecture is known.
      *
@@ -28,21 +25,22 @@ class Layer
      * @param input : input data (most of the time, output of previous layer). input should be the
      * same shape as specified in init().
      */
-    virtual void forward(const Tensor<double>&) = 0;
+    virtual Tensor<double> forward(const Tensor<double>&) const = 0;
+
+    /**
+     * Returns shape of the output from the layer.
+     */
+    virtual vector<size_t> output_shape() const = 0;
 
     /**
      * Displays useful informations on stdout.
      */
-    virtual void summarize() const = 0;
-
-    // getters and setters
-    virtual size_t size() const = 0;
-    virtual void reset_values() = 0;
-
-    // debug
-    virtual void print_layer() const = 0;
+    virtual void summarize() const;
 
     virtual Layer* clone() const = 0;
+
+    // debug
+    virtual void print_layer() const;
 
     virtual ~Layer() = 0;
 };

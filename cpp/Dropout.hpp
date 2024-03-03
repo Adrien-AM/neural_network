@@ -10,19 +10,16 @@ class Dropout : public Layer
 {
   private:
     double rate;
+    vector<size_t> shape;
 
   public:
     Dropout(double rate);
 
     void init(vector<size_t>);
 
-    void forward(const Tensor<double>&);
-    Tensor<double> backprop(Layer*);
+    Tensor<double> forward(const Tensor<double>&) const;
+    vector<size_t> output_shape() const;
     void summarize() const;
-
-    size_t size() const;
-    void reset_values();
-    void reset_errors();
 
     // debug
     void print_layer() const;

@@ -3,22 +3,30 @@
 
 #include "Operation.hpp"
 
-template <typename T>
-class Sub : public Operation<double>
+template<typename T>
+class Sub : public Operation<T>
 {
-public:
-  Sub(SmartPointer<Operation<double>> x, SmartPointer<Operation<double>> y)
-      : Operation<double>(x, y)
-  {
-  }
+  public:
+    Sub(SmartPointer<Operation<T>> x, SmartPointer<Operation<T>> y)
+      : Operation<T>(x, y)
+    {
+    }
 
-  void forward() { this->value = this->inputs[0]->value - this->inputs[1]->value; }
+    void forward() { this->value = this->inputs[0]->value - this->inputs[1]->value; }
 
-  void backward()
-  {
-    this->inputs[0]->gradient += this->gradient;
-    this->inputs[1]->gradient -= this->gradient;
-  }
+    void backward()
+    {
+        this->inputs[0]->gradient += this->gradient;
+        this->inputs[1]->gradient -= this->gradient;
+    }
+
+    Sub<T>* copy()
+    {
+        Sub<T>* n = new Sub<T>(this->inputs[0], this->inputs[1]);
+        n->value = this->value;
+        n->gradient = this->gradient;
+        return n;
+    }
 };
 
 #endif // __SUB_HPP__

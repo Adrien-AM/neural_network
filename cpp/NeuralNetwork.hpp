@@ -47,7 +47,7 @@ class NeuralNetwork
      * @param batch_size : number of samples to backpropagate per epoch
      * @param epochs
      */
-    void fit(const Dataset<double>& data,
+    void fit(Dataset<double>& data,
              size_t batch_size,
              size_t epochs);
 

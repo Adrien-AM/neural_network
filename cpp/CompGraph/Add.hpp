@@ -4,11 +4,11 @@
 #include "Operation.hpp"
 
 template<typename T>
-class Add : public Operation<double>
+class Add : public Operation<T>
 {
   public:
     Add(SmartPointer<Operation<T>> x, SmartPointer<Operation<T>> y)
-      : Operation<double>(x, y)
+      : Operation<T>(x, y)
     {
     }
 
@@ -18,6 +18,14 @@ class Add : public Operation<double>
     {
         this->inputs[0]->gradient += this->gradient;
         this->inputs[1]->gradient += this->gradient;
+    }
+
+    Add<T>* copy()
+    {
+        Add<T>* n = new Add<T>(this->inputs[0], this->inputs[1]);
+        n->value = this->value;
+        n->gradient = this->gradient;
+        return n;
     }
 };
 

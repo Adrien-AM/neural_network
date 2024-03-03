@@ -9,38 +9,7 @@ clipper(double x, double clip)
 }
 
 void
-Optimizer::sample()
-{
-    for (Layer*& l : layers) {
-        l->weights.accumulate_gradients();
-        if (!l->biases.empty()) {
-            l->biases.accumulate_gradients();
-        }
-    }
-}
-
-void
-iterate(Tensor<double>& t)
-{
-    vector<size_t> s = t.shape();
-    size_t nb_dims = s.size();
-    vector<size_t> indices(nb_dims);
-    while (true) {
-        // Code ...
-
-        indices[nb_dims - 1]++;
-        size_t i = nb_dims - 1;
-        while (indices[i] == s[i]) {
-            if (i == 0)
-                return;
-            indices[i] = 0;
-            indices[--i]++;
-        }
-    }
-}
-
-void
-SGD::update(size_t batch_size)
+SGD::update()
 {
     for (size_t i = 0; i < layers.size(); i++) {
         Layer* l = layers[i];
@@ -49,40 +18,16 @@ SGD::update(size_t batch_size)
             continue;
         bool use_bias = !l->biases.empty();
 
-        size_t nb_dims = shape.size();
-        vector<size_t> indices(nb_dims);
-        while (true) {
-            l->weights(indices) -= alpha * clipper(l->weights.acc(indices) / batch_size, clip);
-
-            size_t i = nb_dims - 1;
-            indices[i]++;
-            while (indices[i] == shape[i]) {
-                if (i == 0)
-                    goto bias;
-                indices[i] = 0;
-                indices[--i]++;
-            }
+        for (auto& w : l->weights) {
+            // printf("Grad update : %f\n", w.gradient);
+            w->value -= alpha * w->gradient;
         }
-    bias:
+
         if (use_bias) {
-            shape = l->biases.shape();
-            size_t nb_dims = shape.size();
-            vector<size_t> indices(nb_dims);
-            while (true) {
-                l->biases(indices) -=
-                  alpha * clipper(l->biases.acc(indices) / batch_size, clip);
-
-                size_t i = nb_dims - 1;
-                indices[i]++;
-                while (indices[i] == shape[i]) {
-                    if (i == 0)
-                        goto end;
-                    indices[i] = 0;
-                    indices[--i]++;
-                }
+            for (auto& b : l->biases) {
+                b->value -= alpha * b->gradient;
             }
         }
-    end:
         layers[i]->weights.reset_gradients();
         if (use_bias)
             layers[i]->biases.reset_gradients();
@@ -98,7 +43,7 @@ Adam::Adam(double lr, double beta1, double beta2, double clip)
 }
 
 void
-Adam::update(size_t batch_size)
+Adam::update()
 {
     for (size_t i = 0; i < layers.size(); i++) {
         t++;
@@ -106,7 +51,7 @@ Adam::update(size_t batch_size)
         double bias2 = 1 - pow(beta2, t);
 
         for (size_t j = 0; j < layers[i]->weights.total_size(); j++) {
-            double g = clipper(layers[i]->weights.acc(j) / batch_size, clip);
+            double g = clipper(layers[i]->weights.gradient(j), clip);
             updates1[j] = updates1[j] * beta1 + (1 - beta1) * g;
             updates2[j] = updates2[j] * beta2 + (1 - beta2) * g * g;
             double corrected_up1 = updates1[j] / bias1;
